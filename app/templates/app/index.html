@@ -1,0 +1,15 @@
+{% extends "app/base.html" %}
+
+{% block content %}
+<h1 align='center'>Index</h1>
+<h3 align='center'><a href="{% url "app:about" %}">Ссылка на about</a></h3>
+<h3 align='center'><a href="{% url "tests:create_test" %}">Ссылка на создание Tests</a></h3>
+<h3 align='center'><a href="{% url "tests:add_questions" 1 %}">Ссылка на создание Tests</a></h3>
+
+<div align='center'>
+    {% for test in tests %}
+        <h2>{{ test.name }}</h1>
+    {% endfor %}
+</div>
+
+{% endblock content %}

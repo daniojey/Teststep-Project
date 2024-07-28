@@ -1,0 +1,19 @@
+<!-- tests/templates/tests/add_questions.html -->
+
+<h1>Добавить вопросы для теста: {{ test.name }}</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ question_form.as_p }}
+    <button type="submit">Добавить вопрос</button>
+</form>
+
+<h2>Текущие вопросы</h2>
+<ul>
+    {% for question in questions %}
+        <li>{{ question.text }}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a>
+<a href="{% url "tests:add_answers" test_id=test.id %}">Перейти к добавлению вопросов</a>

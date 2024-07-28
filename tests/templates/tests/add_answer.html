@@ -1,0 +1,14 @@
+{% comment %} <h1>Add Answers to Question: {{ question.text }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ answer_form.as_p }}
+    <button type="submit">Save Answer</button>
+</form> {% endcomment %}
+
+{% for test in tests %}
+    <h1>{{ test.name }}</h1>
+{% endfor %}
+
+{% for quest in question %}
+    <h1>{{ quest }}</h1>
+{% endfor %}
