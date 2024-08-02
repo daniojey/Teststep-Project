@@ -1,19 +1,42 @@
-<!-- tests/templates/tests/add_questions.html -->
+{% extends "app/base.html" %}
+{% load static %}
 
-<h1>Добавить вопросы для теста: {{ test.name }}</h1>
+<head>
+    <title>Добавить вопросы для теста: {{ test.name }}</title>
+</head>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ question_form.as_p }}
-    <button type="submit">Добавить вопрос</button>
-</form>
+{% block content %}
 
-<h2>Текущие вопросы</h2>
-<ul>
-    {% for question in questions %}
-        <li>{{ question.text }}</li>
-    {% endfor %}
-</ul>
+<link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
 
-<a href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a>
-<a href="{% url "tests:add_answers" test_id=test.id %}">Перейти к добавлению вопросов</a>
+<body>
+    <h1>Добавить вопросы для теста: {{ test.name }}</h1>
+
+    {% if test.image %}
+        <div>
+            <img src="{{ test.image.url }}" alt="{{ test.name }}">
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+        <button type="submit">Добавить вопрос</button>
+    </form>
+
+    <h2>Текущие вопросы</h2>
+    <ul>
+        {% for question in questions %}
+            <li>
+                {{ question.text }}
+                <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a></h2> 
+</body>
+
+{% endblock content %}
+
+

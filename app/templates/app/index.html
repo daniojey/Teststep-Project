@@ -1,15 +1,26 @@
 {% extends "app/base.html" %}
+{% load static %}
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 {% block content %}
-<h1 align='center'>Index</h1>
-<h3 align='center'><a href="{% url "app:about" %}">Ссылка на about</a></h3>
-<h3 align='center'><a href="{% url "tests:create_test" %}">Ссылка на создание Tests</a></h3>
-<h3 align='center'><a href="{% url "tests:add_questions" 1 %}">Ссылка на создание Tests</a></h3>
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
 
-<div align='center'>
-    {% for test in tests %}
-        <h2>{{ test.name }}</h1>
+
+
+    <div class="test-container">
+        {% for test in tests %}
+        <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">            <div class="test-overlay">
+                <h2>{{ test.name }}</h2>
+            </div>
+        </div>
     {% endfor %}
-</div>
+    </div>
+
+
 
 {% endblock content %}

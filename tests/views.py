@@ -10,6 +10,11 @@ def index(request):
 def rating(request):
     return render(request, "tests/rating.html")
 
+def all_tests(request):
+    tests = Tests.objects.all()
+    return render(request, 'tests/all_tests.html', {'tests': tests})
+
+
 def create_test(request):
     if request.method == 'POST':
         form = TestForm(request.POST, request.FILES)

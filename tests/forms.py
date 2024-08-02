@@ -4,7 +4,10 @@ from .models import Tests, Question, Answer
 class TestForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image']
+        fields = ['name', 'description', 'image', 'duration']
+        widgets = {
+            'duration': forms.TimeInput(attrs={'type': 'time'})  # Опционально: можно настроить отображение времени
+        }
 
 class QuestionForm(forms.ModelForm):
     class Meta:

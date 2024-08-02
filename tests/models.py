@@ -14,6 +14,7 @@ class Tests(models.Model):
     name = models.CharField(max_length=130, unique=True)
     description = models.CharField(max_length=500)
     image = models.ImageField(null=True, blank=True)
+    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
 
 
     class Meta:
@@ -23,7 +24,7 @@ class Tests(models.Model):
 
 
 class Question(models.Model):
-    SINGLE_CHOICE = 'SC'
+    SINGLE_CHOICE = 'SC'                                                                                                                                                                                                
     MULTIPLE_CHOICE = 'MC'
     IMAGE = 'IMG'
     AUDIO = 'AUD'

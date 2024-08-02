@@ -4,10 +4,9 @@ from django.http import HttpResponse
 from tests.models import Tests
 
 def index(request):
+    tests = Tests.objects.all()
     context = {
-        "title":"Сайт говно",
-        "description":"Педелывай",
-        "testes": Tests.objects.all()
+        "tests" : tests,
     }
     return render(request, "app/index.html", context=context)
 

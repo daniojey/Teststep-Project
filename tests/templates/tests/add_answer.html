@@ -1,14 +1,59 @@
-{% comment %} <h1>Add Answers to Question: {{ question.text }}</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ answer_form.as_p }}
-    <button type="submit">Save Answer</button>
-</form> {% endcomment %}
+{% extends "app/base.html" %}
+{% load static %}
 
-{% for test in tests %}
+
+<head>
+    <title>{{ test.name }}</title>
+</head>
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
+
+<body>
     <h1>{{ test.name }}</h1>
-{% endfor %}
+    <p>{{ test.description }}</p>
 
-{% for quest in question %}
-    <h1>{{ quest }}</h1>
-{% endfor %}
+    <h2>Questions</h2>
+    <ul>
+        {% for question in questions %}
+            <li>
+                <strong>
+                    {{ question.text }}
+                    <a href="{% url 'tests:add_answers' question.id %}">Редактировать вопрос</a>
+                </strong>
+                {% if question.image %}
+                    <div>
+                        <img src="{{ question.image.url }}" alt="Question Image">
+                    </div>
+                {% endif %}
+                {% if question.audio %}
+                    <div>
+                        <audio controls>
+                            <source src="{{ question.audio.url }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                {% endif %}
+                <ul>
+                    {% for answer in question.answers.all %}
+                        <li>
+                            {{ answer.text }}
+                            
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Добавить ответ к вопросу: {{ question.text }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ answer_form.as_p }}
+        <button type="submit">Добавить ответ</button>
+    </form>
+</body>
+
+{% endblock content %}
+

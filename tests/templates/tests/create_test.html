@@ -1,6 +1,19 @@
-<h1>Create Test</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
+
+    <head>
+        <h1>Создание теста</h1>
+    </head>
+    <body>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Создать тест</button>
+        </form>
+    </body>
+
+{% endblock content %}
+
