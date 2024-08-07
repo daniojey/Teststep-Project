@@ -1,4 +1,4 @@
-{% extends "app/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block content %}
@@ -6,12 +6,12 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">
 </head>
 
-<body>
+<div class="nav-links">
     {% for test in tests %}
         <div>
             <h1>{{ test.name }}</h1>
             <a href="{% url "tests:add_questions" test_id=test.id %}">Редактировать тест</a>
         </div>
     {% endfor %}
-</body>
+</div>
 {% endblock content %}

@@ -4,6 +4,9 @@ class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
     slug = models.SlugField(max_length=200, unique=True, blank=True, null=True, verbose_name="URL")
     
+    def __str__(self):
+        return  self.name
+
     class Meta:
         db_table = "category"
         verbose_name = "Категорію"
@@ -11,11 +14,14 @@ class Categories(models.Model):
 
 
 class Tests(models.Model):
-    name = models.CharField(max_length=130, unique=True)
-    description = models.CharField(max_length=500)
-    image = models.ImageField(null=True, blank=True)
-    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
+    name = models.CharField(verbose_name="Название",max_length=130, unique=True)
+    description = models.CharField(verbose_name="Описание",max_length=500)
+    image = models.ImageField(verbose_name="Превью",null=True, blank=True)
+    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True, default=60)
+    category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория")
 
+    def __str__(self):
+        return  self.name
 
     class Meta:
         db_table = "tests"

@@ -28,7 +28,7 @@ def create_test(request):
 def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
     if request.method == 'POST':
-        question_form = QuestionForm(request.POST, request.FILES)
+        question_form = QuestionForm(request.POST, request.FILES, instance=test)
         if question_form.is_valid():
             question = question_form.save(commit=False)
             question.test = test
@@ -68,3 +68,12 @@ def add_answers(request, question_id):
         'questions': questions,
         'answer_form': answer_form
     })
+
+def test_preview(request, test_id):
+    test = get_object_or_404(Tests, pk=test_id)
+
+    context = {
+        "test": test
+    }
+
+    return render(request, 'tests/test_preview.html', context=context)

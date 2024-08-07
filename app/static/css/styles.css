@@ -4,6 +4,7 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     min-height: 100vh;
+    text-align: center;
 }
 
 
@@ -126,4 +127,32 @@ button:active {
 /* Заголовок теста */
 .test-overlay h2 {
     margin: 0;
+}
+
+.test-item-link {
+    text-decoration: none; /* Убирает стандартное подчеркивание ссылок */
+    color: inherit; /* Сохраняет цвет текста */
+    display: block; /* Делает ссылку блочной, чтобы она занимала весь контейнер */
+}
+
+.test-item-link:hover .test-item {
+    transform: scale(1.05); /* Легкое увеличение контейнера при наведении */
+    transition: transform 0.3s ease; /* Плавный переход */
+}
+
+/* Контейнер с фиксированным размером */
+.fixed-container {
+    width: 450px; /* Фиксированная ширина контейнера */
+    height: 300px; /* Фиксированная высота контейнера */
+    overflow: hidden; /* Скрыть части изображения, выходящие за пределы контейнера */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Изображение внутри контейнера */
+.fixed-container img {
+    width: 100%; /* Сжимает изображение по ширине контейнера */
+    height: 100%; /* Сжимает изображение по высоте контейнера */
+    object-fit: cover; /* Обрезает изображение, чтобы оно заполнило контейнер, сохраняя пропорции */
 }

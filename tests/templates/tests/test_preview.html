@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" type='text/css' href="{% static "css/styles.css" %}">
+</head>
+
+<div align="center">
+    <div class='fixed-container'>
+        {% if test.image %}
+            <img src="{{ test.image.url }}" alt="{{ test.name }}" >
+        {% endif %}
+    </div>
+    <h1>{{ test.name }}</h1>
+    {{test.duration}}
+    <div>
+        <h2>Категория: {{ test.category }}</h2>
+        <h3>Описание: {{ test.description }}</h3>
+    </div>
+    <a href="{% url "app:index" %}">Начать тест</a>
+</div>
+{% endblock content %}
