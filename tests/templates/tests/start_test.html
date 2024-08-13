@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+<h1>{{ test.name }}</h1>
+<p>{{ test.description }}</p>
+<button id="start-test">Начать тестирование</button>
+
+<script>
+    document.getElementById('start-test').onclick = function() {
+        window.location.href = "{% url 'take_test' test.id %}";
+    };
+</script>

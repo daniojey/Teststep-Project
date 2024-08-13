@@ -13,11 +13,11 @@
     <title>Профиль</title>
 </head>
 
-<body align="center">
+<body>
     <section>
         <!-- Контент -->
         <div class="container">
-            <div class="row mt-1">
+            <div class="row mt-2">
                 <div class="col-lg-2">
                     <!-- Пустой блок на усмотрение -->
                 </div>
@@ -28,7 +28,7 @@
                             <div class="row">
                                 <!-- Профиль с данными пользователя -->
                                 <div class="col-md-5">
-                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" >
                                         <h3 class="text-center mb-4">Профиль пользователя</h3>
                                         <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data">
                                             {% csrf_token %}

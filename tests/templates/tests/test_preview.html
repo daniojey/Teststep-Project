@@ -19,5 +19,14 @@
         <h3>Описание: {{ test.description }}</h3>
     </div>
     <a href="{% url "app:index" %}">Начать тест</a>
+    <button id="start-test">Начать тестирование</button>
 </div>
+
+<script>
+    document.getElementById('start-test').onclick = function() {
+        window.location.href = "{% url 'tests:take_test' test.id %}";
+    };
+</script>
+
 {% endblock content %}
+

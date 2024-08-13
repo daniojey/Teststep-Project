@@ -1,0 +1,13 @@
+# python ignore
+venv/
+.pylintrc
+__pycache__/
+
+
+#ide staff 
+.vscode
+.idea
+
+#django stuff
+db.sqlite3
+media/

@@ -28,12 +28,11 @@ def create_test(request):
 def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
     if request.method == 'POST':
-        question_form = QuestionForm(request.POST, request.FILES, instance=test)
+        question_form = QuestionForm(request.POST, request.FILES)
         if question_form.is_valid():
             question = question_form.save(commit=False)
-            question.test = test
+            question.test = test  # Привязываем вопрос к текущему тесту
             question.save()
-            # Остаемся на той же странице для добавления дополнительных вопросов
             return redirect('tests:add_questions', test_id=test.id)
     else:
         question_form = QuestionForm()
@@ -44,6 +43,7 @@ def add_questions(request, test_id):
         'question_form': question_form,
         'questions': questions
     })
+
 
 def complete_questions(request, test_id):
     # После завершения добавления вопросов переходим на страницу с вопросами или на другую подходящую страницу
@@ -77,3 +77,34 @@ def test_preview(request, test_id):
     }
 
     return render(request, 'tests/test_preview.html', context=context)
+
+
+
+def take_test(request, test_id):
+    test = get_object_or_404(Tests, id=test_id)
+    questions = test.questions.all()
+    current_question = request.session.get('current_question', 0)
+    
+    if current_question < len(questions):
+        question_instance = questions[current_question]
+
+        if request.method == 'POST':
+            form = TestForm(request.POST)
+            if form.is_valid():
+                # Логика обработки ответа на вопрос
+                request.session['current_question'] = current_question + 1
+                return redirect('tests:take_test', test_id=test.id)
+        else:
+            form = TestForm()
+        
+        return render(request, 'tests/question.html', {'form': form, 'question': question_instance, 'test': test})
+    else:
+        # Очистка сессии и сброс `current_question`
+        request.session['current_question'] = 0
+        return redirect('tests:test_results', test_id=test.id)
+
+
+    
+
+def test_results(request, test_id):
+    return render(request, 'tests/test_results.html')

@@ -1,0 +1,39 @@
+<h2>{{ question.text }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Ответить</button>
+</form>
+<p></p>
+
+
+<script>
+    var countDownDuration = parseInt("{{ test.duration.total_seconds }}", 10) * 1000;
+
+    if (isNaN(countDownDuration)) {
+        console.error("Invalid duration:", "{{ test.duration.total_seconds }}");
+    } else {
+        var timer = setInterval(function() {
+            if (countDownDuration <= 0) {
+                clearInterval(timer);
+                window.location.href = "{% url 'tests:test_results' test.id %}";
+            }
+            var hours = Math.floor((countDownDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((countDownDuration % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((countDownDuration % (1000 * 60)) / 1000);
+            
+            var display = hours > 0 ? hours + "h " : "";
+            display += minutes + "m " + seconds + "s ";
+
+            document.getElementById('timer').innerText = display;
+            countDownDuration -= 1000;
+        }, 1000);
+    }
+</script>
+
+<div id="timer" align='center'></div>
+
+
+
+
+
