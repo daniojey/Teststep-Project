@@ -28,10 +28,12 @@ class QuestionForm(forms.ModelForm):
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ['text']
+        fields = ['text', 'is_correct']
         widgets = {
             'text': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+        is_correct = forms.CheckboxSelectMultiple()
 
 
 class TestTakeForm(forms.Form):

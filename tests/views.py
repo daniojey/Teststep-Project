@@ -82,7 +82,7 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
-    
+
     if request.method == 'POST':
         form = TestTakeForm(request.POST, test=test)
         if form.is_valid():
@@ -118,6 +118,7 @@ def test_results(request, test_id):
                     correct_answers += 1
 
     score = (correct_answers / total_questions) * 100
+    score = round(score)
     context = {
         'test': test,
         'score': score,

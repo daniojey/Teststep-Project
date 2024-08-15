@@ -38,6 +38,12 @@
                 <ul>
                     {% for answer in question.answers.all %}
                         <li>
+                            {% if answer.is_correct == True %}
+                                Верный
+                            {% else %}
+                                -
+                            {% endif %}
+                                :
                             {{ answer.text }}
                             
                         </li>

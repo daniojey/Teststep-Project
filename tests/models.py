@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -70,3 +71,4 @@ class Answer(models.Model):
 
     def __str__(self):
         return self.text
+    
