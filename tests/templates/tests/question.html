@@ -1,11 +1,14 @@
-<h2>{{ question.text }}</h2>
+<h2>{{ test.name }}</h2>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Ответить</button>
+    {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+        </div>
+    {% endfor %}
+    <button type="submit">Отправить</button>
 </form>
-<p></p>
-
 
 <script>
     var countDownDuration = parseInt("{{ test.duration.total_seconds }}", 10) * 1000;

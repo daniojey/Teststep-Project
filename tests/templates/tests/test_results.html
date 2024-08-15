@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Успешно !!</h1>
+<h2>Ваш результат по {{ test.name }}</h2>
+<p>Вы ответили правильно на {{ correct_answers }} из {{ total_questions }} вопросов.</p>
+<p>Ваш балл: {{ score }}%</p>
 {% endblock content %}

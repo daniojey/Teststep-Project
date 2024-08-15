@@ -42,7 +42,7 @@ class Question(models.Model):
         (AUDIO, 'Audio')
     ]
 
-    test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, verbose_name="Тест")
+    test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, default='single' ,verbose_name="Тест")
     text = models.TextField(verbose_name="Текст вопроса")
     question_type = models.CharField(max_length=3, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
@@ -60,7 +60,7 @@ class Question(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Вопрос")
-    text = models.TextField(verbose_name="Текст ответа")
+    text = models.CharField(verbose_name="Текст ответа", max_length=255)
     is_correct = models.BooleanField(default=False, verbose_name="Правильный ответ")
 
     class Meta:

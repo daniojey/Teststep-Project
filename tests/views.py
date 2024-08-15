@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Tests, Question, Answer
-from .forms import TestForm, QuestionForm, AnswerForm
+from .forms import TestForm, QuestionForm, AnswerForm, TestTakeForm
 
 def index(request):
     return render(request, 'tests/index.html')
@@ -82,29 +82,47 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
-    questions = test.questions.all()
-    current_question = request.session.get('current_question', 0)
     
-    if current_question < len(questions):
-        question_instance = questions[current_question]
-
-        if request.method == 'POST':
-            form = TestForm(request.POST)
-            if form.is_valid():
-                # Логика обработки ответа на вопрос
-                request.session['current_question'] = current_question + 1
-                return redirect('tests:take_test', test_id=test.id)
-        else:
-            form = TestForm()
-        
-        return render(request, 'tests/question.html', {'form': form, 'question': question_instance, 'test': test})
+    if request.method == 'POST':
+        form = TestTakeForm(request.POST, test=test)
+        if form.is_valid():
+            # Сохраняем ответы в сессию
+            request.session['test_responses'] = form.cleaned_data
+            return redirect('tests:test_results', test_id=test_id)
     else:
-        # Очистка сессии и сброс `current_question`
-        request.session['current_question'] = 0
-        return redirect('tests:test_results', test_id=test.id)
+        form = TestTakeForm(test=test)
+
+    return render(request, 'tests/question.html', {'form': form, 'test': test})
 
 
     
 
 def test_results(request, test_id):
-    return render(request, 'tests/test_results.html')
+    test = get_object_or_404(Tests, id=test_id)
+    responses = request.session.get('test_responses', {})
+    total_questions = test.questions.count()
+    correct_answers = 0
+
+    for key, value in responses.items():
+        if key.startswith('question_'):
+            question_id = int(key.split('_')[1])
+            question = Question.objects.get(id=question_id)
+            
+            if question.question_type == 'SC':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += 1
+            elif question.question_type == 'MC':
+                correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
+                if set(map(int, value)) == set(correct_answers_list):
+                    correct_answers += 1
+
+    score = (correct_answers / total_questions) * 100
+    context = {
+        'test': test,
+        'score': score,
+        'correct_answers': correct_answers,
+        'total_questions': total_questions
+    }
+    
+    return render(request, 'tests/test_results.html', context)
