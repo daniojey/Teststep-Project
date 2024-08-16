@@ -103,6 +103,18 @@
     <script src="{% static "js/jquery-ajax.js" %}"></script>
     <script src="{% static "js/bootstrap/bootstrap.bundle.min.js" %}"></script>
 </body>
+
+
+<h2 align='center'>Ваши результаты тестов</h2>
+<ul align='center'>
+    {% if test_results %}
+        {% for result in test_results %}
+            <li><a href="{% url "tests:test_preview" result.test.id %}">{{ result.test.name }}</a>: {{ result.score }}% - {{ result.date_taken }}</li>
+        {% endfor %}
+    {% else %}
+        <a href="{% url "app:index" %}">У вас ещё нет пройденных тестов, нажмите чтобы начать прохождение :D</a>
+    {% endif %}
+</ul>
  
 {% endblock content %}
 

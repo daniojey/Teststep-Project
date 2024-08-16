@@ -1,14 +1,16 @@
 # tests/views.py
 
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Tests, Question, Answer
+from .models import TestResult, Tests, Question, Answer
 from .forms import TestForm, QuestionForm, AnswerForm, TestTakeForm
 
 def index(request):
     return render(request, 'tests/index.html')
 
+
 def rating(request):
     return render(request, "tests/rating.html")
+
 
 def all_tests(request):
     tests = Tests.objects.all()
@@ -24,6 +26,7 @@ def create_test(request):
     else:
         form = TestForm()
     return render(request, 'tests/create_test.html', {'form': form})
+
 
 def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
@@ -49,6 +52,7 @@ def complete_questions(request, test_id):
     # После завершения добавления вопросов переходим на страницу с вопросами или на другую подходящую страницу
     return redirect('app:index')
 
+
 def add_answers(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     test = question.test
@@ -69,15 +73,17 @@ def add_answers(request, question_id):
         'answer_form': answer_form
     })
 
+
 def test_preview(request, test_id):
+    test_results = request.user.test_results.all()
     test = get_object_or_404(Tests, pk=test_id)
 
     context = {
-        "test": test
+        "test": test,
+        'test_results': test_results,
     }
 
     return render(request, 'tests/test_preview.html', context=context)
-
 
 
 def take_test(request, test_id):
@@ -94,8 +100,6 @@ def take_test(request, test_id):
 
     return render(request, 'tests/question.html', {'form': form, 'test': test})
 
-
-    
 
 def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
@@ -125,5 +129,8 @@ def test_results(request, test_id):
         'correct_answers': correct_answers,
         'total_questions': total_questions
     }
+    
+    if request.user.is_authenticated:
+        TestResult.objects.create(user=request.user, test=test, score=round(score, 2))
     
     return render(request, 'tests/test_results.html', context)

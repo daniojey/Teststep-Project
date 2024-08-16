@@ -72,3 +72,19 @@ class Answer(models.Model):
     def __str__(self):
         return self.text
     
+    
+class TestResult(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_results')
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+    date_taken = models.DateTimeField(auto_now_add=True)
+
+
+    class Meta:
+        db_table = 'test_results'
+        verbose_name = 'Результат теста'
+        verbose_name_plural = 'Результаты тестов'
+
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.test.name} - {self.score}"

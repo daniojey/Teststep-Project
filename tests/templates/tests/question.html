@@ -1,14 +1,27 @@
-<h2>{{ test.name }}</h2>
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="form-group">
-            {{ field.label_tag }}
-            {{ field }}
-        </div>
-    {% endfor %}
-    <button type="submit">Отправить</button>
-</form>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">   
+
+<head align="center">
+    <h1 align="center">
+        {{ test.name }}
+    </h1>
+</head>
+
+<body>
+    <div id="timer" align='right'></div>
+    
+    <form id="test-form" method="post" align="left">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+            </div>
+        {% endfor %}
+        <button type="submit" >Завершить тест</button>
+    </form>
+</body>
+
 
 <script>
     var countDownDuration = parseInt("{{ test.duration.total_seconds }}", 10) * 1000;
@@ -32,9 +45,12 @@
             countDownDuration -= 1000;
         }, 1000);
     }
+
+
+
 </script>
 
-<div id="timer" align='center'></div>
+
 
 
 

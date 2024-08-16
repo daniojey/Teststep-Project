@@ -13,12 +13,11 @@
         {% endif %}
     </div>
     <h1>{{ test.name }}</h1>
-    {{test.duration}}
+    Время для прохождения - {{test.duration}}
     <div>
         <h2>Категория: {{ test.category }}</h2>
         <h3>Описание: {{ test.description }}</h3>
     </div>
-    <a href="{% url "app:index" %}">Начать тест</a>
     <button id="start-test">Начать тестирование</button>
 </div>
 
@@ -28,5 +27,18 @@
     };
 </script>
 
+<ul align='left'>
+    <h2>Ваши результаты по этому тесту</h2>
+    {% if test_results %}
+        {% for result in test_results %}
+            {% if test.id == result.test.id %}
+                <li>{{ result.score }}% - {{ result.date_taken }}</li>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <a href="{% url "app:index" %}">У вас ещё нет пройденных тестов, нажмите чтобы начать прохождение :D</a>
+    {% endif %}
+</ul>
+ 
 {% endblock content %}
 
