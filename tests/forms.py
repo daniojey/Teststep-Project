@@ -13,8 +13,18 @@ class TestForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop('question', None)  # Извлекаем аргумент 'question'
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         # Теперь можешь использовать 'question' внутри формы, если нужно
+
+       
+    def save(self, commit=True):
+        test = super().save(commit=False)
+        if self.user:
+            test.user = self.user
+        if commit:
+            test.save()
+        return test
 
 class QuestionForm(forms.ModelForm):
 
@@ -71,3 +81,5 @@ class TestTakeForm(forms.Form):
                     if not value:
                         self.add_error(key, "Выберите хотя бы один из вариантов.")
         return cleaned_data
+    
+ 

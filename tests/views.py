@@ -1,5 +1,5 @@
 # tests/views.py
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import TestResult, Tests, Question, Answer
 from .forms import TestForm, QuestionForm, AnswerForm, TestTakeForm
@@ -17,9 +17,10 @@ def all_tests(request):
     return render(request, 'tests/all_tests.html', {'tests': tests})
 
 
+@login_required
 def create_test(request):
     if request.method == 'POST':
-        form = TestForm(request.POST, request.FILES)
+        form = TestForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             test = form.save()
             return redirect('tests:add_questions', test_id=test.id)
@@ -28,8 +29,10 @@ def create_test(request):
     return render(request, 'tests/create_test.html', {'form': form})
 
 
+@login_required
 def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
+    
     if request.method == 'POST':
         question_form = QuestionForm(request.POST, request.FILES)
         if question_form.is_valid():
@@ -41,6 +44,7 @@ def add_questions(request, test_id):
         question_form = QuestionForm()
     
     questions = Question.objects.filter(test=test)
+
     return render(request, 'tests/add_questions.html', {
         'test': test,
         'question_form': question_form,
@@ -53,6 +57,7 @@ def complete_questions(request, test_id):
     return redirect('app:index')
 
 
+@login_required
 def add_answers(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     test = question.test
