@@ -13,7 +13,12 @@ def rating(request):
 
 
 def all_tests(request):
-    tests = Tests.objects.all()
+    if request.user.is_superuser:
+        tests = Tests.objects.all()
+    else:
+        tests = Tests.objects.filter(user=request.user)
+
+
     return render(request, 'tests/all_tests.html', {'tests': tests})
 
 

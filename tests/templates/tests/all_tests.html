@@ -8,10 +8,14 @@
 
 <div class="nav-links">
     {% for test in tests %}
-        <div>
-            <h1>{{ test.name }}</h1>
-            <a href="{% url "tests:add_questions" test_id=test.id %}">Редактировать тест</a>
-        </div>
+       
+            <div>
+                <h1>{{ test.name }}</h1>
+                <a href="{% url "tests:add_questions" test_id=test.id %}">Редактировать тест</a>
+            </div>
+
     {% endfor %}
 </div>
 {% endblock content %}
+
+
