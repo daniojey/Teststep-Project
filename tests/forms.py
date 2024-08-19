@@ -35,6 +35,7 @@ class QuestionForm(forms.ModelForm):
             'text': forms.Textarea(attrs={'rows': 3}),
             'question_type': forms.RadioSelect(choices=Question.QUESTION_TYPES),
         }
+        
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
@@ -66,6 +67,15 @@ class TestTakeForm(forms.Form):
                     widget=forms.CheckboxSelectMultiple,
                     label=question.text
                 )
+            
+            elif question.question_type == 'IMG':
+                self.fields[f'question_{question.id}'] = forms.ChoiceField(
+                    choices=choices,
+                    widget=forms.RadioSelect,
+                    label=question.text
+                )
+
+
 
     def clean(self):
         cleaned_data = super().clean()

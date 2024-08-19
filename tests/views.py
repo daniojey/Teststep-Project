@@ -98,6 +98,7 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
+    question = Question.objects.all()
 
     if request.method == 'POST':
         form = TestTakeForm(request.POST, test=test)
@@ -108,7 +109,7 @@ def take_test(request, test_id):
     else:
         form = TestTakeForm(test=test)
 
-    return render(request, 'tests/question.html', {'form': form, 'test': test})
+    return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': question})
 
 
 def test_results(request, test_id):
@@ -129,6 +130,10 @@ def test_results(request, test_id):
             elif question.question_type == 'MC':
                 correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
                 if set(map(int, value)) == set(correct_answers_list):
+                    correct_answers += 1
+            elif question.question_type == 'IMG':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
                     correct_answers += 1
 
     score = (correct_answers / total_questions) * 100
