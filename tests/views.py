@@ -106,6 +106,7 @@ def take_test(request, test_id):
             # Сохраняем ответы в сессию
             request.session['test_responses'] = form.cleaned_data
             return redirect('tests:test_results', test_id=test_id)
+        
     else:
         form = TestTakeForm(test=test)
 
@@ -135,6 +136,13 @@ def test_results(request, test_id):
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
                     correct_answers += 1
+            elif question.question_type == 'AUD':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += 1
+            elif question.question_type == 'MTCH':
+                ...
+
 
     score = (correct_answers / total_questions) * 100
     score = round(score)

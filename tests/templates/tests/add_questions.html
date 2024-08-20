@@ -25,6 +25,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ question_form.as_p }}
+
         <button type="submit">Добавить вопрос</button>
     </form>
 

@@ -36,17 +36,21 @@ class Question(models.Model):
     MULTIPLE_CHOICE = 'MC'
     IMAGE = 'IMG'
     AUDIO = 'AUD'
+    MATCHING = 'MTCH'
+    TEXT = 'TXT'
 
     QUESTION_TYPES = [
         (SINGLE_CHOICE, 'Single Choice'),
         (MULTIPLE_CHOICE, 'Multiple Choice'),
         (IMAGE, 'Image'),
-        (AUDIO, 'Audio')
+        (AUDIO, 'Audio'),
+        (MATCHING, 'Matching'),
+        (TEXT, 'Text')
     ]
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, default='single' ,verbose_name="Тест")
     text = models.TextField(verbose_name="Текст вопроса")
-    question_type = models.CharField(max_length=3, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
+    question_type = models.CharField(max_length=5, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
     audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио")
 

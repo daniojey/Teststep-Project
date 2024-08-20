@@ -17,7 +17,17 @@
             {% with question_id=field.name|cut:'question_' %}
                 {% for quest in question %}
                     {% if question_id|add:0 == quest.id %}
-                        <img src="{{ quest.image.url }}" alt="{{ quest.text }}" >
+                        {% if quest.image %}
+                            <img src="{{ quest.image.url }}" alt="{{ quest.text }}" >
+                        {% endif %}
+                        {% if quest.audio %}
+                            <div>
+                                <audio controls>
+                                    <source src="{{ quest.audio.url }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             {% endwith %}

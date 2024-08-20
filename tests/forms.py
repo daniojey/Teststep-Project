@@ -74,6 +74,16 @@ class TestTakeForm(forms.Form):
                     widget=forms.RadioSelect,
                     label=question.text
                 )
+            
+            elif question.question_type == 'AUD':
+                self.fields[f'question_{question.id}'] = forms.ChoiceField(
+                    choices=choices,
+                    widget=forms.RadioSelect,
+                    label=question.text
+                )
+
+            elif question.question_type == 'MTCH':
+                matching_fields = []
 
 
 
@@ -90,6 +100,16 @@ class TestTakeForm(forms.Form):
                 elif question.question_type == 'MC':
                     if not value:
                         self.add_error(key, "Выберите хотя бы один из вариантов.")
+                elif question.question_type == 'MTCH':
+                # Проверка ответа для matching
+                    if len(value) != len(question.answers.all()):
+                        self.add_error(key, "Соответствия не установлены корректно.")
+                
+                # Проверка на соответствие ключ-значение
+                    for left, right in value.items():
+                        if not question.answers.filter(text=left, matching_answer=right).exists():
+                             self.add_error(key, "Некорректное соответствие для {}.".format(left))
+
         return cleaned_data
     
  
