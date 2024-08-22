@@ -141,7 +141,7 @@ def test_results(request, test_id):
                 if correct_answer and correct_answer.id == int(value):
                     correct_answers += 1
             elif question.question_type == 'MTCH':
-                ...
+                ... # Реализовать позже
 
 
     score = (correct_answers / total_questions) * 100

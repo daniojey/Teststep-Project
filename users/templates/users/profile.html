@@ -14,6 +14,15 @@
 </head>
 
 <body>
+    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" align='center'>
+        <div class="container" id="cart-items-container">
+            <p>Ваша группа - {{ group_name }}</p>
+            {% for us in user_group %}
+            <li>{{ us.user }}</li>
+            {% endfor %}
+        </div>        
+    </div>
+    
     <section>
         <!-- Контент -->
         <div class="container">
@@ -92,6 +101,34 @@
                                         </form>
                                     </div>
                                 </div>
+
+                                <div class="col-md-7">
+                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                                        <h3 class="text-center mb-4">Мои результаты тестов</h3>
+                                        <div class="container" id="cart-items-container">
+                                            <!-- Разметка Результатов теста -->
+                                            <div class="card mb-3 text-bg-light shadow-lg">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item">
+                                                        <div class="row text-center">
+                                                            <div class="col p-0">
+                                                                {% if test_results %}
+                                                                    {% for result in test_results %}
+                                                                        <li><a href="{% url "tests:test_preview" result.test.id %}">{{ result.test.name }}</a>: {{ result.score }}% - {{ result.date_taken }}</li>
+                                                                    {% endfor %}
+                                                                {% else %}
+                                                                    <a href="{% url "app:index" %}">У вас ещё нет пройденных тестов, нажмите чтобы начать прохождение :D</a>
+                                                                {% endif %}
+                                                            </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <!-- Закончилась разметка Результатов теста -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -105,7 +142,7 @@
 </body>
 
 
-<h2 align='center'>Ваши результаты тестов</h2>
+{% comment %} <h2 align='center'>Ваши результаты тестов</h2>
 <ul align='center'>
     {% if test_results %}
         {% for result in test_results %}
@@ -115,7 +152,7 @@
         <a href="{% url "app:index" %}">У вас ещё нет пройденных тестов, нажмите чтобы начать прохождение :D</a>
     {% endif %}
 </ul>
- 
+  {% endcomment %}
 {% endblock content %}
 
 

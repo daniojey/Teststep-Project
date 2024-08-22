@@ -1,9 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from tests.models import TestResult
+
+from .models import User, UsersGroup, UsersGroupMembership
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 
@@ -55,6 +57,14 @@ def registration(request):
 @login_required
 def profile(request):
     test_results = request.user.test_results.all()
+    user = get_object_or_404(User, id=request.user.id)
+    groups = UsersGroupMembership.objects.all()
+    for us in groups:
+        if us.user == user:
+            group = UsersGroupMembership.objects.filter(group=us.group)
+            group_name = group[0].group
+            
+
     if request.method == 'POST':
         form = ProfileForm(data=request.POST, instance=request.user, files=request.FILES)
         if form.is_valid():
@@ -70,6 +80,8 @@ def profile(request):
     context = {
         'form': form,
         'test_results':test_results,
+        'user_group': group,
+        'group_name': group_name,
     }
 
     return render(request, 'users/profile.html', context=context)

@@ -84,6 +84,7 @@ class TestTakeForm(forms.Form):
 
             elif question.question_type == 'MTCH':
                 matching_fields = []
+                # Реализовать позже
 
 
 
