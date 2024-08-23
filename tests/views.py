@@ -1,4 +1,5 @@
 # tests/views.py
+import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -154,7 +155,8 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
-    question = Question.objects.all()
+    questions = list(test.questions.all())
+    random.shuffle(questions)
 
     if request.method == 'POST':
         form = TestTakeForm(request.POST, test=test)
@@ -166,7 +168,7 @@ def take_test(request, test_id):
     else:
         form = TestTakeForm(test=test)
 
-    return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': question})
+    return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': questions})
 
 
 def test_results(request, test_id):

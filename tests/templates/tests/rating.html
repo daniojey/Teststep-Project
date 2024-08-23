@@ -3,6 +3,8 @@
 
 {% block content %}
 
+    <h1 align='center'>Рейтинг по тестам</h1>
+
     <div class="test-container">
         {% for test in tests %}
         <a href="{% url "tests:rating_test" test_id=test.id %}" class="test-item-link">

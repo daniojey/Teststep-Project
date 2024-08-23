@@ -1,3 +1,4 @@
+import random
 from django import forms
 from .models import Tests, Question, Answer
 
@@ -52,9 +53,12 @@ class TestTakeForm(forms.Form):
         test = kwargs.pop('test')
         super().__init__(*args, **kwargs)
         
-        questions = test.questions.all()
+        questions = list(test.questions.all())
+        random.shuffle(questions)
+
         for question in questions:
             choices = [(a.id, a.text) for a in question.answers.all()]
+            random.shuffle(choices)
             if question.question_type == 'SC':
                 self.fields[f'question_{question.id}'] = forms.ChoiceField(
                     choices=choices,
