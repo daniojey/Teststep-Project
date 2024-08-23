@@ -83,6 +83,9 @@ class TestResult(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
     date_taken = models.DateTimeField(auto_now_add=True)
+    attempts = models.PositiveIntegerField(default=1)
+    max_attempts = models.PositiveIntegerField(default=2)
+    extra_attempts = models.PositiveIntegerField(default=0)
 
 
     class Meta:
@@ -92,4 +95,8 @@ class TestResult(models.Model):
 
     
     def __str__(self):
-        return f"{self.user.username} - {self.test.name} - {self.score}"
+        return f"{self.user.username} - {self.test.name} - {int(self.score)}%"
+    
+    @property
+    def remaining_atemps(self):
+        return (self.max_attempts + self.extra_attempts) - self.attempts

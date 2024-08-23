@@ -1,6 +1,8 @@
 # tests/views.py
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+
+from users.models import User, UsersGroup, UsersGroupMembership
 from .models import TestResult, Tests, Question, Answer
 from .forms import TestForm, QuestionForm, AnswerForm, TestTakeForm
 
@@ -9,7 +11,46 @@ def index(request):
 
 
 def rating(request):
-    return render(request, "tests/rating.html")
+    user = get_object_or_404(User, id=request.user.id)
+    tests = Tests.objects.all()
+
+    context = {
+        'tests': tests,
+        'user': user
+    }
+
+    return render(request, 'tests/rating.html', context)
+
+
+def rating_test(request, test_id):
+    test = Tests.objects.filter(id=test_id).first()
+
+    user = get_object_or_404(User, id=request.user.id)
+    
+    user_group = UsersGroupMembership.objects.filter(user=user).first()
+
+    if user_group:
+        # Получаем всех пользователей, принадлежащих к той же группе, что и текущий пользователь
+        group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
+    else:
+        # Если у пользователя нет группы, можно обработать этот случай по-своему
+        group_members = []
+
+    results = []
+    for item in group_members:
+
+        result = TestResult.objects.filter(user=item.user, test=test)
+        results.append(result)
+
+    
+    context = {
+        'test': test,
+        'user': user,
+        'results':results
+    }
+
+
+    return render(request, 'tests/rating_test.html', context=context)
 
 
 def all_tests(request):
@@ -85,12 +126,27 @@ def add_answers(request, question_id):
 
 
 def test_preview(request, test_id):
-    test_results = request.user.test_results.all()
+    if request.user.is_authenticated:
+        test_results = request.user.test_results.all()
+        test = get_object_or_404(Tests, id=test_id)
+        user_test = TestResult.objects.filter(user=request.user, test=test)
+        if len(user_test) > 0:
+            if user_test[0].remaining_atemps > 0:
+                test_required = True
+            else:
+                test_required = False
+        else:
+            test_required = True
+
+    else:
+        test_results = ['Для того чтобы пройти тест зарегестрируйтесь :D']
+
     test = get_object_or_404(Tests, pk=test_id)
 
     context = {
         "test": test,
         'test_results': test_results,
+        'required_attemps': test_required,
     }
 
     return render(request, 'tests/test_preview.html', context=context)
@@ -146,14 +202,28 @@ def test_results(request, test_id):
 
     score = (correct_answers / total_questions) * 100
     score = round(score)
+
+    if request.user.is_authenticated:
+        test_result, created = TestResult.objects.get_or_create(
+            user=request.user,
+            test=test,
+            defaults={'score': score, 'attempts': 1}
+        )
+        
+        if not created:
+            print(test_result)
+            if test_result.remaining_atemps > 0:
+                test_result.attempts += 1
+                test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
+                test_result.save()
+            else:
+                return render(request, 'tests/test_limit_reached.html')
+            
     context = {
         'test': test,
         'score': score,
         'correct_answers': correct_answers,
         'total_questions': total_questions
     }
-    
-    if request.user.is_authenticated:
-        TestResult.objects.create(user=request.user, test=test, score=round(score, 2))
     
     return render(request, 'tests/test_results.html', context)

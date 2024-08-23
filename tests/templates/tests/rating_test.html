@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <h2 align='center'>Результаты по вашей группе</h2>
+    {% for res in results %}
+        {% for item in res %}
+            {% if user == item.user %}
+                <h3>{{ item }}</h3>
+            {% else %}
+                <li>{{ item }}</li>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

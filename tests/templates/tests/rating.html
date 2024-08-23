@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="test-container">
+        {% for test in tests %}
+        <a href="{% url "tests:rating_test" test_id=test.id %}" class="test-item-link">
+            <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+                <div class="test-overlay">
+                    <h2>{{ test.name }}</h2>
+                </div>
+            </div>
+        </a>    
+    {% endfor %}
+    </div>
+
+{% endblock %}

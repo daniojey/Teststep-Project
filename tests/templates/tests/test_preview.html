@@ -18,7 +18,15 @@
         <h2>Категория: {{ test.category }}</h2>
         <h3>Описание: {{ test.description }}</h3>
     </div>
-    <button id="start-test">Начать тестирование</button>
+    {% if user.is_authenticated %}
+        {% if required_attemps %}
+            <button id="start-test">Начать тестирование</button>
+        {% else %}
+            <p></p>
+        {% endif %}
+    {% else %}
+        <h3><a href="{% url "users:login" %}">Войдите или зарегейстрируйтесь чтобы начать тест</a></h3>
+    {% endif %}
 </div>
 
 <script>
@@ -27,6 +35,7 @@
     };
 </script>
 
+{% if user.is_authenticated %}
 <ul align='left'>
     <h2>Ваши результаты по этому тесту</h2>
     {% if test_results %}
@@ -39,6 +48,7 @@
         <p>у вас ещё нет результатов по этому тесту</p>
     {% endif %}
 </ul>
+{% endif %}
  
 {% endblock content %}
 

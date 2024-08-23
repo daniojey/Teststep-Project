@@ -12,6 +12,7 @@
     <header>
         <div class="nav-links">
             <h3><a class="custom-link" href="{% url "app:index" %}">Главная</a></h3>
+            <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
             {% if user.is_authenticated %}
             <h3><a class="custom-link" href="{% url "tests:create_test" %}">Создать тест</a></h3>
             {% endif %}
