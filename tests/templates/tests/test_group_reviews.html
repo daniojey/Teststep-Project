@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h2>Прошли тест</h2>
+{% for item in user_complete_test %}
+    {% for us in item %}
+        <div>
+            {{ us.user }}
+            {{ us.score }}%
+        </div>
+    {% endfor %}
+{% endfor %}
+<h2>На проверку</h2>
+ {% for item in user_reviews %}
+    {% for it in item %}
+        <div>
+            {{ it.user }}
+            <a href="{% url "tests:take_test_review" user_id=it.user.id test_id=it.test.id %}">Проверить</a>
+        </div>
+    {% endfor %}
+ {% endfor %}
+
+ <h2>Еще не прошли тест</h2>
+ {% for use in user_not_reviews %}
+    <li>{{ use }} </li>
+ {% endfor %}
+{% endblock %}

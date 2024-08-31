@@ -29,6 +29,7 @@ class UsersGroup(models.Model):
 class UsersGroupMembership(models.Model):
     user = models.OneToOneField(User ,on_delete=models.CASCADE , related_name='Учистник')
     group = models.ForeignKey(UsersGroup, on_delete=models.CASCADE, related_name='Участники')
+    owner = models.BooleanField(default=False, verbose_name="Учитель группи")
 
     def __str__(self):
         return f"{self.user} - {self.group}"

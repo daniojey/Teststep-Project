@@ -1,0 +1,9 @@
+[
+    {
+        "model": "users.usersgroup",
+        "pk": 2,
+        "fields": {
+            "name": "Склад даунов"
+        }
+    }
+]

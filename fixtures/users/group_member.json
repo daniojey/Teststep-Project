@@ -1,0 +1,26 @@
+[
+    {
+        "model": "users.usersgroupmembership",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "group": 2
+        }
+    },
+    {
+        "model": "users.usersgroupmembership",
+        "pk": 2,
+        "fields": {
+            "user": 3,
+            "group": 2
+        }
+    },
+    {
+        "model": "users.usersgroupmembership",
+        "pk": 3,
+        "fields": {
+            "user": 5,
+            "group": 2
+        }
+    }
+]

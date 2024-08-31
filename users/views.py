@@ -24,7 +24,7 @@ def login(request):
                     return HttpResponseRedirect(request.POST.get('next'))
 
 
-                return render(request, 'app/index.html')
+                return redirect("users:profile")
                 # return HttpResponseRedirect(reverse('app:index'))
             
     else:
@@ -58,12 +58,18 @@ def registration(request):
 def profile(request):
     test_results = request.user.test_results.all()
     user = get_object_or_404(User, id=request.user.id)
-    groups = UsersGroupMembership.objects.all()
-    for us in groups:
-        if us.user == user:
-            group = UsersGroupMembership.objects.filter(group=us.group)
-            group_name = group[0].group
-            
+
+    user_groups = UsersGroupMembership.objects.filter(user=user)
+
+    if user_groups.exists():
+        group = user_groups.first().group
+        group_memberships = UsersGroupMembership.objects.filter(group=group)
+        group_name = group.name
+    else:
+        group = None
+        group_memberships = None
+        group_name = "Вы не присоединились к группе"
+
 
     if request.method == 'POST':
         form = ProfileForm(data=request.POST, instance=request.user, files=request.FILES)
@@ -82,6 +88,7 @@ def profile(request):
         'test_results':test_results,
         'user_group': group,
         'group_name': group_name,
+        'group_memberships': group_memberships,
     }
 
     return render(request, 'users/profile.html', context=context)

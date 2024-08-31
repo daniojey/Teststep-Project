@@ -1,0 +1,86 @@
+[
+    {
+        "model": "tests.tests",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "name": "Python",
+            "description": "gfgfg",
+            "image": "5289721897333941000.jpg",
+            "duration": "00:16:20",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 2,
+        "fields": {
+            "user": 1,
+            "name": "Spalna",
+            "description": "gf",
+            "image": "default.jpg",
+            "duration": "00:19:20",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 3,
+        "fields": {
+            "user": 1,
+            "name": "ddadddadd",
+            "description": "gfgfghgjhgj",
+            "image": "photo1714584456.jpeg",
+            "duration": "00:00:20",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 4,
+        "fields": {
+            "user": 5,
+            "name": "BOB",
+            "description": "a",
+            "image": "5289721897333941000_yodoe5P.jpg",
+            "duration": "00:00:00",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 5,
+        "fields": {
+            "user": 3,
+            "name": "videouls",
+            "description": "gdfgdfgfdg",
+            "image": "5289721897333941000_PwS7VwZ.jpg",
+            "duration": "00:17:28",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 6,
+        "fields": {
+            "user": 1,
+            "name": "boobl",
+            "description": "kek",
+            "image": "photo1714584456_At9Mhhd.jpeg",
+            "duration": "00:20:00",
+            "category": 1
+        }
+    },
+    {
+        "model": "tests.tests",
+        "pk": 7,
+        "fields": {
+            "user": 3,
+            "name": "prohod",
+            "description": "lol",
+            "image": "drizzle-rainy-day-in-autumn-background-and-wallpaper-generative-ai-photo.jpg",
+            "duration": "00:20:00",
+            "category": 1
+        }
+    }
+]

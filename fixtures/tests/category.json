@@ -1,0 +1,10 @@
+[
+    {
+        "model": "tests.categories",
+        "pk": 1,
+        "fields": {
+            "name": "Все",
+            "slug": "vse-testy"
+        }
+    }
+]

@@ -1,11 +1,12 @@
 # tests/views.py
+from cgi import print_arguments
 import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
 from users.models import User, UsersGroup, UsersGroupMembership
-from .models import TestResult, Tests, Question, Answer
-from .forms import TestForm, QuestionForm, AnswerForm, TestTakeForm
+from .models import TestResult, Tests, Question, Answer, TestsReviews
+from .forms import TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 
 def index(request):
     return render(request, 'tests/index.html')
@@ -34,7 +35,7 @@ def rating_test(request, test_id):
         # Получаем всех пользователей, принадлежащих к той же группе, что и текущий пользователь
         group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
     else:
-        # Если у пользователя нет группы, можно обработать этот случай по-своему
+        # Если у пользователя нет группы
         group_members = []
 
     results = []
@@ -174,6 +175,17 @@ def take_test(request, test_id):
 def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     responses = request.session.get('test_responses', {})
+
+    if test.check_type == Tests.MANUAL_CHECK:
+            review = TestsReviews.objects.create(
+                test=test,
+                user=request.user,
+                answers=responses,
+                # group=request.user.profile.group,  # Если у пользователя есть группа
+            )
+            return render(request, "app/index.html")
+    
+
     total_questions = test.questions.count()
     correct_answers = 0
 
@@ -229,3 +241,106 @@ def test_results(request, test_id):
     }
     
     return render(request, 'tests/test_results.html', context)
+
+
+def tests_for_review(request):
+    user = get_object_or_404(User, id=request.user.id)
+    user_groups = UsersGroupMembership.objects.filter(user=user)
+
+    # Проверяем в какой группе находиться пользоваетель
+    if user_groups.exists():
+        group = user_groups.first().group
+        group_memberships = UsersGroupMembership.objects.filter(group=group)
+    
+    
+    tests_reviews = []
+    for item in group_memberships:
+        test = Tests.objects.filter(user=item.user, check_type='manual')
+        if test:
+            tests_reviews.append(test)
+
+    tests_results = []
+    for t in tests_reviews:
+        for ti in t:
+            if ti:
+                tests_results.append(ti)
+
+    print(tests_results)
+
+    context = {
+        "test_result": tests_results,
+    }
+
+
+    return render(request, 'tests/tr.html', context=context)
+
+
+def test_group_reviews(request, test_id):
+    test = get_object_or_404(Tests, id=test_id)
+    user = get_object_or_404(User, id=request.user.id)
+
+    user_groups = UsersGroupMembership.objects.filter(user=user)
+
+    if user_groups.exists():
+        group = user_groups.first().group
+        group_memberships = UsersGroupMembership.objects.filter(group=group)
+        group_name = group.name
+    else:
+        group = None
+        group_memberships = None
+        group_name = "Вы не присоединились к группе"
+
+    user_complitely_test = []
+    user_reviews = []
+    user_not_reviews = []
+    for us in group_memberships:
+        review = TestsReviews.objects.filter(user=us.user, test=test)
+        results = TestResult.objects.filter(user=us.user, test=test)
+        if review:    
+            user_reviews.append(review)
+        elif results:
+            user_complitely_test.append(results)
+        else:
+            user_not_reviews.append(us.user)
+
+
+    context = {
+        'user_reviews': user_reviews,
+        'user_not_reviews': user_not_reviews,
+        'user_complete_test': user_complitely_test,
+    }
+
+
+    return render(request, 'tests/test_group_reviews.html', context=context)
+
+
+def take_test_review(request, user_id, test_id):
+    user = get_object_or_404(User, id=user_id)
+    test = get_object_or_404(Tests, id=test_id)
+    print(user)
+    print(test)
+    review = get_object_or_404(TestsReviews, user=user, test=test)
+    print(review)
+    answers = review.answers
+
+    if request.method == 'POST':
+        form = TestReviewForm(test=test, answers=answers, data=request.POST)
+        if form.is_valid():
+            correct_answers = 0
+            total_questions = len(test.questions.all())
+    
+            for question in test.questions.all():
+                if form.cleaned_data.get(f'question_{question.id}_approved'):
+                    correct_answers += 1
+    
+            # Сохранение результата
+            score = correct_answers / total_questions * 100
+            # Создание TestResults и удаление TestReviews
+            TestResult.objects.create(user=review.user, test=review.test, score=score)
+            review.delete()
+            return redirect('users:profile')
+
+    else:
+        form = TestReviewForm(test=test, answers=answers)
+
+    return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test})

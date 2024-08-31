@@ -17,9 +17,11 @@
     <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" align='center'>
         <div class="container" id="cart-items-container">
             <p>Ваша группа - {{ group_name }}</p>
-            {% for us in user_group %}
-            <li>{{ us.user }}</li>
-            {% endfor %}
+            {% if group_memberships %}
+                {% for us in group_memberships %}
+                    <li>{{ us.user }}</li>
+                {% endfor %}
+            {% endif %}
         </div>        
     </div>
     

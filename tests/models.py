@@ -15,13 +15,21 @@ class Categories(models.Model):
 
 
 class Tests(models.Model):
+    MANUAL_CHECK = 'manual'
+    AUTO_CHECK = 'auto'
+    CHECK_CHOICES = [
+        (MANUAL_CHECK, 'Manual Check'),
+        (AUTO_CHECK, 'Auto Check')
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
     name = models.CharField(verbose_name="Название",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True)
     duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True, default=60)
     category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория")
-    
+    check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип проверки ответов")
+
     def __str__(self):
         return  self.name
 
@@ -87,7 +95,6 @@ class TestResult(models.Model):
     max_attempts = models.PositiveIntegerField(default=2)
     extra_attempts = models.PositiveIntegerField(default=0)
 
-
     class Meta:
         db_table = 'test_results'
         verbose_name = 'Результат теста'
@@ -100,3 +107,15 @@ class TestResult(models.Model):
     @property
     def remaining_atemps(self):
         return (self.max_attempts + self.extra_attempts) - self.attempts
+    
+
+class TestsReviews(models.Model):
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    answers = models.JSONField()  # Хранение ответов пользователя в формате JSON
+    group = models.CharField(max_length=100, blank=True, null=True)  # Опционально: группа пользователя
+    reviewed = models.BooleanField(default=False)
+    score = models.FloatField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Review for {self.test.name} by {self.user.username}"

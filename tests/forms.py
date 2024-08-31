@@ -1,11 +1,11 @@
 import random
 from django import forms
-from .models import Tests, Question, Answer
+from .models import Categories, Tests, Question, Answer, TestsReviews
 
 class TestForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image', 'duration', 'category']
+        fields = ['name', 'description', 'image', 'duration', 'category', 'check_type']
         widgets = {
             'duration': forms.TimeInput(attrs={'type': 'time'}, format="%M:%S"),
             'category': forms.Select(attrs={'class': 'form-control'}),
@@ -16,7 +16,10 @@ class TestForm(forms.ModelForm):
         question = kwargs.pop('question', None)  # Извлекаем аргумент 'question'
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # Теперь можешь использовать 'question' внутри формы, если нужно
+        # Получаем первую категорию из набора
+        first_category = Categories.objects.first()
+        if first_category:
+            self.fields['category'].initial = first_category
 
        
     def save(self, commit=True):
@@ -118,3 +121,48 @@ class TestTakeForm(forms.Form):
         return cleaned_data
     
  
+class TestReviewForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        test = kwargs.pop('test')
+        answers = kwargs.pop('answers')
+        super().__init__(*args, **kwargs)
+
+        questions = test.questions.all()
+
+        for question in questions:
+            # Извлекаем ответы пользователя из JSON
+            user_answer_ids = answers.get(f'question_{question.id}', [])
+
+            # Приводим одиночный ответ к списку
+            if isinstance(user_answer_ids, str):  # Если ответ одиночный, он представлен как строка
+                user_answer_ids = [user_answer_ids]
+            
+            # Преобразуем строки с id в числа, если нужно
+            user_answer_ids = [int(ans_id) for ans_id in user_answer_ids]
+            
+            # Формируем текст выбранного ответа
+            selected_answers_text = ', '.join(
+                answer.text for answer in question.answers.filter(id__in=user_answer_ids)
+            )
+
+            # Поле с текстом вопроса
+            self.fields[f'question_{question.id}_text'] = forms.CharField(
+                initial=question.text,
+                label=question.text,
+                required=False,
+                widget=forms.TextInput(attrs={'readonly': 'readonly'})
+            )
+
+            # Поле с ответом пользователя
+            self.fields[f'question_{question.id}_selected_answer'] = forms.CharField(
+                initial=selected_answers_text,
+                label='Ответ ученика',
+                required=False,
+                widget=forms.TextInput(attrs={'readonly': 'readonly'})
+            )
+
+            # Поле для учителя, чтобы отметить правильность ответа
+            self.fields[f'question_{question.id}_approved'] = forms.BooleanField(
+                label="Верно?",
+                required=False
+            )
