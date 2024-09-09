@@ -1,8 +1,9 @@
 from django.contrib import admin
-from tests.models import Categories, Tests, Question, Answer, TestResult, TestsReviews
+from tests.models import Categories, Tests, Question, Answer, TestResult, TestsReviews, QuestionGroup
 
 admin.site.register(Tests)
 admin.site.register(Question)
+admin.site.register(QuestionGroup)
 admin.site.register(Answer)
 admin.site.register(TestResult)
 admin.site.register(TestsReviews)

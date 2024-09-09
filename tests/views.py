@@ -4,9 +4,10 @@ import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
+from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroup, UsersGroupMembership
-from .models import TestResult, Tests, Question, Answer, TestsReviews
-from .forms import TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
+from .models import QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
+from .forms import QuestionGroupForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 
 def index(request):
     return render(request, 'tests/index.html')
@@ -78,8 +79,32 @@ def create_test(request):
 
 
 @login_required
+def add_question_group(request, test_id):
+    test = get_object_or_404(Tests, pk=test_id)
+
+    if request.method == 'POST':
+        form = QuestionGroupForm(request.POST)
+        if form.is_valid():
+            question_group = form.save(commit=False)
+            question_group.test = test
+            question_group.save()
+            return redirect("tests:add_questions",  test_id=test.id)
+
+    else:
+        form = QuestionGroupForm()
+
+
+    context = dict(form=form)
+
+    return render(request, 'tests/adq.html', context=context)
+
+
+@login_required
 def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
+    question_groups = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
+    ungrouped_questions = Question.objects.filter(test=test, group__isnull=True)
+    print(question_groups)
     
     if request.method == 'POST':
         question_form = QuestionForm(request.POST, request.FILES)
@@ -93,11 +118,15 @@ def add_questions(request, test_id):
     
     questions = Question.objects.filter(test=test)
 
-    return render(request, 'tests/add_questions.html', {
+    context = {
         'test': test,
         'question_form': question_form,
-        'questions': questions
-    })
+        'questions': questions,
+        'question_groups': question_groups,
+        'ungrouped_questions': ungrouped_questions,
+    }
+
+    return render(request, 'tests/add_questions.html', context=context)
 
 
 def complete_questions(request, test_id):
@@ -265,8 +294,6 @@ def tests_for_review(request):
             if ti:
                 tests_results.append(ti)
 
-    print(tests_results)
-
     context = {
         "test_result": tests_results,
     }
@@ -317,26 +344,57 @@ def test_group_reviews(request, test_id):
 def take_test_review(request, user_id, test_id):
     user = get_object_or_404(User, id=user_id)
     test = get_object_or_404(Tests, id=test_id)
-    print(user)
-    print(test)
     review = get_object_or_404(TestsReviews, user=user, test=test)
-    print(review)
     answers = review.answers
 
     if request.method == 'POST':
         form = TestReviewForm(test=test, answers=answers, data=request.POST)
         if form.is_valid():
-            correct_answers = 0
+            correct_answers = 0.0
             total_questions = len(test.questions.all())
     
+
             for question in test.questions.all():
-                if form.cleaned_data.get(f'question_{question.id}_approved'):
-                    correct_answers += 1
+                if question.question_type == 'MC':
+                    # Получаем правильные ответы
+                    correct_answer = question.answers.filter(is_correct=True)
+                    corrects = [i for i in correct_answer]
+
+                    # Получаем выбранные ответы учителем
+                    selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
+                    selected_unpack = [int(i) for i in selected_answer]
+
+                    multiple_choice_strategy = MultypleChoiceStrategy()
+                    multiple_choice_strategy.calculate_point(question, selected_answer, correct_answer, form)
+
+                    if form.cleaned_data.get(f'question_{question.id}_approve'):
+                        if len(corrects) > 1:
+                            points = 1 / len(corrects)
+                            for i in corrects:
+                                item = Answer.objects.filter(id=i.id).first()
+                                if item.id in selected_unpack:
+                                    correct_answers += points
+
+                elif  question.question_type == "SC":
+                    correct_answer = question.answers.filter(is_correct=True).first()
+
+                    try:
+                        selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
+                    except IndexError:
+                        correct_answers += 0
+
+                    if correct_answer.id == selected_answer:
+                        correct_answers += 1
+
+                elif  question.question_type == "IMG":
+                    ...
+            
     
-            # Сохранение результата
+            # # Сохранение результата
             score = correct_answers / total_questions * 100
-            # Создание TestResults и удаление TestReviews
-            TestResult.objects.create(user=review.user, test=review.test, score=score)
+            print(f"Балл по тесту: {int(score)}%")
+            # # Создание TestResults и удаление TestReviews
+            TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2)
             review.delete()
             return redirect('users:profile')
 

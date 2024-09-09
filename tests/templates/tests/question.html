@@ -10,28 +10,28 @@
 <body>
     <div id="timer" align='right'></div>
     
-    <form id="test-form" method="post" align="left">
+    <form id="test-form" method="post" enctype="multipart/form-data" align="left">
         {% csrf_token %}
         {% for field in form %}
-        {% if 'question_' in field.name %}
-            {% with question_id=field.name|cut:'question_' %}
-                {% for quest in question %}
-                    {% if question_id|add:0 == quest.id %}
-                        {% if quest.image %}
-                            <img src="{{ quest.image.url }}" alt="{{ quest.text }}" >
+            {% if 'question_' in field.name %}
+                {% with question_id=field.name|cut:'question_' %}
+                    {% for quest in question %}
+                        {% if question_id|add:0 == quest.id %}
+                            {% if quest.question_type == 'AUD' %}
+                                <div>
+                                    <p>{{ quest.text }}</p>
+                                    <audio controls id="audio_playback_{{ quest.id }}"></audio>
+                                    <div>
+                                        <button type="button" onclick="startRecording({{ quest.id }})">Начать запись</button>
+                                        <button type="button" onclick="stopRecording({{ quest.id }})" disabled>Остановить запись</button>
+                                        <input type="hidden" name="question_{{ quest.id }}" id="audio_input_{{ quest.id }}">
+                                    </div>
+                                </div>
+                            {% endif %}
                         {% endif %}
-                        {% if quest.audio %}
-                            <div>
-                                <audio controls>
-                                    <source src="{{ quest.audio.url }}" type="audio/mpeg">
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-            {% endwith %}
-        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            {% endif %}
             <div class="form-group">
                 {{ field.label_tag }}
                 {{ field }}
@@ -40,6 +40,52 @@
         <button type="submit" >Завершить тест</button>
     </form>
 </body>
+
+<script>
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    function startRecording(questionId) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = function(event) {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            mediaRecorder.onstop = function() {
+                let blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                let url = URL.createObjectURL(blob);
+                let audioElement = document.getElementById('audio_playback_' + questionId);
+                audioElement.src = url;
+
+                // Convert to base64 and store in hidden input
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    document.getElementById('audio_input_' + questionId).value = reader.result;
+                }
+                reader.readAsDataURL(blob);
+
+                recordedChunks = [];
+            };
+            mediaRecorder.start();
+            document.querySelector('button[onclick="startRecording(' + questionId + ')"]').disabled = true;
+            document.querySelector('button[onclick="stopRecording(' + questionId + ')"]').disabled = false;
+        })
+        .catch(error => {
+            console.error("Error accessing microphone:", error);
+        });
+    }
+
+    function stopRecording(questionId) {
+        mediaRecorder.stop();
+        document.querySelector('button[onclick="startRecording(' + questionId + ')"]').disabled = false;
+        document.querySelector('button[onclick="stopRecording(' + questionId + ')"]').disabled = true;
+    }
+</script>
+
+
 
 <script>
     var countDownDuration = parseInt("{{ test.duration.total_seconds }}", 10) * 1000;

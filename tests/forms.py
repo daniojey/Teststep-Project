@@ -1,6 +1,6 @@
 import random
 from django import forms
-from .models import Categories, Tests, Question, Answer, TestsReviews
+from .models import Categories, QuestionGroup, Tests, Question, Answer, TestsReviews
 
 class TestForm(forms.ModelForm):
     class Meta:
@@ -29,15 +29,21 @@ class TestForm(forms.ModelForm):
         if commit:
             test.save()
         return test
+    
+class QuestionGroupForm(forms.ModelForm):
+    class Meta:
+        model = QuestionGroup
+        fields = ['name']
 
 class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ['text', 'question_type', 'image', 'audio']
+        fields = ['text', 'question_type', 'image', 'audio', 'group']
         widgets = {
             'text': forms.Textarea(attrs={'rows': 3}),
             'question_type': forms.RadioSelect(choices=Question.QUESTION_TYPES),
+            'group': forms.Select(attrs={'class': 'form-control'}),
         }
         
 class AnswerForm(forms.ModelForm):
@@ -83,10 +89,9 @@ class TestTakeForm(forms.Form):
                 )
             
             elif question.question_type == 'AUD':
-                self.fields[f'question_{question.id}'] = forms.ChoiceField(
-                    choices=choices,
-                    widget=forms.RadioSelect,
-                    label=question.text
+                 self.fields[f'question_{question.id}'] = forms.CharField(
+                    widget=forms.HiddenInput(),
+                    required=False
                 )
 
             elif question.question_type == 'MTCH':
@@ -94,30 +99,24 @@ class TestTakeForm(forms.Form):
                 # Реализовать позже
 
 
-
     def clean(self):
         cleaned_data = super().clean()
-        for key, value in cleaned_data.items():
-            if key.startswith('question_'):
-                question_id = int(key.split('_')[1])
-                question = Question.objects.get(id=question_id)
-                
-                if question.question_type == 'SC':
-                    if not value:
-                        self.add_error(key, "Выберите один из вариантов.")
-                elif question.question_type == 'MC':
-                    if not value:
-                        self.add_error(key, "Выберите хотя бы один из вариантов.")
-                elif question.question_type == 'MTCH':
-                # Проверка ответа для matching
-                    if len(value) != len(question.answers.all()):
-                        self.add_error(key, "Соответствия не установлены корректно.")
-                
-                # Проверка на соответствие ключ-значение
-                    for left, right in value.items():
-                        if not question.answers.filter(text=left, matching_answer=right).exists():
-                             self.add_error(key, "Некорректное соответствие для {}.".format(left))
+        
+        # Создаем копию cleaned_data, чтобы избежать его изменения во время итерации
+        cleaned_data_copy = cleaned_data.copy()
+        
+        for key, value in cleaned_data_copy.items():
+            question_id = int(key.split('_')[1])  # Извлекаем ID вопроса
+            question = Question.objects.get(id=question_id)
 
+            # Логика для валидации
+            if question.question_type == 'SC':
+                if not value:
+                    self.add_error(key, "Этот вопрос требует ответа.")
+            
+            # Пример безопасного изменения cleaned_data
+            # cleaned_data['some_key'] = 'some_value'
+        
         return cleaned_data
     
  
@@ -129,40 +128,48 @@ class TestReviewForm(forms.Form):
 
         questions = test.questions.all()
 
+
+
         for question in questions:
+
             # Извлекаем ответы пользователя из JSON
             user_answer_ids = answers.get(f'question_{question.id}', [])
 
-            # Приводим одиночный ответ к списку
-            if isinstance(user_answer_ids, str):  # Если ответ одиночный, он представлен как строка
-                user_answer_ids = [user_answer_ids]
-            
-            # Преобразуем строки с id в числа, если нужно
-            user_answer_ids = [int(ans_id) for ans_id in user_answer_ids]
-            
-            # Формируем текст выбранного ответа
-            selected_answers_text = ', '.join(
-                answer.text for answer in question.answers.filter(id__in=user_answer_ids)
-            )
 
-            # Поле с текстом вопроса
-            self.fields[f'question_{question.id}_text'] = forms.CharField(
-                initial=question.text,
-                label=question.text,
-                required=False,
-                widget=forms.TextInput(attrs={'readonly': 'readonly'})
-            )
+            # Получаем правильные ответы
+            item = question.answers.filter(is_correct=True)
+            ans = [i for i in item]
+            result = [i.text for i in ans]
+            question_correct = ', '.join(result)
 
-            # Поле с ответом пользователя
-            self.fields[f'question_{question.id}_selected_answer'] = forms.CharField(
-                initial=selected_answers_text,
-                label='Ответ ученика',
-                required=False,
-                widget=forms.TextInput(attrs={'readonly': 'readonly'})
-            )
+            # Получаем список  по ответам
+            user_answers =[
+                (answer.id, answer.text) for answer in question.answers.filter(id__in=user_answer_ids)
+            ]
 
-            # Поле для учителя, чтобы отметить правильность ответа
-            self.fields[f'question_{question.id}_approved'] = forms.BooleanField(
-                label="Верно?",
-                required=False
-            )
+            # Если одиночный ответ добавляем его вручную в список
+            if user_answers == []:
+                answer = question.answers.filter(id=user_answer_ids)[0]
+                user_answers.append((answer.id, answer.text))
+
+
+            if question.question_type == 'MC':
+                self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
+                    label=f"{question.text}: Правильные ответы {question_correct}",
+                    choices=user_answers,
+                    widget=forms.CheckboxSelectMultiple,
+                    required=False,
+                    
+                )
+
+            else:
+                self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
+                    label=f"{question.text}: Правльный ответ {question_correct}",
+                    choices=user_answers,
+                    widget=forms.CheckboxSelectMultiple,
+                    required=False,
+                )
+
+
+
+                

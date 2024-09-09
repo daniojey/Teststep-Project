@@ -3,7 +3,7 @@ from django.contrib import auth
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from tests.models import TestResult
+from tests.models import TestResult, TestsReviews
 
 from .models import User, UsersGroup, UsersGroupMembership
 
@@ -58,6 +58,7 @@ def registration(request):
 def profile(request):
     test_results = request.user.test_results.all()
     user = get_object_or_404(User, id=request.user.id)
+    tests_reviews = TestsReviews.objects.filter(user=user)
 
     user_groups = UsersGroupMembership.objects.filter(user=user)
 
@@ -85,10 +86,12 @@ def profile(request):
 
     context = {
         'form': form,
-        'test_results':test_results,
+        'test_results': test_results,
         'user_group': group,
         'group_name': group_name,
         'group_memberships': group_memberships,
+        'user_test_reviews': tests_reviews,
+
     }
 
     return render(request, 'users/profile.html', context=context)

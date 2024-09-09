@@ -39,6 +39,19 @@ class Tests(models.Model):
         verbose_name_plural = "Тести"
 
 
+class QuestionGroup(models.Model):
+    name = models.CharField(max_length=155, verbose_name='Назва группи')
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'question_group'
+        verbose_name = 'Группа для вопросов'
+        verbose_name_plural = 'Группы для вопросовё'
+    
+    def __str__(self):
+        return f"Группа - {self.name}: Тест - {self.test}"
+    
+
 class Question(models.Model):
     SINGLE_CHOICE = 'SC'                                                                                                                                                                                                
     MULTIPLE_CHOICE = 'MC'
@@ -57,6 +70,7 @@ class Question(models.Model):
     ]
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, default='single' ,verbose_name="Тест")
+    group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
     text = models.TextField(verbose_name="Текст вопроса")
     question_type = models.CharField(max_length=5, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
@@ -76,6 +90,7 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Вопрос")
     text = models.CharField(verbose_name="Текст ответа", max_length=255)
     is_correct = models.BooleanField(default=False, verbose_name="Правильный ответ")
+    audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосовой ответ")
 
     class Meta:
         db_table = "answers"
@@ -84,8 +99,10 @@ class Answer(models.Model):
 
     def __str__(self):
         return self.text
-    
-    
+
+
+
+
 class TestResult(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_results')
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
@@ -112,10 +129,16 @@ class TestResult(models.Model):
 class TestsReviews(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_taken = models.DateTimeField(auto_now_add=True)
     answers = models.JSONField()  # Хранение ответов пользователя в формате JSON
     group = models.CharField(max_length=100, blank=True, null=True)  # Опционально: группа пользователя
     reviewed = models.BooleanField(default=False)
     score = models.FloatField(blank=True, null=True)
 
+    class Meta:
+        db_table = "test_reviews"
+        verbose_name = 'Тест на проверку'
+        verbose_name_plural = 'Тесты на проверку'
+
     def __str__(self):
-        return f"Review for {self.test.name} by {self.user.username}"
+        return f"Проверка по  {self.test.name}: проходил тест {self.user.username}"

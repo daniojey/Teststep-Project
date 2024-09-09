@@ -1,0 +1,49 @@
+<body>
+    <audio id='audioPlayer'></audio>
+
+    <button type="button" class="recorder">Start</button>
+    <button type="button" class="stopRecorder">Stop</button>
+    
+    <script>
+        function playAudio(audioChunks) {
+          const blob = new Blob(audioChunks,{type:'audio/x-mpeg-3'});
+          const audioPlayer = document.getElementById('audioPlayer')
+          audioPlayer.src = URL.createObjectURL(blob);
+          audioPlayer.controls=true;
+          audioPlayer.autoplay=true;
+        }
+
+       var mediaRecorder; // Need to be accessible for the stopRecorder function
+       const audioChunks = []; // Place it here to debug it contents after finsih recording
+
+        const getmiceacesses = function () {
+        const stream = navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            mediaRecorder = new MediaRecorder(stream);
+ 
+             mediaRecorder.start();
+
+             setTimeout(stopRecorder, 10000) // To automatically stop the recorder after 10 seconds
+ 
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+                audioChunks.push(event.data);
+                playAudio(audioChunks)
+                console.log('Debugging Breakpoint')
+            });
+        })
+      ;};
+
+             
+     const stopRecorder = function(){
+         if(mediaRecorder.state === 'recording'){
+            mediaRecorder.stop();
+         }
+     }
+
+     const recording = document.querySelector('.recorder');
+     recording.addEventListener('click', getmiceacesses);
+
+     const stopRecording = document.querySelector('.stopRecorder');
+     stopRecording.addEventListener('click', stopRecorder);
+    </script>
+</body>

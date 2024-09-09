@@ -131,6 +131,31 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-12">
+                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                                        <h3 class="text-center mb-4">Ожидают проверки</h3>
+                                        <div class="container" id="cart-items-container">
+                                            <div class="card mb-3 text-bg-light shadow-lg">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item">
+                                                        <div class="row text-center">
+                                                            <div class="col p-0">
+                                                                {% if user_test_reviews %}
+                                                                    {% for item in user_test_reviews %}
+                                                                        <li><a href="{% url "tests:test_preview" item.test.id %}">{{ item.test.name }}</a> - {{ item.date_taken }}</li>
+                                                                    {% endfor %}
+                                                                {% else %}
+                                                                    Отсутствуют тесты ожидающие проверки
+                                                                {% endif %}
+                                                            </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

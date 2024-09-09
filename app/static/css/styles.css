@@ -92,7 +92,7 @@ button:active {
 /* Контейнер для тестов */
 .test-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Автоматическое размещение элементов */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 32%)); /* Автоматическое размещение элементов */
     gap: 20px; /* Расстояние между элементами */
     padding: 20px;
 }
@@ -156,3 +156,43 @@ button:active {
     height: 100%; /* Сжимает изображение по высоте контейнера */
     object-fit: cover; /* Обрезает изображение, чтобы оно заполнило контейнер, сохраняя пропорции */
 }
+
+/* Выпадающая меню */
+.dropbtn {
+  background-color: #eedca2;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #f0c26c;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
