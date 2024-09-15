@@ -49,10 +49,17 @@
                     <h3>Группа - {{ group.name }}</h3>
                     <ul>
                         {% for question in group.questions_group.all %}
-                            <li>
-                                {{ question.text }}
-                                <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
-                            </li>
+                            {% if question.question_type == "INP" %}
+                                <li>
+                                    {{ question.text }}
+                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить правильний ответ</a>
+                                </li>   
+                            {% else %}
+                                <li>
+                                    {{ question.text }}
+                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+                                </li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 </li>

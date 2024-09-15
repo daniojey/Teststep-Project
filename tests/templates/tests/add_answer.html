@@ -4,11 +4,12 @@
 
 <head>
     <title>{{ test.name }}</title>
+    <link rel="stylesheet" href="{% static "css/bootstrap/bootstrap.min.css" %}">
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}"> {% endcomment %}
 </head>
 
 {% block content %}
 
-<link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
 
 <body>
     <h1>{{ test.name }}</h1>
@@ -56,10 +57,42 @@
     <h2>Добавить ответ к вопросу: {{ question.text }}</h2>
     <form method="post">
         {% csrf_token %}
+        <div class="row">
+            
+            <div class="col-md-12 mb-3">
+                <label for="id_text" class="form-label">Текст Ответа</label>
+                <input type="text" class="form-control" id="id_text"
+                name="text"
+                placeholder="Введите ответ" value="" required>
+            </div>
+            
+            {% if question.question_type == "INP" %}
+                <input type="hidden" 
+                name="is_correct" 
+                class="form-check-input" 
+                id="is_correct" 
+                value="True">
+                
+            {% else %}
+                <div class="col-md-12 mb-3">
+                    <label for="is_correct" class="form-label">Правильний ?</label>
+                    <input type="checkbox" class="form-check-input" id="is_correct"
+                    name="is_correct"
+                    placeholder="Правильний ответ">
+                    {% comment %} {% if form.first_name.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show">{{ form.first_name.errors }}</div>
+                    {% endif %} {% endcomment %}
+                </div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-dark">Сохранить</button>
+    </form>
+    {% comment %} <form method="post">
+        {% csrf_token %}
         {{ answer_form.as_p }}
         
         <button type="submit">Добавить ответ</button>
-    </form>
+    </form> {% endcomment %}
 </body>
 
 {% endblock content %}

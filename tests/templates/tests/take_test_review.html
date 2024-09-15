@@ -6,7 +6,28 @@
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Подтвердить</button>
+    
+    {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            
+            {% if 'audio_answer_' in field.name and '_correct' not in field.name %}
+                {% if field.value %}
+                    <audio controls>
+                        <source src="{{ field.value }}" type="audio/webm">
+                        <source src="{{ field.value }}" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудиоплеер.
+                    </audio>
+                {% endif %}
+            {% elif '_correct' in field.name %}
+                {{ field }}
+            {% else %}
+                {{ field }}
+            {% endif %}
+    {% endfor %}
+    
+    <div>
+        <button type="submit">Подтвердить</button>
+    </div>
 </form>
 {% endblock %}

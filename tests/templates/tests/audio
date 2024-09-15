@@ -47,3 +47,35 @@
      stopRecording.addEventListener('click', stopRecorder);
     </script>
 </body>
+
+
+
+
+<body>
+    <div id="timer" align='right'></div>
+    
+    <form id="test-form" method="POST" action="{% url 'tests:test_results' test.id %}">
+        {% csrf_token %}
+        {% for field in form %}
+            {% if 'audio_answer_' in field.name %}
+                <div>
+                    <p>{{ field.label_tag }}</p>
+                    <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
+                    <div>
+                        <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Начать запись</button>
+                        <button type="button" onclick="stopRecording({{ field.name|cut:'audio_answer_' }})" disabled>Остановить запись</button>
+                    </div>
+                    <!-- Скрытое поле для сохранения аудиофайла -->
+                    {{ field }}
+                </div>
+    
+            {% else %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        <button type="submit">Завершить тест</button>
+    </form>
+</body>

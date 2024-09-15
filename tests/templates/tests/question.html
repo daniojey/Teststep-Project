@@ -10,38 +10,33 @@
 <body>
     <div id="timer" align='right'></div>
     
-    <form id="test-form" method="post" enctype="multipart/form-data" align="left">
+    <form id="test-form" method="POST" action="{% url 'tests:take_test' test.id %}">
         {% csrf_token %}
         {% for field in form %}
-            {% if 'question_' in field.name %}
-                {% with question_id=field.name|cut:'question_' %}
-                    {% for quest in question %}
-                        {% if question_id|add:0 == quest.id %}
-                            {% if quest.question_type == 'AUD' %}
-                                <div>
-                                    <p>{{ quest.text }}</p>
-                                    <audio controls id="audio_playback_{{ quest.id }}"></audio>
-                                    <div>
-                                        <button type="button" onclick="startRecording({{ quest.id }})">Начать запись</button>
-                                        <button type="button" onclick="stopRecording({{ quest.id }})" disabled>Остановить запись</button>
-                                        <input type="hidden" name="question_{{ quest.id }}" id="audio_input_{{ quest.id }}">
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                {% endwith %}
+            {% if 'audio_answer_' in field.name %}
+                <div>
+                    <p>{{ field.label_tag }}</p>
+                    <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
+                    <div>
+                        <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Начать запись</button>
+                        <button type="button" onclick="stopRecording({{ field.name|cut:'audio_answer_' }})" disabled>Остановить запись</button>
+                    </div>
+                    <!-- Скрытое поле для сохранения аудиофайла -->
+                    {{ field }}
+                </div>
+    
+            {% else %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
             {% endif %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
-            </div>
         {% endfor %}
-        <button type="submit" >Завершить тест</button>
+        <button type="submit">Завершить тест</button>
     </form>
 </body>
 
-<script>
+  <script>
     let mediaRecorder;
     let recordedChunks = [];
 
@@ -60,10 +55,10 @@
                 let audioElement = document.getElementById('audio_playback_' + questionId);
                 audioElement.src = url;
 
-                // Convert to base64 and store in hidden input
+                // Преобразуем в base64 и сохраняем в скрытое поле формы
                 let reader = new FileReader();
                 reader.onloadend = function() {
-                    document.getElementById('audio_input_' + questionId).value = reader.result;
+                    document.getElementById('id_audio_answer_' + questionId).value = reader.result;  // input id с префиксом 'id_'
                 }
                 reader.readAsDataURL(blob);
 
@@ -84,7 +79,6 @@
         document.querySelector('button[onclick="stopRecording(' + questionId + ')"]').disabled = true;
     }
 </script>
-
 
 
 <script>

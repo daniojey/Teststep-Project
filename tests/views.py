@@ -1,5 +1,4 @@
 # tests/views.py
-from cgi import print_arguments
 import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,6 +7,10 @@ from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroup, UsersGroupMembership
 from .models import QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import QuestionGroupForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
+from django.core.files.base import ContentFile
+import base64
+import os
+from django.core.files.storage import default_storage
 
 def index(request):
     return render(request, 'tests/index.html')
@@ -204,15 +207,44 @@ def take_test(request, test_id):
 def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     responses = request.session.get('test_responses', {})
+    audio_answers = request.session.get('audio_answer_', {})
+
 
     if test.check_type == Tests.MANUAL_CHECK:
-            review = TestsReviews.objects.create(
-                test=test,
-                user=request.user,
-                answers=responses,
+            for key, value in responses.items():
+                if 'audio_answer_' in key and value:
+                    # Преобразуем base64 в файл
+                    question_id = key.split('audio_answer_')[1]
+                    audio_data = value.split(',')[1]  # Убираем префикс base64
+                    audio_content = base64.b64decode(audio_data)
+                    
+                    # Генерируем имя файла
+                    filename = f"audio_answer_{question_id}_{request.user.id}.webm"
+                    file_path = os.path.join('answers/audios/', filename)
+                    audio_file = ContentFile(audio_content, filename)
+                    
+                    # Сохраняем файл в систему
+                    saved_file = default_storage.save(file_path, audio_file)
+                    
+                    # Получаем URL файла
+                    file_url = default_storage.url(saved_file)
+                    
+                    # Сохраняем URL аудиофайла по вопросу в словаре
+                    audio_answers[question_id] = file_url
+
+            request.session['audio_answers'] = audio_answers
+
+
+    if test.check_type == Tests.MANUAL_CHECK:
+        review = TestsReviews.objects.create(
+            test=test,
+            user=request.user,
+            answers=responses,
+            audio_answers=audio_answers,  # Сохраняем аудио-ответы для ручной проверки
                 # group=request.user.profile.group,  # Если у пользователя есть группа
-            )
-            return render(request, "app/index.html")
+        )
+
+        return render(request, "app/index.html")
     
 
     total_questions = test.questions.count()
@@ -239,8 +271,12 @@ def test_results(request, test_id):
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
                     correct_answers += 1
+            elif question.question_type == "INP":
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if str(correct_answer).strip().lower() == str(value).strip().lower():
+                    correct_answers += 1
             elif question.question_type == 'MTCH':
-                ... # Реализовать позже
+                ... # TODO Реализовать позже
 
 
     score = (correct_answers / total_questions) * 100
@@ -260,7 +296,7 @@ def test_results(request, test_id):
                 test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
                 test_result.save()
             else:
-                return render(request, 'tests/test_limit_reached.html')
+                return render(request, 'users/profile.html')
             
     context = {
         'test': test,
@@ -346,59 +382,96 @@ def take_test_review(request, user_id, test_id):
     test = get_object_or_404(Tests, id=test_id)
     review = get_object_or_404(TestsReviews, user=user, test=test)
     answers = review.answers
+    audio_answers = review.audio_answers or {}
+
 
     if request.method == 'POST':
         form = TestReviewForm(test=test, answers=answers, data=request.POST)
         if form.is_valid():
             correct_answers = 0.0
             total_questions = len(test.questions.all())
-    
+            print(form.cleaned_data)
 
             for question in test.questions.all():
                 if question.question_type == 'MC':
+                    
                     # Получаем правильные ответы
                     correct_answer = question.answers.filter(is_correct=True)
+                    
                     corrects = [i for i in correct_answer]
 
                     # Получаем выбранные ответы учителем
                     selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
                     selected_unpack = [int(i) for i in selected_answer]
+                    
 
-                    multiple_choice_strategy = MultypleChoiceStrategy()
-                    multiple_choice_strategy.calculate_point(question, selected_answer, correct_answer, form)
+                    # TODO Реализовать стратегию позже 
+                    # multiple_choice_strategy = MultypleChoiceStrategy()
+                    # multiple_choice_strategy.calculate_point(question, selected_answer, correct_answer, form)
+
 
                     if form.cleaned_data.get(f'question_{question.id}_approve'):
+                        # Если правильных ответов в вопросе несколько 
                         if len(corrects) > 1:
                             points = 1 / len(corrects)
                             for i in corrects:
+                                
                                 item = Answer.objects.filter(id=i.id).first()
                                 if item.id in selected_unpack:
                                     correct_answers += points
 
-                elif  question.question_type == "SC":
+                        # Если один правильный ответ
+                        elif len(corrects) == 1:
+                            for i in corrects:
+                                
+                                item = Answer.objects.filter(id=i.id).first()
+                                if item.id in selected_unpack:
+                                    correct_answers += 1
+
+                elif question.question_type == "SC":
                     correct_answer = question.answers.filter(is_correct=True).first()
 
                     try:
                         selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
-                    except IndexError:
-                        correct_answers += 0
+                    except (IndexError, TypeError):
+                        selected_answer = None  # Если пользователь не выбрал ответ
 
-                    if correct_answer.id == selected_answer:
+                    # Сравниваем ответ пользователя с правильным ответом
+                    if correct_answer and correct_answer.id == selected_answer:
                         correct_answers += 1
 
                 elif  question.question_type == "IMG":
                     ...
-            
-    
+                elif question.question_type == 'AUD':
+                    audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
+
+                    if audio_response == True:
+                        correct_answers += 1                   
+                
+                elif question.question_type == 'INP':
+                    correct_answer = question.answers.filter(is_correct=True).first()
+
+
+                    selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
+
+                    if selected_answer == True:
+                        correct_answers += 1
+
+            review.audio_answers = audio_answers
+            review.save()
+
+            # TODO Переделать этот калл
+
             # # Сохранение результата
             score = correct_answers / total_questions * 100
             print(f"Балл по тесту: {int(score)}%")
+
             # # Создание TestResults и удаление TestReviews
             TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2)
             review.delete()
             return redirect('users:profile')
 
     else:
-        form = TestReviewForm(test=test, answers=answers)
+        form = TestReviewForm(test=test, answers=answers, audio_answers=audio_answers)
 
-    return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test})
+    return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test, 'audio_answers': audio_answers})

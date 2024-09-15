@@ -146,3 +146,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'static' , 'media')
 AUTH_USER_MODEL = 'users.User'
 
 LOGIN_URL = '/user/login/'
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -58,7 +58,7 @@ class Question(models.Model):
     IMAGE = 'IMG'
     AUDIO = 'AUD'
     MATCHING = 'MTCH'
-    TEXT = 'TXT'
+    INPUT = 'INP'
 
     QUESTION_TYPES = [
         (SINGLE_CHOICE, 'Single Choice'),
@@ -66,7 +66,7 @@ class Question(models.Model):
         (IMAGE, 'Image'),
         (AUDIO, 'Audio'),
         (MATCHING, 'Matching'),
-        (TEXT, 'Text')
+        (INPUT, 'input')
     ]
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, default='single' ,verbose_name="Тест")
@@ -131,6 +131,7 @@ class TestsReviews(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date_taken = models.DateTimeField(auto_now_add=True)
     answers = models.JSONField()  # Хранение ответов пользователя в формате JSON
+    audio_answers = models.JSONField(blank=True, null=True)
     group = models.CharField(max_length=100, blank=True, null=True)  # Опционально: группа пользователя
     reviewed = models.BooleanField(default=False)
     score = models.FloatField(blank=True, null=True)
