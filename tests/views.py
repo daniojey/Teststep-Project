@@ -188,20 +188,84 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
-    questions = list(test.questions.all())
-    random.shuffle(questions)
+    
+    # Получаем все вопросы теста
+    
+    # Если тест только начался, инициализируем сессию для теста
+    if 'question_order' not in request.session:
+        questions = list(test.questions.all())
+        print(questions)
+        random.shuffle(questions)
+        request.session['question_order'] = [q.id for q in questions]
+        request.session['question_index'] = 0  # Начинаем с первого вопроса
+        request.session['test_responses'] = {}  # Для хранения ответов пользователя
 
+    question_order = request.session['question_order']
+    question_index = request.session['question_index']
+    
+    # Проверяем, не завершен ли тест (когда все вопросы пройдены)
+    if question_index >= len(question_order):
+        return redirect('tests:test_results', test_id=test_id)
+    
+    # Текущий вопрос
+    current_question_id = question_order[question_index]
+    current_question = get_object_or_404(Question, id=current_question_id)
+    
+    # Форма для текущего вопроса
     if request.method == 'POST':
-        form = TestTakeForm(request.POST, test=test)
+        form = TestTakeForm(request.POST, question=current_question)
         if form.is_valid():
-            # Сохраняем ответы в сессию
-            request.session['test_responses'] = form.cleaned_data
-            return redirect('tests:test_results', test_id=test_id)
-        
-    else:
-        form = TestTakeForm(test=test)
+            # Обрабатываем разные типы вопросов
+            if current_question.question_type == 'AUD':
+                # Для аудиовопросов используем 'audio_answer'
+                answer = form.cleaned_data.get(f'audio_answer_{current_question_id}', None)
+            else:
+                # Для всех остальных вопросов используем 'answer'
+                answer = form.cleaned_data.get('answer', None)
 
-    return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': questions})
+            if current_question.question_type == 'AUD':
+                # Сохраняем в сессии с префиксом 'audio_answer_'
+                if answer is not None:
+                    request.session['test_responses'][f"audio_answer_{current_question_id}"] = answer
+            else:
+                # Для всех остальных типов вопросов используем 'question_{id}'
+                if answer is not None:
+                    request.session['test_responses'][f"question_{current_question_id}"] = answer
+                            
+            # Переход к следующему вопросу
+            request.session['question_index'] += 1
+
+            return redirect('tests:take_test', test_id=test_id)  # Перезагрузка на следующий вопрос
+    else:
+        form = TestTakeForm(question=current_question)
+
+    
+    all_questions = {
+        "current": question_index + 1,
+        "all": len(question_order)
+    }
+
+    return render(request, 'tests/question.html', {
+        'form': form,
+        'test': test,
+        'question': current_question,
+        'all_questions': all_questions,
+    })
+    # test = get_object_or_404(Tests, id=test_id)
+    # questions = list(test.questions.all())
+    # random.shuffle(questions)
+
+    # if request.method == 'POST':
+    #     form = TestTakeForm(request.POST, test=test)
+    #     if form.is_valid():
+    #         # Сохраняем ответы в сессию
+    #         request.session['test_responses'] = form.cleaned_data
+    #         return redirect('tests:test_results', test_id=test_id)
+        
+    # else:
+    #     form = TestTakeForm(test=test)
+
+    # return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': questions})
 
 
 def test_results(request, test_id):
@@ -243,6 +307,13 @@ def test_results(request, test_id):
             audio_answers=audio_answers,  # Сохраняем аудио-ответы для ручной проверки
                 # group=request.user.profile.group,  # Если у пользователя есть группа
         )
+
+        if 'question_order' in request.session:
+            del request.session['question_order']
+        if 'question_index' in request.session:
+            del request.session['question_index']
+        if 'test_responses' in request.session:
+            del request.session['test_responses']
 
         return render(request, "app/index.html")
     
@@ -297,6 +368,13 @@ def test_results(request, test_id):
                 test_result.save()
             else:
                 return render(request, 'users/profile.html')
+            
+    if 'question_order' in request.session:
+        del request.session['question_order']
+    if 'question_index' in request.session:
+        del request.session['question_index']
+    if 'test_responses' in request.session:
+        del request.session['test_responses']
             
     context = {
         'test': test,

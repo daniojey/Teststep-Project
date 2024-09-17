@@ -59,51 +59,105 @@ class AnswerForm(forms.ModelForm):
 
 class TestTakeForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        test = kwargs.pop('test')
+        # Теперь мы передаем только один вопрос
+        question = kwargs.pop('question')  # Получаем текущий вопрос
         super().__init__(*args, **kwargs)
+
+        choices = [(a.id, a.text) for a in question.answers.all()]
+        random.shuffle(choices)  # Перемешиваем варианты ответа
+
+        # Одиночный выбор (Single Choice)
+        if question.question_type == 'SC':
+            self.fields[f'answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
+            )
         
-        questions = list(test.questions.all())
-        random.shuffle(questions)
+        # Множественный выбор (Multiple Choice)
+        elif question.question_type == 'MC':
+            self.fields[f'answer'] = forms.MultipleChoiceField(
+                choices=choices,
+                widget=forms.CheckboxSelectMultiple,
+                label=question.text
+            )
+        
+        # Выбор изображения (Image Choice)
+        elif question.question_type == 'IMG':
+            self.fields[f'answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
+            )
+        
+        # Аудио-вопросы (Audio Answer)
+        elif question.question_type == 'AUD':
+            # Теперь ключ снова будет содержать ID вопроса
+            self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+                label=f"{question.text} (Ваш ответ в аудиоформате)",
+                widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
+                required=False
+            )
+        
+        # Текстовые ответы (Input Answer)
+        elif question.question_type == "INP":
+            self.fields[f'answer'] = forms.CharField(
+                label=f"{question.text}",
+                widget=forms.TextInput
+            )
+        
+        # Матчинг (Matching) - возможно, нужно будет доработать логику
+        elif question.question_type == 'MTCH':
+            matching_fields = []
+            # Логика для матчинга (например, сопоставление пар) будет реализована позже
 
-        for question in questions:
-            choices = [(a.id, a.text) for a in question.answers.all()]
-            random.shuffle(choices)
-            if question.question_type == 'SC':
-                self.fields[f'question_{question.id}'] = forms.ChoiceField(
-                    choices=choices,
-                    widget=forms.RadioSelect,
-                    label=question.text
-                )
-            elif question.question_type == 'MC':
-                self.fields[f'question_{question.id}'] = forms.MultipleChoiceField(
-                    choices=choices,
-                    widget=forms.CheckboxSelectMultiple,
-                    label=question.text
-                )
-            
-            elif question.question_type == 'IMG':
-                self.fields[f'question_{question.id}'] = forms.ChoiceField(
-                    choices=choices,
-                    widget=forms.RadioSelect,
-                    label=question.text
-                )
-            
-            elif question.question_type == 'AUD':  # Для аудиовопросов
-                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                    label=f"{question.text} (Ваш ответ в аудиоформате)",
-                    widget=forms.HiddenInput(),  # Здесь сохраняется URL до аудио
-                    required=False
-                )
-            
-            elif question.question_type == "INP":
-                self.fields[f'question_{question.id}'] = forms.CharField(
-                    label=f"{question.text}",
-                    widget=forms.TextInput,
-                )
 
-            elif question.question_type == 'MTCH':
-                matching_fields = []
-                # TODO Реализовать позже
+    # def __init__(self, *args, **kwargs):
+    #     test = kwargs.pop('test')
+    #     super().__init__(*args, **kwargs)
+        
+    #     questions = list(test.questions.all())
+    #     # random.shuffle(questions)
+
+    #     for question in questions:
+    #         choices = [(a.id, a.text) for a in question.answers.all()]
+    #         random.shuffle(choices)
+    #         if question.question_type == 'SC':
+    #             self.fields[f'question_{question.id}'] = forms.ChoiceField(
+    #                 choices=choices,
+    #                 widget=forms.RadioSelect,
+    #                 label=question.text
+    #             )
+    #         elif question.question_type == 'MC':
+    #             self.fields[f'question_{question.id}'] = forms.MultipleChoiceField(
+    #                 choices=choices,
+    #                 widget=forms.CheckboxSelectMultiple,
+    #                 label=question.text
+    #             )
+            
+    #         elif question.question_type == 'IMG':
+    #             self.fields[f'question_{question.id}'] = forms.ChoiceField(
+    #                 choices=choices,
+    #                 widget=forms.RadioSelect,
+    #                 label=question.text
+    #             )
+            
+    #         elif question.question_type == 'AUD':  # Для аудиовопросов
+    #             self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+    #                 label=f"{question.text} (Ваш ответ в аудиоформате)",
+    #                 widget=forms.HiddenInput(),  # Здесь сохраняется URL до аудио
+    #                 required=False
+    #             )
+            
+    #         elif question.question_type == "INP":
+    #             self.fields[f'question_{question.id}'] = forms.CharField(
+    #                 label=f"{question.text}",
+    #                 widget=forms.TextInput,
+    #             )
+
+    #         elif question.question_type == 'MTCH':
+    #             matching_fields = []
+    #             # TODO Реализовать позже
 
 
     # def clean(self):
@@ -149,8 +203,6 @@ class TestReviewForm(forms.Form):
             result = [i.text for i in ans]
             question_correct = ', '.join(result)
 
-            print(item)
-            print(question_correct)
 
             # Получаем список  по ответам
             user_answers =[
@@ -188,18 +240,18 @@ class TestReviewForm(forms.Form):
                 )
 
             elif question.question_type == 'INP':
-                print(user_answers)
+                ans_resp = answers.get(f"question_{question.id}", None)
                 item = item[0]
                 self.fields[f'question_{question.id}_user_answer'] = forms.CharField(
-                    label=f"{question.text}:",
+                    label=f"{question.text}:\nПравильний ответ - {item.text}",
                     widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                    initial=f"Ответ ученика - {item.text}",
+                    initial=f"Ответ ученика - {ans_resp}",
                     required=False,
                 )
 
                 self.fields[f"question_{question.id}_correct"] = forms.BooleanField(
                     label="Ответ верный ?",
-                    required=True,
+                    required=False,
                 )
 
             else:

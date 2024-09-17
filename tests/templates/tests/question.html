@@ -8,6 +8,7 @@
 </head>
 
 <body>
+    <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
     <div id="timer" align='right'></div>
     
     <form id="test-form" method="POST" action="{% url 'tests:take_test' test.id %}">
