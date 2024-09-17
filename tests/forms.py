@@ -36,6 +36,14 @@ class QuestionGroupForm(forms.ModelForm):
         fields = ['name']
 
 class QuestionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        test = kwargs.pop('test', None)  # Забираем тест из kwargs
+        super().__init__(*args, **kwargs)
+
+        if test:
+            self.fields['group'].queryset = QuestionGroup.objects.filter(test=test)
+        else:
+            self.fields['group'].queryset = QuestionGroup.objects.none()
 
     class Meta:
         model = Question
@@ -45,6 +53,7 @@ class QuestionForm(forms.ModelForm):
             'question_type': forms.RadioSelect(choices=Question.QUESTION_TYPES),
             'group': forms.Select(attrs={'class': 'form-control'}),
         }
+
         
 class AnswerForm(forms.ModelForm):
     class Meta:
@@ -195,6 +204,7 @@ class TestReviewForm(forms.Form):
 
             # Извлекаем ответы пользователя из JSON
             user_answer_ids = answers.get(f'question_{question.id}', [])
+            print(user_answer_ids)
 
 
             # Получаем правильные ответы
@@ -205,11 +215,12 @@ class TestReviewForm(forms.Form):
 
 
             # Получаем список  по ответам
-            user_answers =[
-                (answer.id, answer.text) for answer in question.answers.filter(id__in=user_answer_ids)
-            ]
-
-            
+            try:
+                user_answers =[
+                    (answer.id, answer.text) for answer in question.answers.filter(id__in=user_answer_ids)
+                ]
+            except ValueError:
+                ...
 
             # Если одиночный ответ добавляем его вручную в список
             if user_answers == [] and question.question_type == "SC":

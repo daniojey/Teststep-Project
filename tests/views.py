@@ -107,17 +107,16 @@ def add_questions(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
     question_groups = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
     ungrouped_questions = Question.objects.filter(test=test, group__isnull=True)
-    print(question_groups)
     
     if request.method == 'POST':
-        question_form = QuestionForm(request.POST, request.FILES)
+        question_form = QuestionForm(request.POST, request.FILES, test=test)
         if question_form.is_valid():
             question = question_form.save(commit=False)
             question.test = test  # Привязываем вопрос к текущему тесту
             question.save()
             return redirect('tests:add_questions', test_id=test.id)
     else:
-        question_form = QuestionForm()
+        question_form = QuestionForm(test=test)
     
     questions = Question.objects.filter(test=test)
 
@@ -189,17 +188,40 @@ def test_preview(request, test_id):
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     
-    # Получаем все вопросы теста
-    
     # Если тест только начался, инициализируем сессию для теста
     if 'question_order' not in request.session:
-        questions = list(test.questions.all())
-        print(questions)
-        random.shuffle(questions)
-        request.session['question_order'] = [q.id for q in questions]
+        # Получаем вопросы, отсортированные по группам
+        questions_by_group = {}
+        for group in QuestionGroup.objects.filter(test=test):
+            questions_by_group[group.name] = list(group.questions_group.all())
+
+
+        # Перемешиваем вопросы внутри каждой группы
+        for group_name, questions in questions_by_group.items():
+            random.shuffle(questions)  # Перемешиваем вопросы в группе
+
+        # Объединяем все перемешанные вопросы в один список
+        all_questions = []
+        for group_name, questions in questions_by_group.items():
+            all_questions.extend(questions)
+
+        #Для вопросов без группы
+        questions_not_group = {}
+        # for group in Question.objects.filter(test=test, group=None):
+        questions_not_group['All'] = list(Question.objects.filter(test=test, group=None))
+
+        # Перемешиваем вопросы и добавляем их к остальным
+        for _ , questions in questions_not_group.items():
+            random.shuffle(questions)
+            all_questions.extend(questions)
+
+
+    
+        # Сохраняем порядок вопросов в сессии
+        request.session['question_order'] = [q.id for q in all_questions]
         request.session['question_index'] = 0  # Начинаем с первого вопроса
         request.session['test_responses'] = {}  # Для хранения ответов пользователя
-
+        
     question_order = request.session['question_order']
     question_index = request.session['question_index']
     
@@ -210,6 +232,12 @@ def take_test(request, test_id):
     # Текущий вопрос
     current_question_id = question_order[question_index]
     current_question = get_object_or_404(Question, id=current_question_id)
+    # current_question_group = QuestionGroup.objects.filter(question=current_question).first()
+
+    try:
+        current_question_group = current_question.group.name
+    except:
+        current_question_group = 'Усі'
     
     # Форма для текущего вопроса
     if request.method == 'POST':
@@ -239,7 +267,7 @@ def take_test(request, test_id):
     else:
         form = TestTakeForm(question=current_question)
 
-    
+    # Статистика по вопросам
     all_questions = {
         "current": question_index + 1,
         "all": len(question_order)
@@ -250,23 +278,74 @@ def take_test(request, test_id):
         'test': test,
         'question': current_question,
         'all_questions': all_questions,
+        'current_question_group': current_question_group,
     })
+
     # test = get_object_or_404(Tests, id=test_id)
-    # questions = list(test.questions.all())
-    # random.shuffle(questions)
+    
+    # # Получаем все вопросы теста
+    
+    # # Если тест только начался, инициализируем сессию для теста
+    # if 'question_order' not in request.session:
+    #     questions = list(test.questions.all())
+    #     print(questions)
+    #     random.shuffle(questions)
+    #     request.session['question_order'] = [q.id for q in questions]
+    #     request.session['question_index'] = 0  # Начинаем с первого вопроса
+    #     request.session['test_responses'] = {}  # Для хранения ответов пользователя
 
+    # question_order = request.session['question_order']
+    # question_index = request.session['question_index']
+    
+    # # Проверяем, не завершен ли тест (когда все вопросы пройдены)
+    # if question_index >= len(question_order):
+    #     return redirect('tests:test_results', test_id=test_id)
+    
+    # # Текущий вопрос
+    # current_question_id = question_order[question_index]
+    # current_question = get_object_or_404(Question, id=current_question_id)
+    
+    # # Форма для текущего вопроса
     # if request.method == 'POST':
-    #     form = TestTakeForm(request.POST, test=test)
+    #     form = TestTakeForm(request.POST, question=current_question)
     #     if form.is_valid():
-    #         # Сохраняем ответы в сессию
-    #         request.session['test_responses'] = form.cleaned_data
-    #         return redirect('tests:test_results', test_id=test_id)
-        
+    #         # Обрабатываем разные типы вопросов
+    #         if current_question.question_type == 'AUD':
+    #             # Для аудиовопросов используем 'audio_answer'
+    #             answer = form.cleaned_data.get(f'audio_answer_{current_question_id}', None)
+    #         else:
+    #             # Для всех остальных вопросов используем 'answer'
+    #             answer = form.cleaned_data.get('answer', None)
+
+    #         if current_question.question_type == 'AUD':
+    #             # Сохраняем в сессии с префиксом 'audio_answer_'
+    #             if answer is not None:
+    #                 request.session['test_responses'][f"audio_answer_{current_question_id}"] = answer
+    #         else:
+    #             # Для всех остальных типов вопросов используем 'question_{id}'
+    #             if answer is not None:
+    #                 request.session['test_responses'][f"question_{current_question_id}"] = answer
+                            
+    #         # Переход к следующему вопросу
+    #         request.session['question_index'] += 1
+
+    #         return redirect('tests:take_test', test_id=test_id)  # Перезагрузка на следующий вопрос
     # else:
-    #     form = TestTakeForm(test=test)
+    #     form = TestTakeForm(question=current_question)
 
-    # return render(request, 'tests/question.html', {'form': form, 'test': test, 'question': questions})
+    
+    # all_questions = {
+    #     "current": question_index + 1,
+    #     "all": len(question_order)
+    # }
 
+    # return render(request, 'tests/question.html', {
+    #     'form': form,
+    #     'test': test,
+    #     'question': current_question,
+    #     'all_questions': all_questions,
+    # })
+   
 
 def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
@@ -460,6 +539,7 @@ def take_test_review(request, user_id, test_id):
     test = get_object_or_404(Tests, id=test_id)
     review = get_object_or_404(TestsReviews, user=user, test=test)
     answers = review.answers
+    print(answers)
     audio_answers = review.audio_answers or {}
 
 
@@ -468,7 +548,6 @@ def take_test_review(request, user_id, test_id):
         if form.is_valid():
             correct_answers = 0.0
             total_questions = len(test.questions.all())
-            print(form.cleaned_data)
 
             for question in test.questions.all():
                 if question.question_type == 'MC':

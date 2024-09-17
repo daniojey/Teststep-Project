@@ -9,6 +9,7 @@
 
 <body>
     <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
+    <h2>Категорія питання: {{ current_question_group }}</h2>
     <div id="timer" align='right'></div>
     
     <form id="test-form" method="POST" action="{% url 'tests:take_test' test.id %}">
@@ -33,7 +34,7 @@
                 </div>
             {% endif %}
         {% endfor %}
-        <button type="submit">Завершить тест</button>
+        <button type="submit">Підтвердити</button>
     </form>
 </body>
 

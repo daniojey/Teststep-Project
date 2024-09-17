@@ -56,9 +56,9 @@ def registration(request):
 
 @login_required
 def profile(request):
-    test_results = request.user.test_results.all()
+    test_results = request.user.test_results.all().order_by('-date_taken')
     user = get_object_or_404(User, id=request.user.id)
-    tests_reviews = TestsReviews.objects.filter(user=user)
+    tests_reviews = TestsReviews.objects.filter(user=user).order_by('date_taken')
 
     user_groups = UsersGroupMembership.objects.filter(user=user)
 
