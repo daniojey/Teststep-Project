@@ -1,12 +1,14 @@
 from django.contrib import admin
-from tests.models import Categories, Tests, Question, Answer, TestResult, TestsReviews, QuestionGroup
+from tests.models import Categories, MatchingPair, Tests, Question, Answer, TestResult, TestsReviews, QuestionGroup
 
 admin.site.register(Tests)
 admin.site.register(Question)
 admin.site.register(QuestionGroup)
 admin.site.register(Answer)
+admin.site.register(MatchingPair)
 admin.site.register(TestResult)
 admin.site.register(TestsReviews)
+
 
 @admin.register(Categories)
 class CategoriesAdmin(admin.ModelAdmin):

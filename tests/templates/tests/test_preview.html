@@ -6,6 +6,11 @@
     <link rel="stylesheet" type='text/css' href="{% static "css/styles.css" %}">
 </head>
 
+<div align='left'>
+    <button onclick="window.history.back();" aling='left'>Назад</button>
+</div>
+
+
 <div align="center">
     <div class='fixed-container'>
         {% if test.image %}
@@ -17,7 +22,7 @@
     <div>
         <h2>Категория: {{ test.category }}</h2>
         <h3>Описание: {{ test.description }}</h3>
-    </div>
+    </div>nkn
     {% if user.is_authenticated %}
         {% if required_attemps %}
             <button id="start-test">Начать тестирование</button>

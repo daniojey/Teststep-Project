@@ -7,6 +7,46 @@
     </h1>
 </head>
 
+<style>
+    .matching-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    
+    .left-column, .right-column {
+        display: flex;
+        align-items: center;
+    }
+    
+    .left-item, .right-item {
+        padding: 10px;
+        margin: 0 10px;
+        border: 2px solid #ccc;
+        background-color: #f9f9f9;
+        width: 150px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropzone {
+        width: 150px;
+        height: 50px;
+        border: 2px dashed #ccc;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .right-item[draggable="true"] {
+        cursor: move;
+    }
+</style>
+
 <body>
     <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
     <h2>Категорія питання: {{ current_question_group }}</h2>
@@ -26,17 +66,83 @@
                     <!-- Скрытое поле для сохранения аудиофайла -->
                     {{ field }}
                 </div>
+            {% elif question.question_type == "MTCH" %}
+                <div class="matching-container">
+                    <div class="left-column">
+                        {% if 'matching_left' in field.name %}
+                            <div class="left-item">
+                                {{ field.label }}  <!-- Показываем только текст -->
+                            </div>
+                            <div id="dropzone_{{ forloop.counter }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                                <!-- Сюда перетащить ответ -->
+                            </div>
+                        {% endif %}
+                    </div>
     
+                    <div class="right-column">
+                        {% if 'matching_right' in field.name %}
+                            <div class="right-item" id="drag_{{ forloop.counter }}" draggable="true" ondragstart="drag(event)">
+                                {{ field.label }}  <!-- Показываем только текст -->
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             {% else %}
                 <div class="form-group">
                     {{ field.label_tag }}
                     {{ field }}
                 </div>
             {% endif %}
+
+            
         {% endfor %}
         <button type="submit">Підтвердити</button>
     </form>
 </body>
+
+
+<script>
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var dropzone = ev.target;
+        var rightItem = document.getElementById(data);
+
+        if (dropzone.classList.contains('dropzone')) {
+            dropzone.appendChild(rightItem);
+
+            // Записываем значение в скрытое поле
+            var leftId = dropzone.getAttribute('data-left-id');
+            var rightId = rightItem.getAttribute('data-right-id');
+            document.getElementById('answer_' + leftId).value = rightId;
+
+            // Проверяем, записалось ли значение
+            console.log('answer_' + leftId + ': ' + document.getElementById('answer_' + leftId).value);
+        }
+    }
+
+    document.getElementById('test-form').addEventListener('submit', function(event) {
+        event.preventDefault();  // Останавливаем стандартную отправку формы для проверки
+
+        // Проверим содержимое всех скрытых полей
+        const formData = new FormData(this);
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+
+        // Отправляем форму после проверки
+        this.submit();
+    });
+</script>
+
 
   <script>
     let mediaRecorder;

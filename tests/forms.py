@@ -1,6 +1,6 @@
 import random
 from django import forms
-from .models import Categories, QuestionGroup, Tests, Question, Answer, TestsReviews
+from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, Answer, TestsReviews
 
 class TestForm(forms.ModelForm):
     class Meta:
@@ -54,7 +54,11 @@ class QuestionForm(forms.ModelForm):
             'group': forms.Select(attrs={'class': 'form-control'}),
         }
 
-        
+class MatchingPairForm(forms.ModelForm):
+    class Meta:
+        model = MatchingPair
+        fields = ['left_item', 'right_item']
+
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
@@ -115,10 +119,29 @@ class TestTakeForm(forms.Form):
                 widget=forms.TextInput
             )
         
-        # Матчинг (Matching) - возможно, нужно будет доработать логику
+         # Матчинг (Matching)
         elif question.question_type == 'MTCH':
-            matching_fields = []
-            # Логика для матчинга (например, сопоставление пар) будет реализована позже
+            left_items = [(pair.left_item, pair.left_item) for pair in question.matching_pairs.all()]
+            right_items = [(pair.right_item, pair.right_item) for pair in question.matching_pairs.all()]
+
+            random.shuffle(left_items)
+            random.shuffle(right_items)
+
+            for idx, (left_item, _) in enumerate(left_items):
+                # Левый элемент просто выводится как текст, без поля ввода
+                self.fields[f'matching_left_{idx}'] = forms.CharField(
+                    label=left_item,
+                    required=False,
+                    widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
+                )
+                
+            for idx, (right_item, _) in enumerate(right_items):
+                # Правый элемент также выводится как текст, без выпадающего списка
+                self.fields[f'matching_right_{idx}'] = forms.CharField(
+                    label=right_item,
+                    required=False,
+                    widget=forms.HiddenInput()  # Прячем поле для выбора
+                )
 
 
     # def __init__(self, *args, **kwargs):

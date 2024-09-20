@@ -15,12 +15,12 @@ urlpatterns = [
     path('add_question_group/<int:test_id>/', views.add_question_group, name='add_question_group'),
     path('<int:test_id>/add_questions/', views.add_questions, name='add_questions'),
     path('<int:question_id>/add_answers/', views.add_answers, name='add_answers'),
+    path('<int:question_id>/add_matching_pair/', views.add_matching_pair, name='add_matching_pair'),
     path('<int:test_id>/complete_questions/', views.complete_questions, name='complete_questions'),
     path('tests_group_reviews/<int:test_id>/', views.test_group_reviews, name='test_group_reviews'),
     path('test_st/<int:test_id>/', views.take_test, name='take_test'),
     path('results/<int:test_id>/', views.test_results, name='test_results'),
     path('tests_for_review/', views.tests_for_review, name='tests_for_review'),
     path('tests_for_review/<int:user_id>/<int:test_id>/', views.take_test_review, name='take_test_review'),
-
-
+    path('success_page/', views.success_manual_test, name='success_page'),
 ]

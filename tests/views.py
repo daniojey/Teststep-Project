@@ -5,8 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroup, UsersGroupMembership
-from .models import QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
-from .forms import QuestionGroupForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
+from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
+from .forms import MatchingPairForm, QuestionGroupForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
 import base64
 import os
@@ -141,6 +141,8 @@ def add_answers(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     test = question.test
     questions = test.questions.all()
+
+
     if request.method == 'POST':
         answer_form = AnswerForm(request.POST)
         if answer_form.is_valid():
@@ -154,9 +156,34 @@ def add_answers(request, question_id):
         'test': test,
         'question': question,
         'questions': questions,
-        'answer_form': answer_form
+        'form': answer_form,
+        'form_type':'Ответ',
+        'action_url':'tests:add_answers',
     })
 
+def add_matching_pair(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    test = question.test
+    questions = test.questions.all()
+
+
+    if request.method == "POST":
+        matching_pair_form = MatchingPairForm(request.POST)
+        if matching_pair_form.is_valid():
+            answer = matching_pair_form.save(commit=False)
+            answer.question = question
+            answer.save()
+            return redirect('tests:add_matching_pair', question_id=question.id)
+    else:
+        matching_pair_form = MatchingPairForm()
+    return render(request, 'tests/add_answer.html', {
+        'test': test,
+        'question': question,
+        'questions': questions,
+        'form': matching_pair_form,
+        "form_type":"Соотвецтвие",
+        "action_url":'tests:add_matching_pair',
+    })
 
 def test_preview(request, test_id):
     if request.user.is_authenticated:
@@ -209,6 +236,7 @@ def take_test(request, test_id):
         questions_not_group = {}
         # for group in Question.objects.filter(test=test, group=None):
         questions_not_group['All'] = list(Question.objects.filter(test=test, group=None))
+        print(questions_not_group)
 
         # Перемешиваем вопросы и добавляем их к остальным
         for _ , questions in questions_not_group.items():
@@ -227,7 +255,10 @@ def take_test(request, test_id):
     
     # Проверяем, не завершен ли тест (когда все вопросы пройдены)
     if question_index >= len(question_order):
-        return redirect('tests:test_results', test_id=test_id)
+        if test.check_type == 'manual':
+            return redirect('tests:success_page')
+        else:
+            return redirect('tests:test_results', test_id=test_id)
     
     # Текущий вопрос
     current_question_id = question_order[question_index]
@@ -255,10 +286,22 @@ def take_test(request, test_id):
                 # Сохраняем в сессии с префиксом 'audio_answer_'
                 if answer is not None:
                     request.session['test_responses'][f"audio_answer_{current_question_id}"] = answer
+            elif current_question.question_type == 'MTCH':
+                for idx in range(len(current_question.matching_pairs.all())):
+                    # Извлекаем данные из скрытых полей
+                    answer_key = f"answer_{idx}"
+                    if answer_key in request.POST:
+                        answer_value = request.POST.get(answer_key)
+                        if answer_value:
+                            # Сохраняем ответы в сессии
+                            request.session['test_responses'][f"matching_{current_question_id}_{idx}"] = answer_value
+                            print(f"Ответ на вопрос {idx}: {answer_value}")
             else:
                 # Для всех остальных типов вопросов используем 'question_{id}'
                 if answer is not None:
                     request.session['test_responses'][f"question_{current_question_id}"] = answer
+
+                print(request.POST)
                             
             # Переход к следующему вопросу
             request.session['question_index'] += 1
@@ -281,71 +324,6 @@ def take_test(request, test_id):
         'current_question_group': current_question_group,
     })
 
-    # test = get_object_or_404(Tests, id=test_id)
-    
-    # # Получаем все вопросы теста
-    
-    # # Если тест только начался, инициализируем сессию для теста
-    # if 'question_order' not in request.session:
-    #     questions = list(test.questions.all())
-    #     print(questions)
-    #     random.shuffle(questions)
-    #     request.session['question_order'] = [q.id for q in questions]
-    #     request.session['question_index'] = 0  # Начинаем с первого вопроса
-    #     request.session['test_responses'] = {}  # Для хранения ответов пользователя
-
-    # question_order = request.session['question_order']
-    # question_index = request.session['question_index']
-    
-    # # Проверяем, не завершен ли тест (когда все вопросы пройдены)
-    # if question_index >= len(question_order):
-    #     return redirect('tests:test_results', test_id=test_id)
-    
-    # # Текущий вопрос
-    # current_question_id = question_order[question_index]
-    # current_question = get_object_or_404(Question, id=current_question_id)
-    
-    # # Форма для текущего вопроса
-    # if request.method == 'POST':
-    #     form = TestTakeForm(request.POST, question=current_question)
-    #     if form.is_valid():
-    #         # Обрабатываем разные типы вопросов
-    #         if current_question.question_type == 'AUD':
-    #             # Для аудиовопросов используем 'audio_answer'
-    #             answer = form.cleaned_data.get(f'audio_answer_{current_question_id}', None)
-    #         else:
-    #             # Для всех остальных вопросов используем 'answer'
-    #             answer = form.cleaned_data.get('answer', None)
-
-    #         if current_question.question_type == 'AUD':
-    #             # Сохраняем в сессии с префиксом 'audio_answer_'
-    #             if answer is not None:
-    #                 request.session['test_responses'][f"audio_answer_{current_question_id}"] = answer
-    #         else:
-    #             # Для всех остальных типов вопросов используем 'question_{id}'
-    #             if answer is not None:
-    #                 request.session['test_responses'][f"question_{current_question_id}"] = answer
-                            
-    #         # Переход к следующему вопросу
-    #         request.session['question_index'] += 1
-
-    #         return redirect('tests:take_test', test_id=test_id)  # Перезагрузка на следующий вопрос
-    # else:
-    #     form = TestTakeForm(question=current_question)
-
-    
-    # all_questions = {
-    #     "current": question_index + 1,
-    #     "all": len(question_order)
-    # }
-
-    # return render(request, 'tests/question.html', {
-    #     'form': form,
-    #     'test': test,
-    #     'question': current_question,
-    #     'all_questions': all_questions,
-    # })
-   
 
 def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
@@ -394,7 +372,7 @@ def test_results(request, test_id):
         if 'test_responses' in request.session:
             del request.session['test_responses']
 
-        return render(request, "app/index.html")
+        return render(request, 'app/success_page_manual_test.html')
     
 
     total_questions = test.questions.count()
@@ -463,6 +441,9 @@ def test_results(request, test_id):
     }
     
     return render(request, 'tests/test_results.html', context)
+
+def success_manual_test(request):
+    return render(request, 'tests/success_page_manual_test.html')
 
 
 def tests_for_review(request):

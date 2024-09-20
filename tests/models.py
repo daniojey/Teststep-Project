@@ -84,6 +84,19 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text
+    
+class MatchingPair(models.Model):
+    question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
+    left_item = models.CharField(max_length=255, verbose_name='Левая часть')
+    right_item = models.CharField(max_length=255, verbose_name='Правая часть')
+
+    class Meta:
+        db_table = "matching_pairs"
+        verbose_name = "Пара для соответствия"
+        verbose_name_plural = "Пари для соответствий"
+
+    def __str__(self) -> str:
+        return f"{self.left_item} - {self.right_item}"
 
 
 class Answer(models.Model):

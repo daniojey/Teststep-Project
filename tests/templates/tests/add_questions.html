@@ -31,16 +31,86 @@
         <button type="submit">Добавить вопрос</button>
     </form>
 
-    {% comment %} <h2>Текущие вопросы</h2>
+    <h2>Группы и вопросы</h2>
     <ul>
-        {% for question in questions %}
-            <li>
-                {{ question.text }}
-                <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
-            </li>
-        {% endfor %}
+        {% if question_groups %}
+            {% for group in question_groups %}
+                <li>
+                    <h3>Группа - {{ group.name }}</h3>
+                    <ul>
+                        {% for question in group.questions_group.all %}
+                            {% if question.question_type == "INP" %}
+                                <li>
+                                    {{ question.text }}
+                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить правильный ответ</a>
+                                </li>   
+                            {% else %}
+                                <li>
+                                    {{ question.text }}
+                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>Нет доступных групп вопросов.</li>
+        {% endif %}
     </ul>
-     {% endcomment %}
+
+    <h2>Вопросы без группы</h2>
+    <ul>
+        {% if ungrouped_questions %}
+            {% for question in ungrouped_questions %}
+                <li>
+                    {% if question.question_type == "MTCH" %}
+                        {{ question.text }}
+                        <a href="{% url "tests:add_matching_pair" question.id %}">Добавить соотвецтвия</a>
+                    {% else %}
+                        {{ question.text }}
+                        <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>Нет вопросов без группы.</li>
+        {% endif %}
+    </ul>
+
+    <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a></h2> 
+</body>
+
+{% comment %} <head>
+    <title>Добавить вопросы для теста: {{ test.name }}</title>
+</head>
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
+
+<body>
+    <h1>Добавить вопросы для теста: {{ test.name }}</h1>
+
+    {% if test.image %}
+    <div align='center'>
+        <div class='fixed-container' >
+            {% if test.image %}
+                <img src="{{ test.image.url }}" alt="{{ test.name }}" >
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h2><a href="{% url "tests:add_question_group" test_id=test.id %}">Добавить группу для вопросов</a></h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+
+        <button type="submit">Добавить вопрос</button>
+    </form>
+
     <h2>Группы и вопросы</h2>
     <ul>
         {% if question_groups %}
@@ -84,7 +154,7 @@
     </ul>
 
     <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a></h2> 
-</body>
+</body> {% endcomment %}
 
 {% endblock content %}
 
