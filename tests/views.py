@@ -287,21 +287,27 @@ def take_test(request, test_id):
                 if answer is not None:
                     request.session['test_responses'][f"audio_answer_{current_question_id}"] = answer
             elif current_question.question_type == 'MTCH':
-                for idx in range(len(current_question.matching_pairs.all())):
-                    # Извлекаем данные из скрытых полей
-                    answer_key = f"answer_{idx}"
-                    if answer_key in request.POST:
-                        answer_value = request.POST.get(answer_key)
-                        if answer_value:
-                            # Сохраняем ответы в сессии
-                            request.session['test_responses'][f"matching_{current_question_id}_{idx}"] = answer_value
-                            print(f"Ответ на вопрос {idx}: {answer_value}")
+                responses = request.POST
+
+                responses = responses
+                print(responses)
+
+                # questions_count = MatchingPair.objects.filter(question=current_question).count()
+                # points = 1 / questions_count
+                # print(points)
+                dict_items = {}
+                for left, right in responses.items():
+                    left_item = str(left[7:])
+                    right_item = right
+                    dict_items[left_item] = right_item
+                
+                request.session['test_responses'][f'question_{current_question_id}_type_matching'] = dict_items
+
+
             else:
                 # Для всех остальных типов вопросов используем 'question_{id}'
                 if answer is not None:
                     request.session['test_responses'][f"question_{current_question_id}"] = answer
-
-                print(request.POST)
                             
             # Переход к следующему вопросу
             request.session['question_index'] += 1
@@ -376,7 +382,8 @@ def test_results(request, test_id):
     
 
     total_questions = test.questions.count()
-    correct_answers = 0
+    correct_answers = 0.0
+
 
     for key, value in responses.items():
         if key.startswith('question_'):
@@ -386,25 +393,35 @@ def test_results(request, test_id):
             if question.question_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
-                    correct_answers += 1
+                    correct_answers += 1.0
             elif question.question_type == 'MC':
                 correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
                 if set(map(int, value)) == set(correct_answers_list):
-                    correct_answers += 1
+                    correct_answers += 1.0
             elif question.question_type == 'IMG':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
-                    correct_answers += 1
+                    correct_answers += 1.0
             elif question.question_type == 'AUD':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
-                    correct_answers += 1
+                    correct_answers += 1.0
             elif question.question_type == "INP":
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if str(correct_answer).strip().lower() == str(value).strip().lower():
-                    correct_answers += 1
+                    correct_answers += 1.0
             elif question.question_type == 'MTCH':
-                ... # TODO Реализовать позже
+                questions_count = MatchingPair.objects.filter(question=question).count()
+                points = 1 / questions_count
+                print(points)
+                
+                for left, right in value.items():
+                    res = MatchingPair.objects.filter(question=question, left_item=left, right_item=right).first()
+                    print(res)
+                    print(type(res))
+                    if res:
+                        correct_answers += points 
+                        print('+')
 
 
     score = (correct_answers / total_questions) * 100
@@ -418,7 +435,6 @@ def test_results(request, test_id):
         )
         
         if not created:
-            print(test_result)
             if test_result.remaining_atemps > 0:
                 test_result.attempts += 1
                 test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
@@ -432,6 +448,8 @@ def test_results(request, test_id):
         del request.session['question_index']
     if 'test_responses' in request.session:
         del request.session['test_responses']
+
+    correct_answers = int(correct_answers)
             
     context = {
         'test': test,

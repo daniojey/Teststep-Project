@@ -127,18 +127,17 @@ class TestTakeForm(forms.Form):
             random.shuffle(left_items)
             random.shuffle(right_items)
 
-            for idx, (left_item, _) in enumerate(left_items):
-                # Левый элемент просто выводится как текст, без поля ввода
-                self.fields[f'matching_left_{idx}'] = forms.CharField(
-                    label=left_item,
+            for pair in question.matching_pairs.all():
+                # Левый элемент просто выводится как текст
+                self.fields[f'matching_left_{pair.id}'] = forms.CharField(
+                    label=pair.left_item,
                     required=False,
                     widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
                 )
-                
-            for idx, (right_item, _) in enumerate(right_items):
-                # Правый элемент также выводится как текст, без выпадающего списка
-                self.fields[f'matching_right_{idx}'] = forms.CharField(
-                    label=right_item,
+
+                # Правый элемент также выводится как текст
+                self.fields[f'matching_right_{pair.id}'] = forms.CharField(
+                    label=pair.right_item,
                     required=False,
                     widget=forms.HiddenInput()  # Прячем поле для выбора
                 )

@@ -70,23 +70,26 @@
                 <div class="matching-container">
                     <div class="left-column">
                         {% if 'matching_left' in field.name %}
-                            <div class="left-item">
-                                {{ field.label }}  <!-- Показываем только текст -->
-                            </div>
-                            <div id="dropzone_{{ forloop.counter }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-                                <!-- Сюда перетащить ответ -->
-                            </div>
+                        <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
+                            {{ field.label }}  <!-- Показываем только текст -->
+                        </div>
+                        <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                            <!-- Скрытое поле для записи ответа -->
+                            <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                        </div>
                         {% endif %}
                     </div>
-    
+            
                     <div class="right-column">
                         {% if 'matching_right' in field.name %}
-                            <div class="right-item" id="drag_{{ forloop.counter }}" draggable="true" ondragstart="drag(event)">
-                                {{ field.label }}  <!-- Показываем только текст -->
-                            </div>
+                        <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
+                            {{ field.label }}  <!-- Показываем только текст -->
+                        </div>
                         {% endif %}
                     </div>
                 </div>
+            
+            
             {% else %}
                 <div class="form-group">
                     {{ field.label_tag }}
@@ -98,50 +101,64 @@
         {% endfor %}
         <button type="submit">Підтвердити</button>
     </form>
+
+    <script>
+        // Функция для обработки начала перетаскивания
+        function drag(event) {
+            var data = event.target.getAttribute('data-right-item');
+            if (data) {
+                event.dataTransfer.setData("text", event.target.id);  // Передаём ID элемента
+                console.log("Начато перетаскивание элемента с данными:", data);
+            } else {
+                console.error("Ошибка: атрибут data-right-item пустой!");
+            }
+        }
+
+        // Функция для разрешения сброса элемента
+        function allowDrop(event) {
+            event.preventDefault();  // Останавливаем стандартное поведение браузера
+        }
+
+        // Функция для обработки сброса элемента в dropzone
+        function drop(event) {
+            event.preventDefault();
+
+            // Получаем ID элемента, который был перетащен
+            var draggedElementId = event.dataTransfer.getData("text");
+            var draggedElement = document.getElementById(draggedElementId);
+
+            if (draggedElement) {
+                var dropzone = event.target;
+
+                // Перемещаем перетаскиваемый элемент в новую зону
+                dropzone.appendChild(draggedElement);
+
+                // Получаем значения левого и правого элемента
+                var leftBlockId = dropzone.getAttribute('data-left-item');  // Получаем идентификатор левого элемента
+                var rightBlockValue = draggedElement.getAttribute('data-right-item');  // Получаем значение правого элемента
+
+                console.log("Сопоставлены элементы:", leftBlockId, "с", rightBlockValue);
+
+                // Обновляем скрытое поле с результатом сопоставления
+                var matchingInput = document.getElementById('answer_' + leftBlockId);  // Используем идентификатор левого элемента
+                if (matchingInput) {
+                    matchingInput.value = rightBlockValue;
+                    console.log("Обновлено скрытое поле для POST-запроса:", matchingInput);
+                } else {
+                    console.error("Не удалось найти скрытое поле для:", leftBlockId);
+                }
+            } else {
+                console.error("Перетаскиваемый элемент не найден:", draggedElementId);
+            }
+        }
+
+    </script>
+    
+    
 </body>
 
 
-<script>
-    function allowDrop(ev) {
-        ev.preventDefault();
-    }
 
-    function drag(ev) {
-        ev.dataTransfer.setData("text", ev.target.id);
-    }
-
-    function drop(ev) {
-        ev.preventDefault();
-        var data = ev.dataTransfer.getData("text");
-        var dropzone = ev.target;
-        var rightItem = document.getElementById(data);
-
-        if (dropzone.classList.contains('dropzone')) {
-            dropzone.appendChild(rightItem);
-
-            // Записываем значение в скрытое поле
-            var leftId = dropzone.getAttribute('data-left-id');
-            var rightId = rightItem.getAttribute('data-right-id');
-            document.getElementById('answer_' + leftId).value = rightId;
-
-            // Проверяем, записалось ли значение
-            console.log('answer_' + leftId + ': ' + document.getElementById('answer_' + leftId).value);
-        }
-    }
-
-    document.getElementById('test-form').addEventListener('submit', function(event) {
-        event.preventDefault();  // Останавливаем стандартную отправку формы для проверки
-
-        // Проверим содержимое всех скрытых полей
-        const formData = new FormData(this);
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
-
-        // Отправляем форму после проверки
-        this.submit();
-    });
-</script>
 
 
   <script>
