@@ -121,74 +121,28 @@ class TestTakeForm(forms.Form):
         
          # Матчинг (Matching)
         elif question.question_type == 'MTCH':
-            left_items = [(pair.left_item, pair.left_item) for pair in question.matching_pairs.all()]
-            right_items = [(pair.right_item, pair.right_item) for pair in question.matching_pairs.all()]
+            left_items = [pair.left_item for pair in question.matching_pairs.all()]
+            right_items = [pair.right_item for pair in question.matching_pairs.all()]
 
             random.shuffle(left_items)
             random.shuffle(right_items)
+            
 
-            for pair in question.matching_pairs.all():
+            for i , pair in enumerate(question.matching_pairs.all()):
                 # Левый элемент просто выводится как текст
                 self.fields[f'matching_left_{pair.id}'] = forms.CharField(
-                    label=pair.left_item,
+                    label=left_items[i],
                     required=False,
                     widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
                 )
 
                 # Правый элемент также выводится как текст
                 self.fields[f'matching_right_{pair.id}'] = forms.CharField(
-                    label=pair.right_item,
+                    label=right_items[i],
                     required=False,
                     widget=forms.HiddenInput()  # Прячем поле для выбора
                 )
 
-
-    # def __init__(self, *args, **kwargs):
-    #     test = kwargs.pop('test')
-    #     super().__init__(*args, **kwargs)
-        
-    #     questions = list(test.questions.all())
-    #     # random.shuffle(questions)
-
-    #     for question in questions:
-    #         choices = [(a.id, a.text) for a in question.answers.all()]
-    #         random.shuffle(choices)
-    #         if question.question_type == 'SC':
-    #             self.fields[f'question_{question.id}'] = forms.ChoiceField(
-    #                 choices=choices,
-    #                 widget=forms.RadioSelect,
-    #                 label=question.text
-    #             )
-    #         elif question.question_type == 'MC':
-    #             self.fields[f'question_{question.id}'] = forms.MultipleChoiceField(
-    #                 choices=choices,
-    #                 widget=forms.CheckboxSelectMultiple,
-    #                 label=question.text
-    #             )
-            
-    #         elif question.question_type == 'IMG':
-    #             self.fields[f'question_{question.id}'] = forms.ChoiceField(
-    #                 choices=choices,
-    #                 widget=forms.RadioSelect,
-    #                 label=question.text
-    #             )
-            
-    #         elif question.question_type == 'AUD':  # Для аудиовопросов
-    #             self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-    #                 label=f"{question.text} (Ваш ответ в аудиоформате)",
-    #                 widget=forms.HiddenInput(),  # Здесь сохраняется URL до аудио
-    #                 required=False
-    #             )
-            
-    #         elif question.question_type == "INP":
-    #             self.fields[f'question_{question.id}'] = forms.CharField(
-    #                 label=f"{question.text}",
-    #                 widget=forms.TextInput,
-    #             )
-
-    #         elif question.question_type == 'MTCH':
-    #             matching_fields = []
-    #             # TODO Реализовать позже
 
 
     # def clean(self):

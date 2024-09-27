@@ -1,0 +1,183 @@
+/* Основные стили для body */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #1E1F29;
+    height: 100vh;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Основной контейнер с фиксированным размером */
+.main-container {
+    display: flex;
+    width: 1440px; 
+    height: 915px; 
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Левая часть: форма */
+.form-section {
+    background-color: #1E1F29;
+    width: 51%; 
+    padding: 85px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Правая часть: картинка */
+.image-section {
+    width: 49%; 
+    background-color: #1E1F29; /* Цвет фона для картинки */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+    padding-left: 70px;
+    box-sizing: border-box;
+}
+
+.image-section img {
+    width: 100%;    /* Картинка занимает всю ширину контейнера */
+    height: 100%;   /* Картинка занимает всю высоту контейнера */
+    object-fit: cover; /* Заполняет контейнер, обрезаясь при необходимости */
+    border-radius: 10px;
+}
+
+/* Медиазапрос для ширины экрана до 800px */
+@media (max-width: 800px) {
+    .image-section {
+        display: none;  /* Скрываем картинку */
+    }
+
+    /* Делаем форму на всю ширину */
+    .form-section {
+        width: 100%;
+    }
+}
+
+
+/* Стили для формы */
+.custom-form .form-row {
+    display: flex;
+    gap: 20px; /* Отступы между полями */
+    margin-bottom: 25px;
+}
+
+.custom-form h1 {
+    color:#FFFFFF;
+    font-size: 36px;
+}
+
+/* Стили для placeholder в input */
+.custom-form input::placeholder {
+    color: #b0b0b09d; 
+    opacity: 1; 
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+
+
+/* Поля формы */
+.custom-form input {
+    padding: 20px 24px;
+    background-color: #2E303E;
+    border: none;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 18px;
+    width: 100%;
+    height: 55px;
+}
+
+/* Первые два поля в строку, уменьшены по ширине */
+.custom-form .form-row input {
+    width: 50%; /* Два поля по 50% ширины */
+}
+
+/* Обычные поля формы */
+.custom-form .form-group {
+    margin-bottom: 32px;
+}
+
+.custom-form .submit-btn {
+    width: 100%;
+    padding: 17px;
+    background-color: #8265F5;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 64px;
+}
+
+.custom-form .submit-btn:hover {
+    background-color: #6953D9;
+}
+
+/* Стили для текста под кнопкой */
+.custom-form .login-prompt {
+    text-align: left;
+    margin-top: 15px;  /* Отступ сверху */
+    padding:5px;
+    color: #b0b0b09d; 
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+
+/* Стили для ссылки */
+.custom-form .login-link {
+    color: #8265F5;  /* Цвет ссылки */
+    text-decoration: none;  /* Убираем подчеркивание */
+    font-weight: bold;
+    padding-bottom: 50px;
+}
+
+
+/* Стили для ссылки */
+.custom-form .password-link {
+    color: #8265F5;  /* Цвет ссылки */
+    text-decoration: none;  /* Убираем подчеркивание */
+    font-weight: bold;
+    padding: 5px;
+    font-size: 18px;
+}
+
+
+.custom-form .login-link:hover {
+    color: #6953D9;  /* Изменяем цвет при наведении */
+}
+
+input:-webkit-autofill {
+    background-color: #2E303E !important; 
+    -webkit-text-fill-color: #dbbfff !important; 
+    border: none;
+    font-size: 18px !important;  
+} 
+
+
+/* Хак с appearance для Chrome */
+input {
+    appearance: none; /* Отключаем встроенные стили для автозаполнения */
+    contain: style; /* Ограничиваем влияние стилей извне */
+    font-size: 18px; /* Прямо указываем желаемый размер */
+}
+
+
+
+.custom-form input{
+    -webkit-box-shadow: inset 0 0 0 1000px #3A3646;
+    font-size: 18px;
+}
+

@@ -289,17 +289,12 @@ def take_test(request, test_id):
             elif current_question.question_type == 'MTCH':
                 responses = request.POST
 
-                responses = responses
-                print(responses)
 
-                # questions_count = MatchingPair.objects.filter(question=current_question).count()
-                # points = 1 / questions_count
-                # print(points)
                 dict_items = {}
                 for left, right in responses.items():
-                    left_item = str(left[7:])
-                    right_item = right
-                    dict_items[left_item] = right_item
+                   if left.startswith('answer_'):  # Проверяем, что это поле с ответом
+                        left_item = left.split('answer_')[1]  # Получаем левый элемент
+                        dict_items[left_item] = right
                 
                 request.session['test_responses'][f'question_{current_question_id}_type_matching'] = dict_items
 
@@ -413,15 +408,10 @@ def test_results(request, test_id):
             elif question.question_type == 'MTCH':
                 questions_count = MatchingPair.objects.filter(question=question).count()
                 points = 1 / questions_count
-                print(points)
                 
                 for left, right in value.items():
-                    res = MatchingPair.objects.filter(question=question, left_item=left, right_item=right).first()
-                    print(res)
-                    print(type(res))
-                    if res:
+                    if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
                         correct_answers += points 
-                        print('+')
 
 
     score = (correct_answers / total_questions) * 100
