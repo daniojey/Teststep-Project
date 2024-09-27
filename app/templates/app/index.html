@@ -16,6 +16,7 @@
             <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
                 <div class="test-overlay">
                     <h2>{{ test.name }}</h2>
+                    <h2>пройти до {{ test.date_out }}</h2>
                 </div>
             </div>
         </a>    

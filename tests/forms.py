@@ -5,10 +5,17 @@ from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, An
 class TestForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image', 'duration', 'category', 'check_type']
+        fields = ['name', 'description', 'image', 'duration', 'category', 'check_type', 'date_out']
         widgets = {
-            'duration': forms.TimeInput(attrs={'type': 'time'}, format="%M:%S"),
+            'duration': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Введите длительность (чч:мм:сс)',
+                'pattern': '^([0-9]{1,2}):([0-5][0-9]):([0-5][0-9])$',  # Опционально для валидации в браузере
+                'title': 'формат чч:мм:сс'
+            }),
             'category': forms.Select(attrs={'class': 'form-control'}),
+            'date_out': forms.DateInput(attrs={'type': 'date'})
+            
         }
 
 

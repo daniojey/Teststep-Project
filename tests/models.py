@@ -26,7 +26,9 @@ class Tests(models.Model):
     name = models.CharField(verbose_name="Название",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True)
-    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True, default=60)
+    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
+    date_taken = models.DateTimeField(auto_now_add=True)
+    date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')
     category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория")
     check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип проверки ответов")
 

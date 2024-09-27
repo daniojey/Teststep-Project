@@ -6,7 +6,7 @@ from tests.models import Tests
 
 @login_required
 def index(request):
-    tests = Tests.objects.all()
+    tests = Tests.objects.all().order_by('-date_taken')
     context = {
         "tests" : tests,
     }

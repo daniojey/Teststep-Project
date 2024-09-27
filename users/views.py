@@ -24,7 +24,7 @@ def login(request):
                     return HttpResponseRedirect(request.POST.get('next'))
 
 
-                return redirect("users:profile")
+                return redirect("app:index")
                 # return HttpResponseRedirect(reverse('app:index'))
             
     else:
