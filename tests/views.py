@@ -1,12 +1,13 @@
 # tests/views.py
 import random
+from traceback import print_tb
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
 from tests.strategy import MultypleChoiceStrategy
-from users.models import User, UsersGroup, UsersGroupMembership
+from users.models import User, UsersGroupMembership
 from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
-from .forms import MatchingPairForm, QuestionGroupForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
+from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
 import base64
 import os
@@ -74,10 +75,24 @@ def create_test(request):
     if request.method == 'POST':
         form = TestForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            test = form.save()
+            # Сначала создаем тест, но не сохраняем его в базе
+            test = form.save(commit=False)  
+            test.user = request.user  # Присваиваем пользователя
+
+            # Получаем список ID студентов
+            selected_students = form.cleaned_data.get('students')
+            
+            # Сохраняем студентов в поле JSON в формате [1, 2, 3]
+            test.students = {'students': selected_students}
+            
+            # Сохраняем тест
+            test.save()
+
+            # Далее можно перенаправить на другую страницу
             return redirect('tests:add_questions', test_id=test.id)
     else:
-        form = TestForm()
+        form = TestForm(user=request.user)
+    
     return render(request, 'tests/create_test.html', {'form': form})
 
 
@@ -104,28 +119,52 @@ def add_question_group(request, test_id):
 
 @login_required
 def add_questions(request, test_id):
+    user = get_object_or_404(User, id=request.user.id)
     test = get_object_or_404(Tests, pk=test_id)
     question_groups = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
     ungrouped_questions = Question.objects.filter(test=test, group__isnull=True)
-    
+
+    # POST-запрос: Обрабатываем форму в зависимости от переданного form_type
     if request.method == 'POST':
+        form_type = request.POST.get('form_type')  # Определяем тип формы
+
+        # Обработка формы вопросов
         question_form = QuestionForm(request.POST, request.FILES, test=test)
-        if question_form.is_valid():
-            question = question_form.save(commit=False)
-            question.test = test  # Привязываем вопрос к текущему тесту
-            question.save()
-            return redirect('tests:add_questions', test_id=test.id)
+
+        # Обработка формы студентов
+        student_form = QuestionStudentsForm(request.POST, request.FILES, test=test, user=user)
+
+        if form_type == 'form_question':
+            if question_form.is_valid():
+                question = question_form.save(commit=False)
+                question.test = test  # Привязываем вопрос к текущему тесту
+                question.save()
+                return redirect('tests:add_questions', test_id=test.id)
+
+        elif form_type == 'form_student':
+            if student_form.is_valid():
+                test.students = {'students': student_form.cleaned_data.get('students')}
+                test.save()
+                return redirect('tests:add_questions', test_id=test.id)
+            else:
+                print(student_form.errors)
+                return redirect('tests:add_questions', test_id=test.id)
+
     else:
         question_form = QuestionForm(test=test)
-    
+        student_form = QuestionStudentsForm(test=test, user=user)    
+
+    # Запросы для отображения данных
     questions = Question.objects.filter(test=test)
 
+    # Контекст для шаблона
     context = {
         'test': test,
-        'question_form': question_form,
-        'questions': questions,
-        'question_groups': question_groups,
-        'ungrouped_questions': ungrouped_questions,
+        'question_form': question_form,  
+        'questions': questions,  # Список всех вопросов
+        'question_groups': question_groups,  # Группированные вопросы
+        'ungrouped_questions': ungrouped_questions,  # Негруппированные вопросы
+        'form_student': student_form  # Форма для выбора студентов
     }
 
     return render(request, 'tests/add_questions.html', context=context)

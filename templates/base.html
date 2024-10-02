@@ -5,71 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Your Title{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">   
+    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">   
     {% block extra_head %}{% endblock %}
     
 </head>
-    <header>
-        
+    <header>    
         <div class="nav-links">
-            <div class="dropdown">
-                <button onclick="myFunction()" class="dropbtn">Меню</button>
-                <div id="myDropdown" class="dropdown-content">
+                    <div class="name-site">
+                      <img src="{% static "media/images.png" %}" alt="{{ test.name }}" >
+                      <h3><a class="custom-link" href="{% url "app:index" %}">Главная</a></h3>
+                    </div>
                     <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
-                    {% if user.is_authenticated %}
-                    <h3><a class="custom-link" href="{% url "tests:create_test" %}">Создать тест</a></h3>
-                    {% endif %}
                     {% if user.is_admin or user.is_staff %}
-                    <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Мои тесты</a></h3>
+                    <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Меню тестів</a></h3>
                     {% endif %}
                     {% if user.is_admin or user.is_superuser %}
                     <h3><a class="custom-link" href="{% url "admin:index" %}">Админка</a></h3>
                     {% endif %}
-                    {% if user.is_admin or user.is_superuser or user.is_staff %}
-                    <h3><a class="custom-link" href="{% url "tests:tests_for_review" %}">Тесты на проверку</a></h3>
-                    {% endif %}
                     {% if not user.is_authenticated %}
                     <h3><a class="custom-link" href="{% url "users:login" %}">Войти</a></h3>
                     {% else %}
-                    <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>
-                    <h3><a class="custom-link" href="{% url "users:logout" %}">Выйти</a></h3>
-                    {% endif %}   
-                </div>
-            </div>
-            <h3><a class="custom-link" href="{% url "app:index" %}">Главная</a></h3> 
+                    <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
+                    {% endif %}           
         </div>
     </header>
 
-    <main>
-        {% include "includes/notifications.html" %}
-        {% block content %} 
-        {% endblock %}
-    </main>
+    <body>
+      {% include "includes/notifications.html" %}
+      {% block content %} 
+      {% endblock %}
+    </body>
 
     <footer>
         <!-- Your footer content -->
     </footer>
-</body>
 
-<script>
-    /* When the user clicks on the button, 
-    toggle between hiding and showing the dropdown content */
-    function myFunction() {
-      document.getElementById("myDropdown").classList.toggle("show");
-    }
-    
-    // Close the dropdown if the user clicks outside of it
-    window.onclick = function(event) {
-      if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        var i;
-        for (i = 0; i < dropdowns.length; i++) {
-          var openDropdown = dropdowns[i];
-          if (openDropdown.classList.contains('show')) {
-            openDropdown.classList.remove('show');
-          }
-        }
-      }
-    }
-</script>
 </html>

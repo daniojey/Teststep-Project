@@ -1,16 +1,32 @@
 body {
-    background-color: #FBAB7E;
-    background-image: linear-gradient(62deg, #FBAB7E 0%, #F7CE68 100%);
-    background-repeat: no-repeat;
+    background-color: #2B2738;
     background-size: cover;
     min-height: 100vh;
     text-align: center;
+    margin: 0%;
 }
 
+header {
+    background-color: rgba(255, 255, 255, 0.05);
+    display: flexbox;
+    padding: 0dvw;
+    font-size: 18px;
+    height: 76px;
+}
 
+.name-site {
+    background-color: #42b142;
+    height: 100%;
+}
+
+.name-site img{
+    width: 10px;
+    height: 10px;
+}
 
 .nav-links {
     display: flex;
+    color: #ffffff;
     gap: 20px; /* отступ между ссылками */
     padding: 0 10px;
     justify-content: space-between;
@@ -196,3 +212,11 @@ button:active {
 .dropdown a:hover {background-color: #ddd;}
 
 .show {display: block;}
+
+
+.button-back {
+    color: #333;
+    background-color: #42b142;
+    height: 30;
+    width: 40;
+}

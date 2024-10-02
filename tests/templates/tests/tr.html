@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block content %}
+<div align='left'>
+    <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
+</div>
+
 <div class="test-container">
     {% for test in test_result %}
     <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">

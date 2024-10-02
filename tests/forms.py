@@ -1,11 +1,15 @@
+from cProfile import label
 import random
+import json
 from django import forms
+
+from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, Answer, TestsReviews
 
 class TestForm(forms.ModelForm):
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image', 'duration', 'category', 'check_type', 'date_out']
+        fields = ['name', 'description', 'image', 'duration','category', 'check_type', 'date_out']
         widgets = {
             'duration': forms.TextInput(attrs={
                 'class': 'form-control', 
@@ -14,33 +18,64 @@ class TestForm(forms.ModelForm):
                 'title': 'формат чч:мм:сс'
             }),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'date_out': forms.DateInput(attrs={'type': 'date'})
-            
+            'date_out': forms.DateInput(attrs={'type': 'date'}),
         }
 
 
     def __init__(self, *args, **kwargs):
-        question = kwargs.pop('question', None)  # Извлекаем аргумент 'question'
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # Получаем первую категорию из набора
-        first_category = Categories.objects.first()
-        if first_category:
-            self.fields['category'].initial = first_category
+        
+        # Получаем группу, в которой состоит пользователь
+        user_group = UsersGroupMembership.objects.filter(user=self.user).first()
+        if user_group:
+            # Получаем всех пользователей группы
+            users_in_group = UsersGroupMembership.objects.filter(group=user_group.group)
+            choices_user = [(user.user.id, user.user.username) for user in users_in_group]
+            
+            # Добавляем поле students с выбором
+            self.fields['students'] = forms.MultipleChoiceField(
+                choices=choices_user,
+                widget=forms.CheckboxSelectMultiple,
+                label="Выберите студентов"
+            )
 
-       
-    def save(self, commit=True):
-        test = super().save(commit=False)
-        if self.user:
-            test.user = self.user
-        if commit:
-            test.save()
-        return test
+
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     print(f"Cleaned data: {cleaned_data}")  # Выводим содержимое cleaned_data
+        
+    #     selected_students = cleaned_data.get('students', [])
+    #     print(f"Selected students: {selected_students}")  # Проверяем выбранных студентов
+
+    #     # Проверяем, что есть выбранные студенты
+    #     if not selected_students or not isinstance(selected_students, (list, tuple)):
+    #         raise forms.ValidationError("Не выбраны студенты.")
+
+    #     # Получаем только ID студентов
+    #     selected_students_ids = [str(student.id) for student in selected_students]
+    #     print(f"Selected students IDs: {selected_students_ids}")  # Отладка
+
+    #     # Сохраняем выбранные студенты в cleaned_data
+    #     cleaned_data['students'] = selected_students_ids  # Храним ID студентов как список строк
+    #     return cleaned_data
+
+
+
+class TestsAdminForm(forms.ModelForm):
+    class Meta:
+        model = Tests
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
     
 class QuestionGroupForm(forms.ModelForm):
     class Meta:
         model = QuestionGroup
         fields = ['name']
+
 
 class QuestionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -60,6 +95,59 @@ class QuestionForm(forms.ModelForm):
             'question_type': forms.RadioSelect(choices=Question.QUESTION_TYPES),
             'group': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class QuestionStudentsForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        test = kwargs.pop('test', None)  # Текущий тест
+        user = kwargs.pop('user', None)  # Текущий пользователь (учитель)
+        super().__init__(*args, **kwargs)
+
+
+         # Получаем группу, в которой состоит учитель
+        user_group = UsersGroupMembership.objects.filter(user=user).first()
+        if user_group:
+            students_in_group = UsersGroupMembership.objects.filter(group=user_group.group)
+
+            # Список студентов для чекбоксов
+            students = [(item.user.id, item.user.username) for item in students_in_group]
+
+            # Заполняем поле с чекбоксами
+            self.fields['students'] = forms.MultipleChoiceField(
+                choices=students,  # Список студентов в формате (id, имя)
+                widget=forms.CheckboxSelectMultiple,
+                label='Студенты',
+                required=False
+            )
+        
+
+        # Устанавливаем начальные значения для чекбоксов, если студенты уже выбраны
+        if test and test.students:
+            try:
+                self.initial['students'] = [str(student_id) for student_id in test.students['students']]  # JSONField хранит список ID
+            except Exception as e:
+                print(f"В вашей группе на данный момент отсуцтвуют студенты {e}")
+
+    def clean_students(self):
+        students = self.cleaned_data.get('students')
+        print(students)
+        return students  # Убедитесь, что возвращаете список
+
+
+    class Meta:
+        model = Tests
+        fields = ['students']
+
+    
+    # def clean_data(self):
+    #     students = self.cleaned_data.get('students', [])
+
+    #     # Проверяем, что все выбранные студенты существуют в базе данных
+    #     for student in students:
+    #         if not User.objects.filter(id=student.id).exists():
+    #             raise forms.ValidationError(f"Пользователь {student} не существует.")
+        
+    #     return students
+
 
 class MatchingPairForm(forms.ModelForm):
     class Meta:

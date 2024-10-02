@@ -4,10 +4,15 @@
 {% block content %}
     <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
 
+    <div align='left'>
+        <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
+    </div>
+    
     <head>
         <h1>Создание теста</h1>
     </head>
     <body>
+        
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}

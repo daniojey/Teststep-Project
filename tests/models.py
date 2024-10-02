@@ -23,13 +23,14 @@ class Tests(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
+    students = models.JSONField(verbose_name='Юзеры', default=list)
     name = models.CharField(verbose_name="Название",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True)
     duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
     date_taken = models.DateTimeField(auto_now_add=True)
     date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')
-    category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория")
+    category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория", null=False)
     check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип проверки ответов")
 
     def __str__(self):
@@ -71,7 +72,7 @@ class Question(models.Model):
         (INPUT, 'input')
     ]
 
-    test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE, default='single' ,verbose_name="Тест")
+    test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
     text = models.TextField(verbose_name="Текст вопроса")
     question_type = models.CharField(max_length=5, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
