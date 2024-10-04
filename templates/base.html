@@ -9,26 +9,30 @@
     {% block extra_head %}{% endblock %}
     
 </head>
-    <header>    
-        <div class="nav-links">
-                    <div class="name-site">
-                      <img src="{% static "media/images.png" %}" alt="{{ test.name }}" >
-                      <h3><a class="custom-link" href="{% url "app:index" %}">Главная</a></h3>
-                    </div>
-                    <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
-                    {% if user.is_admin or user.is_staff %}
-                    <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Меню тестів</a></h3>
-                    {% endif %}
-                    {% if user.is_admin or user.is_superuser %}
-                    <h3><a class="custom-link" href="{% url "admin:index" %}">Админка</a></h3>
-                    {% endif %}
-                    {% if not user.is_authenticated %}
-                    <h3><a class="custom-link" href="{% url "users:login" %}">Войти</a></h3>
-                    {% else %}
-                    <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
-                    {% endif %}           
-        </div>
-    </header>
+<header>    
+  <div class="nav-links">
+      <div class="name-site">
+          <img src="{% static "media/icon_page.svg" %}" alt="govno" >
+          <h3><a class="custom-link" href="{% url "app:index" %}">TestStep</a></h3>
+      </div>
+
+      <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
+
+      {% if user.is_admin or user.is_staff %}
+          <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Меню тестів</a></h3>
+      {% endif %}
+
+      {% if user.is_admin or user.is_superuser %}
+          <h3><a class="custom-link" href="{% url "admin:index" %}">Админка</a></h3>
+      {% endif %}
+
+      {% if not user.is_authenticated %}
+          <h3><a class="custom-link" href="{% url "users:login" %}">Войти</a></h3>
+      {% else %}
+          <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
+      {% endif %}
+  </div>
+</header>
 
     <body>
       {% include "includes/notifications.html" %}

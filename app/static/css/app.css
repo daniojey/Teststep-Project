@@ -3,67 +3,80 @@ body {
     background-size: cover;
     min-height: 100vh;
     text-align: center;
-    margin: 0%;
+    margin: 0;
 }
 
 header {
     background-color: rgba(255, 255, 255, 0.05);
-    display: flexbox;
-    padding: 0dvw;
-    font-size: 18px;
     height: 76px;
+    border: none;
 }
 
 .name-site {
-    background-color: #42b142;
     height: 100%;
+    display: flex; /* Flexbox для горизонтального выравнивания */
+    align-items: center; /* Вертикальное выравнивание по центру */
+    box-sizing: border-box;
+    border: none;
+    background-color: transparent;
+    margin: 0;
+    padding-right: 60%;
+    padding-left: 75px;
 }
 
-.name-site img{
-    width: 10px;
-    height: 10px;
+.name-site img {
+    width: 30px; /* Ширина изображения */
+    height: 30px; /* Высота изображения */
+    margin-right: 10px; /* Отступ между изображением и текстом */
 }
 
+.name-site a{
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 900;
+    line-height: normal;
+    letter-spacing: 0.4px;
+}
+
+.name-site h3{
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 900;
+    line-height: normal;
+    letter-spacing: 0.4px;
+    padding-right: min(5px, 0.5%);
+}
+
+/* Навигационные ссылки */
 .nav-links {
+    height: 100%;
     display: flex;
     color: #ffffff;
-    gap: 20px; /* отступ между ссылками */
-    padding: 0 10px;
+    gap: auto; /* Отступ между ссылками */
     justify-content: space-between;
+    align-items: center;
+    padding-right: 75px;
+    
 }
 
 
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-    background: linear-gradient(45deg, #bafa71, #e0e0e0);
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(45deg, #42b142, #333);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(45deg, #1a612f, #555);
-}
-
-* Основной стиль для ссылок */
+/* Стили для ссылок */
 a {
     color: inherit;
     text-decoration: none;
+    font-family: Roboto;
+    font-size: 18px;
+    font-weight: 400;
 }
 
 a:hover {
-    color: #75e666;
+    color: #cb89f7;
     text-decoration: underline;
 }
 
-/* Основной стиль для кнопок */
+/* Стили для кнопок */
 button {
     border: none;
     background: none;
@@ -81,17 +94,18 @@ button:active {
     color: #ffffff;
 }
 
-/* Примеры стилей для кастомных классов */
+/* Кастомные стили для ссылок */
 .custom-link {
     color: inherit;
     text-decoration: none;
 }
 
 .custom-link:hover {
-    color: #4adb86;
+    color: #c994fc;
     text-decoration: underline;
 }
 
+/* Кастомные кнопки */
 .custom-button {
     border: none;
     background-color: #007bff;
@@ -105,35 +119,52 @@ button:active {
     background-color: #0056b3;
 }
 
+/* Глобально: уберём любые нестандартные отступы */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Это решает проблему с padding и border */
+}
+
 /* Контейнер для тестов */
 .test-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 32%)); /* Автоматическое размещение элементов */
-    gap: 20px; /* Расстояние между элементами */
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(286px, 1fr)); /* Размещаем тесты по сетке */
+    gap: auto;
+    justify-content: center; /* Центрируем тесты в контейнере */
 }
 
-/* Стиль для каждого контейнера теста */
+/* Ссылка на тест */
+.test-item-link {
+    display: block;
+    width: 100%;
+    height: 184px;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Контейнер для каждого теста */
 .test-item {
     position: relative;
-    background-size: cover;
+    background-size: cover;  /* Убедимся, что изображение занимает весь контейнер */
     background-position: center;
-    height: 200px; /* Высота контейнера */
+    width: 100%;
+    height: 100%; /* 100% от высоты родителя (184px) */
     border-radius: 8px;
     overflow: hidden;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 5px;
 }
 
-/* Оверлей для текста */
 .test-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
     padding: 10px;
     text-align: center;
@@ -145,78 +176,79 @@ button:active {
     margin: 0;
 }
 
-.test-item-link {
-    text-decoration: none; /* Убирает стандартное подчеркивание ссылок */
-    color: inherit; /* Сохраняет цвет текста */
-    display: block; /* Делает ссылку блочной, чтобы она занимала весь контейнер */
+/* Анимация на hover */
+.test-item-link:hover .test-item {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
 }
 
-.test-item-link:hover .test-item {
-    transform: scale(1.05); /* Легкое увеличение контейнера при наведении */
-    transition: transform 0.3s ease; /* Плавный переход */
-}
+
+
 
 /* Контейнер с фиксированным размером */
 .fixed-container {
-    width: 450px; /* Фиксированная ширина контейнера */
-    height: 300px; /* Фиксированная высота контейнера */
-    overflow: hidden; /* Скрыть части изображения, выходящие за пределы контейнера */
+    width: 450px;
+    height: 300px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Изображение внутри контейнера */
 .fixed-container img {
-    width: 100%; /* Сжимает изображение по ширине контейнера */
-    height: 100%; /* Сжимает изображение по высоте контейнера */
-    object-fit: cover; /* Обрезает изображение, чтобы оно заполнило контейнер, сохраняя пропорции */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* Выпадающая меню */
+/* Выпадающее меню */
 .dropbtn {
-  background-color: #eedca2;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
+    background-color: #eedca2;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
 }
 
 .dropbtn:hover, .dropbtn:focus {
-  background-color: #f0c26c;
+    background-color: #f0c26c;
 }
 
 .dropdown {
-  position: relative;
-  display: inline-block;
+    position: relative;
+    display: inline-block;
 }
 
 .dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  overflow: auto;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
 }
 
 .dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
 }
 
-.dropdown a:hover {background-color: #ddd;}
+.dropdown a:hover {
+    background-color: #ddd;
+}
 
-.show {display: block;}
+.show {
+    display: block;
+}
 
-
+/* Стиль кнопки назад */
 .button-back {
     color: #333;
     background-color: #42b142;
-    height: 30;
-    width: 40;
+    height: 30px; /* Исправил на корректные единицы измерения */
+    width: 40px;
 }
