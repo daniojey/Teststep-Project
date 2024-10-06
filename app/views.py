@@ -2,18 +2,23 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 
 from tests.models import Tests
-from users.models import User
+from users.models import User, UsersGroupMembership
 
 
 @login_required
 def index(request):
     user_id = str(request.user.id)  # Получаем ID текущего пользователя
+    user = get_object_or_404(User, id=request.user.id)
+
+    # Получаем группу пользователя
+    group = UsersGroupMembership.objects.filter(user=user).first()
 
     # Фильтруем тесты, где поле students содержит ID текущего пользователя
     tests = Tests.objects.filter(students__students__contains=[user_id]).order_by('-date_taken')
 
     context = {
         "tests": tests,
+        "group": group.group
     }
     return render(request, "app/index.html", context=context)
 

@@ -38,7 +38,7 @@
 .group-content {
     display: none;
     background-color: #3A354A;
-    padding-top: 10px;
+    padding-top: 60px;
 }
 
 .category {
@@ -48,22 +48,16 @@
 .category h3 {
     color: white;
     font-size: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 24px;
     padding-left: 24px;
 }
 
 .tests {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(286px, 1fr)); /* Задаём колонки с фиксированной минимальной шириной 286px */
+    grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Определяем фиксированную ширину в 286px для тестов */
     gap: 40px 20px; /* 40px между строками, 20px между колонками */
-    margin: 0 20px;
+    justify-content: start; /* Выравнивание элементов по левому краю */
+    padding: 0 20px; /* Отступы по краям, чтобы первый и последний тест имели отступы слева и справа */
+    margin-bottom: 60px;
 }
 
-/* .test-item {
-    background-color: #5C5470;
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    flex: 1;
-    text-align: center;
-} */

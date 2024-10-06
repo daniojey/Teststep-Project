@@ -137,7 +137,7 @@ button:active {
 /* Ссылка на тест */
 .test-item-link {
     display: block;
-    width: 100%;
+    width: 286px;
     height: 184px;
     text-decoration: none;
     color: inherit;
