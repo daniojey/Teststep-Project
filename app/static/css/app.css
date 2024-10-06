@@ -12,6 +12,56 @@ header {
     border: none;
 }
 
+/* Скрыть бургер-меню по умолчанию, для мобильной версии */
+.burger-menu {
+    display: none;
+    font-size: 30px;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+/* Скрыть dropdown-меню по умолчанию */
+.dropdown-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 76px;
+    right: 0;
+    background-color: #2B2738;
+    padding: 10px;
+    border-radius: 5px;
+    transform: translateX(-25%);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu h3 {
+    margin: 10px 0;
+}
+
+/* Стили для десктопа */
+.desktop-menu {
+    display: flex;
+    gap: 20px;
+}
+
+/* Медиазапрос для мобильных устройств */
+@media (max-width: 1200px) {
+    /* Показываем бургер-меню при ширине меньше 800px */
+    .burger-menu {
+        display: block;
+    }
+
+    /* Скрыть десктопное меню при малых экранах */
+    .desktop-menu {
+        display: none;
+    }
+
+    /* Показывать dropdown при активации */
+    .dropdown-menu.active {
+        display: flex;
+    }
+}
+
 .name-site {
     height: 100%;
     display: flex; /* Flexbox для горизонтального выравнивания */
@@ -20,8 +70,14 @@ header {
     border: none;
     background-color: transparent;
     margin: 0;
-    padding-right: 60%;
+    padding-right: 60vw;
     padding-left: 75px;
+}
+
+@media (max-width: 1550px) {
+    .name-site {
+        padding-right: 40vw;
+    }
 }
 
 .name-site img {
