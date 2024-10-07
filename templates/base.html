@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Your Title{% endblock %}</title>
+    <title>{% block title %}TestStep{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">   
+    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
     {% block extra_head %}{% endblock %}
     
 </head>
@@ -16,25 +17,36 @@
           <h3><a class="custom-link" href="{% url "app:index" %}">TestStep</a></h3>
       </div>
 
-    <div class="desktop-menu">
-        <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
-          
-        {% if user.is_admin or user.is_staff %}
-          <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Меню тестів</a></h3>
-        {% endif %}
-          
-        {% if user.is_admin or user.is_superuser %}
-          <h3><a class="custom-link" href="{% url "admin:index" %}">Админка</a></h3>
-        {% endif %}
-          
-        {% if not user.is_authenticated %}
-          <h3><a class="custom-link" href="{% url "users:login" %}">Войти</a></h3>
-        {% else %}
-          <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
-        {% endif %}
+    {% comment %} <div class="desktop-menu"> {% endcomment %}
+      <div class='nav'>
+            <ul>
+                <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
+                
+                {% if user.is_admin or user.is_staff %}
+                <h3><a class="custom-link" href="{% url 'tests:all_tests' %}">Меню тестів</a></h3>
+                {% endif %}
+                
+                {% if user.is_admin or user.is_superuser %}
+                <h3><a class="custom-link" href="{% url "admin:index" %}">Админка</a></h3>
+                {% endif %}
+                
+                {% if not user.is_authenticated %}
+                <h3><a class="custom-link" href="{% url "users:login" %}">Войти</a></h3>
+                {% else %}
+                <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
+                {% endif %}
+            </ul>
+        </div>
+    {% comment %} </div> {% endcomment %}
+
+
+    <div class='burger'>
+        <span></span>
     </div>
 
-     <!-- Иконка бургер-меню для мобильной версии -->
+
+
+     {% comment %} <!-- Иконка бургер-меню для мобильной версии -->
      <div class="burger-menu" onclick="toggleMenu()">☰</div>
      
       <!-- Выпадающее меню для мобильной версии -->
@@ -51,13 +63,19 @@
         {% else %}
             <h3><a class="custom-link" href="{% url "users:profile" %}">Профиль</a></h3>        
         {% endif %}
-    </div>
+    </div> {% endcomment %}
 
     <script>
-        function toggleMenu() {
+        {% comment %} function toggleMenu() {
             var dropdown = document.getElementById("dropdown-menu");
             dropdown.classList.toggle("active");
-        }
+        } {% endcomment %}
+
+        document.querySelector('.burger').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('.nav').classList.toggle('open');
+    })
+
     </script>
     </div>
 </header>
