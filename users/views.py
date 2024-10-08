@@ -14,9 +14,9 @@ def login(request):
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
-            username = request.POST['username']
+            email = request.POST['email']
             password = request.POST['password']
-            user = auth.authenticate(username=username, password=password)
+            user = auth.authenticate(email=email, password=password)
             if user:
                 auth.login(request, user)
 
@@ -26,6 +26,8 @@ def login(request):
 
                 return redirect("app:index")
                 # return HttpResponseRedirect(reverse('app:index'))
+        else:
+                print(form.errors)
             
     else:
         form = UserLoginForm()
@@ -41,8 +43,19 @@ def registration(request):
     if request.method == 'POST':
         form = UserRegistrationForm(data=request.POST)
         if form.is_valid():
-            form.save()
-            user = form.instance
+            user = form.save(commit=False)
+            
+            base_name = f"{form.cleaned_data['first_name'][0]}{form.cleaned_data['last_name']}".lower()
+            username = base_name
+            count = 1
+
+            while User.objects.filter(username=username).exists():
+                username = f"{base_name}_{count}"
+                count += 1
+
+            user.username = username
+            
+            user.save()
             auth.login(request, user)
             return HttpResponseRedirect(reverse('users:login'))
     else:

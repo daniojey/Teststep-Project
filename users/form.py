@@ -4,14 +4,29 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, User
 from users.models import User
 
 
-class UserLoginForm(AuthenticationForm):
-    username = forms.CharField()
-    password = forms.CharField()
+class UserLoginForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
+    def clean(self):
+        email = self.cleaned_data.get('email')
+        password = self.cleaned_data.get('password')
 
-    class Meta:
-        model = User
-        
+        try:
+            # Найдем пользователя по email
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise forms.ValidationError('Користувача з такою електронною поштою не існує.')
+
+        # Проверим пароль
+        if not user.check_password(password):
+            raise forms.ValidationError('Невірний пароль.')
+
+        print(user.username)
+        self.cleaned_data['username'] = user.username  # Задаем `username`, так как он нужен в процессе аутентификации
+
+        return super(UserLoginForm, self).clean()
+
 
     # username = forms.CharField(
     #     label="Имя пользователя",
@@ -41,7 +56,7 @@ class UserRegistrationForm(UserCreationForm):
 
         first_name = forms.CharField()
         last_name = forms.CharField()
-        username = forms.CharField()
+        username = forms.CharField(widget=forms.HiddenInput())
         email = forms.CharField()
         password1 = forms.CharField()
         password2 = forms.CharField()

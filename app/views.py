@@ -11,14 +11,18 @@ def index(request):
     user = get_object_or_404(User, id=request.user.id)
 
     # Получаем группу пользователя
-    group = UsersGroupMembership.objects.filter(user=user).first()
+    if UsersGroupMembership.objects.filter(user=user).exists():
+        group = UsersGroupMembership.objects.filter(user=user).first()
+        group = group.group
+    else:
+        group = "Без группы"
 
     # Фильтруем тесты, где поле students содержит ID текущего пользователя
     tests = Tests.objects.filter(students__students__contains=[user_id]).order_by('-date_taken')
 
     context = {
         "tests": tests,
-        "group": group.group
+        "group": group
     }
     return render(request, "app/index.html", context=context)
 
