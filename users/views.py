@@ -57,7 +57,7 @@ def registration(request):
             
             user.save()
             auth.login(request, user)
-            return HttpResponseRedirect(reverse('users:login'))
+            return HttpResponseRedirect(reverse('app:index'))
     else:
         form = UserRegistrationForm()
 

@@ -17,8 +17,7 @@
           <h3><a class="custom-link" href="{% url "app:index" %}">TestStep</a></h3>
       </div>
 
-    {% comment %} <div class="desktop-menu"> {% endcomment %}
-      <div class='nav'>
+      <div class='nav-panel'>
             <ul>
                 <h3><a class="custom-link" href="{% url "tests:rating" %}">Рейтинг</a></h3>
                 
@@ -37,7 +36,6 @@
                 {% endif %}
             </ul>
         </div>
-    {% comment %} </div> {% endcomment %}
 
 
     <div class='burger'>
@@ -73,7 +71,7 @@
 
         document.querySelector('.burger').addEventListener('click', function() {
             this.classList.toggle('active');
-            document.querySelector('.nav').classList.toggle('open');
+            document.querySelector('.nav-panel').classList.toggle('open');
     })
 
     </script>

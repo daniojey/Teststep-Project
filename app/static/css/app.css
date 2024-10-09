@@ -16,12 +16,12 @@ header {
     display: flex !important;
 }
 
-.nav {
+.nav-panel {
     display: flex;
     gap: 20px;
 }
 
-.nav ul {
+.nav-panel ul {
     width: 100%;
     gap: 38px;
     list-style: none;
@@ -76,7 +76,7 @@ header {
 @media (max-width: 1200px) {
     .burger{ display: flex;}
 
-    .nav{
+    .nav-panel{
         display: none;
         flex-direction: column;
         position: fixed;
@@ -90,12 +90,12 @@ header {
         animation: burgerAnimation 0.4s;
     }
 
-    .nav ul{
+    .nav-panel ul{
         flex-direction: column;
         row-gap: 30px;
     }
 
-    .nav h3{
+    .nav-panel h3{
         font-size: 30px;
     }
 }
