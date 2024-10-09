@@ -88,6 +88,14 @@
 
         <button type='submit'>Сохранить</button>
     </form>
+
+    <div class="test-item">
+        <form method="post" action="{% url 'tests:delete_test' test.id %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-btn">Удалить тест</button>
+        </form>
+    </div>
+
 </body>
 
 

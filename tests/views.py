@@ -96,6 +96,12 @@ def create_test(request):
     return render(request, 'tests/create_test.html', {'form': form})
 
 
+def delete_test(request, test_id):
+    test = get_object_or_404(Tests, id=test_id)
+    test.delete()
+    return redirect('app:index')
+
+
 @login_required
 def add_question_group(request, test_id):
     test = get_object_or_404(Tests, pk=test_id)
