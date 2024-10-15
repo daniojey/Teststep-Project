@@ -8,9 +8,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static "css/bootstrap/bootstrap.min.css" %}"> 
-    <link rel="stylesheet" href="{% static "css/my_css.css" %}">
-    <title>Профиль</title>
+    <link rel="stylesheet" href="{% static "css/bootstrap/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/app.css" %}">
+    <title>Профіль</title>
 </head>
 
 <body>
@@ -31,7 +31,7 @@
             <div class="row mt-2">
                 <div class="col-lg-2">
                     <!-- Пустой блок на усмотрение -->
-                    <h3><a class="custom-link" href="{% url "users:logout" %}">Выйти</a></h3>
+                    <h3><a class="custom-link" href="{% url "users:logout" %}">Вийти</a></h3>
                 </div>
                 <div class="col-lg-10">
                     <!-- Контент на странице -->
@@ -41,7 +41,7 @@
                                 <!-- Профиль с данными пользователя -->
                                 <div class="col-md-5">
                                     <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" >
-                                        <h3 class="text-center mb-4">Профиль пользователя</h3>
+                                        <h3 class="text-center mb-4">Профіль користувача</h3>
                                         <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data">
                                             {% csrf_token %}
                                             <div class="row">

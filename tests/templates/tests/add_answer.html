@@ -9,25 +9,26 @@
 </head>
 
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static "css/delete_confirm.css" %}">
 
 
 <body>
     <h1>{{ test.name }}</h1>
     <p>{{ test.description }}</p>
 
-    <h2>Questions</h2>
+    <h2>Питання</h2>
     <ul>
         {% for question in questions %}
             <li>
                 {% if question.question_type == "MTCH" %}
                     <strong>
                         {{ question.text }}
-                        <a href="{% url 'tests:add_matching_pair' question.id %}">Редактировать соотвецтвие</a>
+                        <a href="{% url 'tests:add_matching_pair' question.id %}">Редагувати відповідність</a>
                     </strong>
                 {% else %}
                     <strong>
                         {{ question.text }}
-                        <a href="{% url 'tests:add_answers' question.id %}">Редактировать вопрос</a>
+                        <a href="{% url 'tests:add_answers' question.id %}">Редагувати питання</a>
                     </strong>
                 {% endif %}
                 {% if question.image %}
@@ -39,7 +40,7 @@
                     <div>
                         <audio controls>
                             <source src="{{ question.audio.url }}" type="audio/mpeg">
-                            Your browser does not support the audio element.
+                            Ваш браузер не підтримує аудіо елемент.
                         </audio>
                     </div>
                 {% endif %}
@@ -55,12 +56,32 @@
                         {% for answer in question.answers.all %}
                             <li>
                                 {% if answer.is_correct == True %}
-                                    Верный
+                                    Правильний
                                 {% else %}
                                     -
                                 {% endif %}
                                     :
                                 {{ answer.text }}
+                                    :
+                                    <div class="delete-btn">
+                                        <!-- Кнопка для открытия модального окна -->
+                                        <button type="button" class="delete-btn" onclick="openModal('answerModal{{ answer.id }}')">Видалити відповідь</button>
+                                    
+                                        <!-- Модальное окно для вопроса -->
+                                        <div id="answerModal{{ answer.id }}" class="modal">
+                                            <div class="modal-content">
+                                                <span class="close" onclick="closeModal('answerModal{{ answer.id }}')">&times;</span>
+                                                <h2>Видалити відповідь ?</h2>
+                                                <p>Ви впевненні що бажаєте видалити відповідь для цього питання ?</p>
+                                                
+                                                <form method="post" action="{% url 'tests:delete_answer' answer.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                                    <button type="button" class="cancel-btn" onclick="closeModal('answerModal{{ answer.id }}')">Відмінити</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 
                             </li>
                         {% endfor %}
@@ -69,23 +90,23 @@
         {% endfor %}
     </ul>
 
-    <h2>Добавить ответ к вопросу: {{ question.text }}</h2>
+    <h2>Додати відповідь к питанню: {{ question.text }}</h2>
     <form method="post" action="{% url action_url question.id %}">
         {% csrf_token %}
         <div class="row">
             
             {% if question.question_type == "MTCH" %}
                 <div class='col-md-6 mb-3'>
-                    <label for="left_item" class='form-label'>Левая часть</label>
+                    <label for="left_item" class='form-label'>Ліва частина</label>
                     {{ form.left_item }}
                 </div>
                 <div class='col-md-6 mb-3'>
-                    <label for="right_item" class='form-label'>Правая часть</label>
+                    <label for="right_item" class='form-label'>Права частина</label>
                     {{ form.right_item }}
                 </div>
             {% else %}
                 <div class="col-md-12 mb-3">
-                    <label for="id_text" class="form-label">Текст Ответа</label>
+                    <label for="id_text" class="form-label">Текст відповіді</label>
                     <input type="text" class="form-control" id="id_text"
                     name="text"
                     placeholder="Введите ответ" value="" required>
@@ -105,14 +126,14 @@
                 </div>
             {% else %}
                 <div class="col-md-12 mb-3">
-                    <label for="is_correct" class="form-label">Правильний ?</label>
+                    <label for="is_correct" class="form-label">Вірний ?</label>
                     <input type="checkbox" class="form-check-input" id="is_correct"
                     name="is_correct"
-                    placeholder="Правильний ответ">
+                    placeholder="Відповідь">
                 </div>
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-dark">Сохранить</button>
+        <button type="submit" class="btn btn-dark">Зберегти</button>
     </form>
     {% comment %} <form method="post">
         {% csrf_token %}
@@ -120,6 +141,31 @@
         
         <button type="submit">Добавить ответ</button>
     </form> {% endcomment %}
+
+    <!-- JavaScript для управления модальным окном -->
+    <script>
+        // Функция для открытия модального окна
+        function openModal(modalId) {
+            var modal = document.getElementById(modalId);
+            modal.classList.add("show");
+        }
+
+        // Функция для закрытия модального окна
+        function closeModal(modalId) {
+            var modal = document.getElementById(modalId);
+            modal.classList.remove("show");
+        }
+
+        // Закрытие модального окна при клике вне его области
+        window.onclick = function(event) {
+            var modals = document.getElementsByClassName("modal");
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].classList.remove("show");
+                }
+            }
+        }
+    </script>
 </body>
 
 {% endblock content %}

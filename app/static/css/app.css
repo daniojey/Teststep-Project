@@ -19,11 +19,16 @@ header {
 .nav-panel {
     display: flex;
     gap: 20px;
+    align-items: center;
 }
 
 .nav-panel ul {
     width: 100%;
+    max-height: 50px;
     gap: 38px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
     list-style: none;
     display: flex;
     justify-content: space-between;
@@ -138,6 +143,7 @@ header {
     font-weight: 900;
     line-height: normal;
     letter-spacing: 0.4px;
+    margin: 0;
 }
 
 .name-site h3{
@@ -148,6 +154,7 @@ header {
     line-height: normal;
     letter-spacing: 0.4px;
     padding-right: min(5px, 0.5%);
+    margin: 0;
 }
 
 /* Навигационные ссылки */
@@ -196,13 +203,24 @@ button:active {
 
 /* Кастомные стили для ссылок */
 .custom-link {
-    color: inherit;
+    color: #ffffff;
     text-decoration: none;
 }
 
 .custom-link:hover {
     color: #c994fc;
     text-decoration: none;
+}
+
+/* Стили для активной вкладки */
+.active {
+    color: #e0b3fd; /* Например, сделаем цвет активной ссылки светло-фиолетовым */
+    /* border-bottom: 2px solid #e0b3fd; */
+}
+
+/* Можно добавить небольшую анимацию для плавного перехода */
+.active {
+    transition: color 0.3s ease, border-bottom 0.3s ease;
 }
 
 /* Кастомные кнопки */

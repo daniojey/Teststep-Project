@@ -104,6 +104,7 @@ def profile(request):
         'group_name': group_name,
         'group_memberships': group_memberships,
         'user_test_reviews': tests_reviews,
+        'active_tab': 'profile',
 
     }
 

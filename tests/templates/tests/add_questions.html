@@ -2,15 +2,16 @@
 {% load static %}
 
 <head>
-    <title>Добавить вопросы для теста: {{ test.name }}</title>
+    <title>Додати питання до тесту: {{ test.name }}</title>
 </head>
 
 {% block content %}
 
-<link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
+{% comment %} <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}"> {% endcomment %}
+<link rel="stylesheet" type="text/css" href="{% static "css/delete_confirm.css" %}">
 
 <body>
-    <h1>Добавить вопросы для теста: {{ test.name }}</h1>
+    <h1>Додати питання для тесту: {{ test.name }}</h1>
 
     {% if test.image %}
     <div align='center'>
@@ -22,17 +23,17 @@
     </div>
     {% endif %}
 
-    <h2><a href="{% url "tests:add_question_group" test_id=test.id %}">Добавить группу для вопросов</a></h2>
+    <h2><a href="{% url "tests:add_question_group" test_id=test.id %}">Додати группу для питань</a></h2>
 
     <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
         <input type="hidden" name="form_type" value="form_question">
         {% csrf_token %}
         {{ question_form.as_p }}
 
-        <button type="submit">Добавить вопрос</button>
+        <button type="submit">Додати питання</button>
     </form>
 
-    <h2>Группы и вопросы</h2>
+    <h2>Группи та питання</h2>
     <ul>
         {% if question_groups %}
             {% for group in question_groups %}
@@ -42,13 +43,51 @@
                         {% for question in group.questions_group.all %}
                             {% if question.question_type == "INP" %}
                                 <li>
+                                    <div class="delete-btn">
+                                        <!-- Кнопка для открытия модального окна -->
+                                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
+                                    
+                                        <!-- Модальное окно для вопроса -->
+                                        <div id="questionModal{{ question.id }}" class="modal">
+                                            <div class="modal-content">
+                                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
+                                                <h2>Видалити питання?</h2>
+                                                <p>Ви впевненні що бажаєте видалити це питання?</p>
+                                                
+                                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                     {{ question.text }}
-                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить правильный ответ</a>
+                                    <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
                                 </li>   
                             {% else %}
                                 <li>
+                                    <div class="delete-btn">
+                                        <!-- Кнопка для открытия модального окна -->
+                                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
+                                    
+                                        <!-- Модальное окно для вопроса -->
+                                        <div id="questionModal{{ question.id }}" class="modal">
+                                            <div class="modal-content">
+                                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
+                                                <h2>Видалити питання?</h2>
+                                                <p>Ви впевненні що бажаєте видалити це питання?</p>
+                                                
+                                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                     {{ question.text }}
-                                    <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+                                    <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
                                 </li>
                             {% endif %}
                         {% endfor %}
@@ -56,46 +95,123 @@
                 </li>
             {% endfor %}
         {% else %}
-            <li>Нет доступных групп вопросов.</li>
+            <li>Відсутні группи питань.</li>
         {% endif %}
     </ul>
 
-    <h2>Вопросы без группы</h2>
+    <h2>Питання без группи</h2>
     <ul>
         {% if ungrouped_questions %}
             {% for question in ungrouped_questions %}
                 <li>
                     {% if question.question_type == "MTCH" %}
+                    <div class="delete-btn">
+                        <!-- Кнопка для открытия модального окна -->
+                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Удалить вопрос</button>
+                    
+                        <!-- Модальное окно для вопроса -->
+                        <div id="questionModal{{ question.id }}" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
+                                <h2>Видалити питання?</h2>
+                                <p>Ви впевненні що бажаєте видалити це питання?</p>
+                                
+                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                         {{ question.text }}
-                        <a href="{% url "tests:add_matching_pair" question.id %}">Добавить соотвецтвия</a>
+                        <a href="{% url "tests:add_matching_pair" question.id %}">Додати відповідність</a>
                     {% else %}
+                    <div class="delete-btn">
+                        <!-- Кнопка для открытия модального окна -->
+                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
+                    
+                        <!-- Модальное окно для вопроса -->
+                        <div id="questionModal{{ question.id }}" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
+                                <h2>Видалити питання?</h2>
+                                <p>Ви впевненні що бажаєте видалити це питання?</p>
+                                
+                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                         {{ question.text }}
-                        <a href="{% url 'tests:add_answers' question.id %}">Добавить ответы</a>
+                        <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
                     {% endif %}
                 </li>
             {% endfor %}
         {% else %}
-            <li>Нет вопросов без группы.</li>
+            <li>Відсутні питання без группи.</li>
         {% endif %}
     </ul>
 
-    <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершить добавление вопросов</a></h2>
+    <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершити додавання питань</a></h2>
     
     <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
         <input type="hidden" name="form_type" value="form_student">
         {% csrf_token %}
         {{ form_student.as_p }}
 
-        <button type='submit'>Сохранить</button>
+        <button type='submit'>Зберегти</button>
     </form>
 
-    <div class="test-item">
-        <form method="post" action="{% url 'tests:delete_test' test.id %}">
-            {% csrf_token %}
-            <button type="submit" class="delete-btn">Удалить тест</button>
-        </form>
+
+    <div class="delete-btn">
+        <!-- Кнопка для открытия модального окна -->
+        <button type="button" class="delete-btn" onclick="openModal('testModal{{ test.id }}')">Видалити тест</button>
+        
+        <!-- Модальное окно для теста -->
+        <div id="testModal{{ test.id }}" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('testModal{{ test.id }}')">&times;</span>
+                <h2>Видалити тест?</h2>
+                <p>Ви впевненні що бажаєте видалити тест? Цю дію неможливо буде відмінити.</p>
+                
+                <form method="post" action="{% url 'tests:delete_test' test.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="confirm-btn">Видалити</button>
+                    <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ test.id }}')">Відмінити</button>
+                </form>
+            </div>
+        </div>
     </div>
 
+
+    <!-- JavaScript для управления модальным окном -->
+    <script>
+        // Функция для открытия модального окна
+        function openModal(modalId) {
+            var modal = document.getElementById(modalId);
+            modal.classList.add("show");
+        }
+
+        // Функция для закрытия модального окна
+        function closeModal(modalId) {
+            var modal = document.getElementById(modalId);
+            modal.classList.remove("show");
+        }
+
+        // Закрытие модального окна при клике вне его области
+        window.onclick = function(event) {
+            var modals = document.getElementsByClassName("modal");
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].classList.remove("show");
+                }
+            }
+        }
+    </script>
 </body>
 
 

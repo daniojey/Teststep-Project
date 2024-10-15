@@ -6,7 +6,7 @@
     <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
 </div>
 
-<h2>Прошли тест</h2>
+<h2>Пройшли тест</h2>
 {% for item in user_complete_test %}
     {% for us in item %}
         <div>
@@ -15,17 +15,17 @@
         </div>
     {% endfor %}
 {% endfor %}
-<h2>На проверку</h2>
+<h2>На перевірку</h2>
  {% for item in user_reviews %}
     {% for it in item %}
         <div>
             {{ it.user }}
-            <a href="{% url "tests:take_test_review" user_id=it.user.id test_id=it.test.id %}">Проверить</a>
+            <a href="{% url "tests:take_test_review" user_id=it.user.id test_id=it.test.id %}">Перевірити</a>
         </div>
     {% endfor %}
  {% endfor %}
 
- <h2>Еще не прошли тест</h2>
+ <h2>Ще не пройшли тест</h2>
  {% for use in user_not_reviews %}
     <li>{{ use }} </li>
  {% endfor %}

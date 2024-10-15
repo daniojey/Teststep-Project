@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGN IN</title>
     <link rel="stylesheet" href="{% static 'css/registration.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
 </head>
 
 
@@ -23,44 +24,43 @@
                     
                     <div class="form-row">
                         <input type="text" id="id_first_name" name='first_name'
-                        placeholder="Введите ваше имя" 
+                        placeholder="Ім'я" 
                         value="{% if form.first_name.value %}{{ form.first_name.value }}{% endif %}">
                         
                         <input type="text" id="id_last_name" name='last_name'
-                        placeholder="Введите вашу фамилию" 
+                        placeholder="Прізвище" 
                         value="{% if form.last_name.value %}{{ form.last_name.value }}{% endif %}">
                     </div>
                     
                     
                     <div class="form-group">
                         <input type="hidden" id="id_username" name="username"
-                        placeholder="Введите ваше имя пользователя"
                         value="{% if form.username.value %}{{ form.username.value }}{% else %}10{% endif %}">               
                     </div>
                     
                     
                     <div class="form-group">
                         <input type="email" id="id_email" name="email"
-                        placeholder="Введите ваш email"
+                        placeholder="Електронна пошта"
                         value="{% if form.email.value %}{{ form.email.value }}{% endif %}">
                     </div>
                     
                     
                     <div class="form-group">
                         <input type="password" id="id_password1" name="password1"
-                        placeholder="Введите пароль"
+                        placeholder="Введіть свій пароль"
                         value="{% if form.password1.value %}{{ form.password1.value }}{% endif %}">                
                     </div>
                     
                     
                     <div class="form-group">
                         <input type="password" id="id_password2" name="password2"
-                        placeholder="Подтвердите пароль"
+                        placeholder="Повторіть пароль"
                         value="{% if form.password2.value %}{{ form.password2.value }}{% endif %}">
                     </div>
                     
                     
-                    <button type="submit" class="submit-btn">Зарегистрироваться</button>
+                    <button type="submit" class="submit-btn">Зареєструватися</button>
 
                     <p class="login-prompt">Вже є акаунт ? <a href="{% url 'users:login' %}" class="login-link">Увійти в акаунт</a></p>
                 </form>

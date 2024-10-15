@@ -2,20 +2,18 @@
 {% load static %}
 
 {% block content %}
-<head>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">
-</head>
+
 
 <div align='center'>
     <div align='center'>
         {% if user.is_admin or user.is_superuser or user.is_staff %}
-        <h3><a class="custom-link" href="{% url "tests:tests_for_review" %}">Тесты на проверку</a></h3>
+        <h3><a class="custom-link" href="{% url "tests:tests_for_review" %}">Тести на перевірку</a></h3>
         {% endif %}
     </div>
 
     <div align='center'>    
         {% if user.is_authenticated %}
-        <h3><a class="custom-link" href="{% url "tests:create_test" %}">Создать тест</a></h3>
+        <h3><a class="custom-link" href="{% url "tests:create_test" %}">Створити тест</a></h3>
         {% endif %}
     </div>
 </div>
@@ -27,7 +25,7 @@
        
             <div>
                 <h1>{{ test.name }}</h1>
-                <a href="{% url "tests:add_questions" test_id=test.id %}">Редактировать тест</a>
+                <a href="{% url "tests:add_questions" test_id=test.id %}">Редагувати тест</a>
             </div>
 
     {% endfor %}

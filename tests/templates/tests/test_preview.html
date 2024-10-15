@@ -18,20 +18,17 @@
         {% endif %}
     </div>
     <h1>{{ test.name }}</h1>
-    Время для прохождения - {{test.duration}}
+    Час для проходження - {{test.duration}}
     <div>
-        <h2>Категория: {{ test.category }}</h2>
-        <h3>Описание: {{ test.description }}</h3>
+        <h2>Категорія: {{ test.category }}</h2>
+        <h3>Опис: {{ test.description }}</h3>
     </div>
-    {% if user.is_authenticated %}
-        {% if required_attemps %}
-            <button id="start-test">Начать тестирование</button>
-        {% else %}
-            <p></p>
-        {% endif %}
+    {% if required_attemps %}
+        <button id="start-test">Почати тестування</button>
     {% else %}
-        <h3><a href="{% url "users:login" %}">Войдите или зарегейстрируйтесь чтобы начать тест</a></h3>
+        <p></p>
     {% endif %}
+
 </div>
 
 <script>
@@ -40,20 +37,17 @@
     };
 </script>
 
-{% if user.is_authenticated %}
+
 <ul align='left'>
-    <h2>Ваши результаты по этому тесту</h2>
+    <h2>Ваш результат по тесту</h2>
     {% if test_results %}
         {% for result in test_results %}
             {% if test.id == result.test.id %}
                 <li>{{ result.score }}% - {{ result.date_taken }}</li>
             {% endif %}
         {% endfor %}
-    {% else %}
-        <p>у вас ещё нет результатов по этому тесту</p>
     {% endif %}
 </ul>
-{% endif %}
  
 {% endblock content %}
 

@@ -4,8 +4,10 @@
 
 {% block content %}
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <title>LOGIN</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
 </head>
 
 
@@ -39,7 +41,7 @@
 
                     <a href="" class="password-link">Забули пароль ?</a>
 
-                    <button type="submit" class="submit-btn">Войти</button> 
+                    <button type="submit" class="submit-btn">Увійти</button> 
 
                     <p class="login-prompt">Немає облікового запису ? <a href="{% url 'users:registration' %}" class="login-link">Зареєструватися</a></p>
                 </form>

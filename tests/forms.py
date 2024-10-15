@@ -13,9 +13,9 @@ class TestForm(forms.ModelForm):
         widgets = {
             'duration': forms.TextInput(attrs={
                 'class': 'form-control', 
-                'placeholder': 'Введите длительность (чч:мм:сс)',
+                'placeholder': 'Введіть тривалісь тесту гг:хх:сс)',
                 'pattern': '^([0-9]{1,2}):([0-5][0-9]):([0-5][0-9])$',  # Опционально для валидации в браузере
-                'title': 'формат чч:мм:сс'
+                'title': 'формат гг:хх:сс'
             }),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'date_out': forms.DateInput(attrs={'type': 'date'}),
@@ -37,7 +37,7 @@ class TestForm(forms.ModelForm):
             self.fields['students'] = forms.MultipleChoiceField(
                 choices=choices_user,
                 widget=forms.CheckboxSelectMultiple,
-                label="Выберите студентов"
+                label="Оберіть студентів"
             )
 
 
@@ -115,7 +115,7 @@ class QuestionStudentsForm(forms.ModelForm):
             self.fields['students'] = forms.MultipleChoiceField(
                 choices=students,  # Список студентов в формате (id, имя)
                 widget=forms.CheckboxSelectMultiple,
-                label='Студенты',
+                label='Студенти',
                 required=False
             )
         
@@ -125,7 +125,7 @@ class QuestionStudentsForm(forms.ModelForm):
             try:
                 self.initial['students'] = [str(student_id) for student_id in test.students['students']]  # JSONField хранит список ID
             except Exception as e:
-                print(f"В вашей группе на данный момент отсуцтвуют студенты {e}")
+                print(f"У вашій группі на данний момент відсутні студенти {e}")
 
     def clean_students(self):
         students = self.cleaned_data.get('students')
@@ -202,7 +202,7 @@ class TestTakeForm(forms.Form):
         elif question.question_type == 'AUD':
             # Теперь ключ снова будет содержать ID вопроса
             self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                label=f"{question.text} (Ваш ответ в аудиоформате)",
+                label=f"{question.text} (Ваша відповідь в аудіо)",
                 widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
                 required=False
             )
@@ -301,7 +301,7 @@ class TestReviewForm(forms.Form):
 
             if question.question_type == 'MC':
                 self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
-                    label=f"{question.text}: Правильные ответы {question_correct}",
+                    label=f"{question.text}: Правильні відвопіді {question_correct}",
                     choices=user_answers,
                     widget=forms.CheckboxSelectMultiple,
                     required=False,
@@ -310,14 +310,14 @@ class TestReviewForm(forms.Form):
 
             elif question.question_type == 'AUD':  # Для вопросов с аудио
                 self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                    label=f"Текст вопроса  {question.text}",
+                    label=f"Текст питання  {question.text}",
                     widget=forms.HiddenInput(),
                     required=False,
                     initial=audio_answers.get(str(question.id))
                 )
 
                 self.fields[f"audio_answer_{question.id}_correct"] = forms.BooleanField(
-                    label=f"Ответ правильный ?",
+                    label=f"Відповідь вірна ?",
                     required=False,
                 )
 
@@ -325,20 +325,20 @@ class TestReviewForm(forms.Form):
                 ans_resp = answers.get(f"question_{question.id}", None)
                 item = item[0]
                 self.fields[f'question_{question.id}_user_answer'] = forms.CharField(
-                    label=f"{question.text}:\nПравильний ответ - {item.text}",
+                    label=f"{question.text}:\nВірна відповідь ? - {item.text}",
                     widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                    initial=f"Ответ ученика - {ans_resp}",
+                    initial=f"Відповідь студента - {ans_resp}",
                     required=False,
                 )
 
                 self.fields[f"question_{question.id}_correct"] = forms.BooleanField(
-                    label="Ответ верный ?",
+                    label="Відповідь вірна ?",
                     required=False,
                 )
 
             else:
                 self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
-                    label=f"{question.text}: Правльный ответ {question_correct}",
+                    label=f"{question.text}: Правильна відповідь {question_correct}",
                     choices=user_answers,
                     widget=forms.CheckboxSelectMultiple,
                     required=False,

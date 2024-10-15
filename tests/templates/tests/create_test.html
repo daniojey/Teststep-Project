@@ -9,14 +9,14 @@
     </div>
     
     <head>
-        <h1>Создание теста</h1>
+        <h1>Створення тесту</h1>
     </head>
     <body>
         
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Создать тест</button>
+            <button type="submit">Створити тест</button>
         </form>
     </body>
 

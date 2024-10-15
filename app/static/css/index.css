@@ -2,15 +2,15 @@
 .test-group-container {
     max-width: calc(100% - 160px); /* Ограничиваем ширину с учетом отступов */
     margin: 0 auto; /* Центрируем блок */
-    padding-top: 80px;
+    padding-top: 60px;
     padding-bottom: 60px;
 }
 
 .test-group {
-    background-color: #2B2738;
+    background-color: #3A354A;
     margin-bottom: 10px;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Заголовок группы */
@@ -38,7 +38,8 @@
 .group-content {
     display: none;
     background-color: #3A354A;
-    padding-top: 60px;
+    padding-top: 36px;
+    height: 100%;
 }
 
 .category {
@@ -61,3 +62,17 @@
     margin-bottom: 60px;
 }
 
+.arrow {
+    display: inline-block;
+    width: 24px;  /* Укажи точную ширину твоей картинки */
+    height: 24px; /* Укажи точную высоту твоей картинки */
+    background-image: url('/static/media/arrow_icon.png'); /* Путь к картинке */
+    background-size: contain; /* Сохраняем размер изображения */
+    background-repeat: no-repeat; /* Не повторяем картинку */
+    background-position: center; /* Центрируем картинку */
+    transition: transform 0.4s ease;
+}
+
+.arrow.rotate {
+    transform: rotate(180deg); /* Поворачиваем стрелку на 180 градусов */
+}

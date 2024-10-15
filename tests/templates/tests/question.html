@@ -21,8 +21,8 @@
                     <p>{{ field.label_tag }}</p>
                     <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
                     <div>
-                        <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Начать запись</button>
-                        <button type="button" onclick="stopRecording({{ field.name|cut:'audio_answer_' }})" disabled>Остановить запись</button>
+                        <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Почати запис</button>
+                        <button type="button" onclick="stopRecording({{ field.name|cut:'audio_answer_' }})" disabled>Зупинити запис</button>
                     </div>
                     <!-- Скрытое поле для сохранения аудиофайла -->
                     {{ field }}

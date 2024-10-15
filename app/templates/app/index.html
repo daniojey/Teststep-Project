@@ -14,7 +14,7 @@
         <div class="test-group">
             <div class="group-header" onclick="toggleGroup('group-1')">
                 <h3>{{ group }}</h3>
-                <span class="arrow">&#9660;</span> <!-- Стрелка вниз -->
+                <span class="arrow"></span> <!-- Стрелка вниз -->
             </div>
             <div id="group-1" class="group-content">
                 <!-- Здесь будут категории и тесты для группы 1 -->
@@ -22,23 +22,21 @@
                     <h3 align='left'>Невиконані тести</h3>
                     <div class="tests">
                         <!-- Тесты первой категории -->
-
-                                {% for test in tests %}
-                                <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
-                                    <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
-                                        <div class="test-overlay">
-                                            <h2>{{ test.name }}</h2>
-                                        </div>
+                        {% for test in uncompeted_tests %}
+                            <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
+                                <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+                                    <div class="test-overlay">
+                                        <h2>{{ test.name }}</h2>
                                     </div>
-                                </a>    
-                                {% endfor %}
-
+                                </div>
+                            </a>    
+                        {% endfor %}
                         </div>
                     </div>
                 <div class="category">
                     <h3 align='left'>Очікують на перевірку</h3>
                     <div class="tests">
-                        {% for test in tests %}
+                        {% for test in awaiting_tests %}
                                 <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
                                     <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
                                         <div class="test-overlay">
@@ -52,6 +50,15 @@
                 <div class="category">
                     <h3 align='left'>Пройдені тести</h3>
                     <div class="tests">
+                        {% for test in completed_tests %}
+                                <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
+                                    <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+                                        <div class="test-overlay">
+                                            <h2>{{ test.name }}</h2>
+                                        </div>
+                                    </div>
+                                </a>    
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -70,15 +77,19 @@
     </div>
 </body>
     
-    <script>
-        function toggleGroup(groupId) {
-            var groupContent = document.getElementById(groupId);
-            if (groupContent.style.display === "none" || groupContent.style.display === "") {
+<script>
+    function toggleGroup(groupId) {
+        var groupContent = document.getElementById(groupId);
+        var arrow = groupContent.previousElementSibling.querySelector('.arrow'); // Находим стрелку в заголовке
+
+        if (groupContent.style.display === "none" || groupContent.style.display === "") {
             groupContent.style.display = "block";
+            arrow.classList.add("rotate"); // Поворачиваем стрелку
         } else {
             groupContent.style.display = "none";
+            arrow.classList.remove("rotate"); // Возвращаем стрелку в исходное положение
         }
     }
-</script> 
+</script>
 
 {% endblock content %}

@@ -1,6 +1,7 @@
 # tests/views.py
 import random
 from traceback import print_tb
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -23,7 +24,8 @@ def rating(request):
 
     context = {
         'tests': tests,
-        'user': user
+        'user': user,
+        'active_tab': 'rating'
     }
 
     return render(request, 'tests/rating.html', context)
@@ -61,13 +63,14 @@ def rating_test(request, test_id):
 
 
 def all_tests(request):
+    # messages.success(request, 'Тест!')
     if request.user.is_superuser:
         tests = Tests.objects.all()
     else:
         tests = Tests.objects.filter(user=request.user)
 
 
-    return render(request, 'tests/all_tests.html', {'tests': tests})
+    return render(request, 'tests/all_tests.html', {'tests': tests, "active_tab": "my_tests"})
 
 
 @login_required
@@ -99,6 +102,7 @@ def create_test(request):
 def delete_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     test.delete()
+    # messages.success(request, 'Тест успешно удалён!')
     return redirect('app:index')
 
 
@@ -171,9 +175,17 @@ def add_questions(request, test_id):
         'question_groups': question_groups,  # Группированные вопросы
         'ungrouped_questions': ungrouped_questions,  # Негруппированные вопросы
         'form_student': student_form  # Форма для выбора студентов
+        
     }
 
     return render(request, 'tests/add_questions.html', context=context)
+
+
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    test = get_object_or_404(Tests, id=question.test.id)
+    question.delete()
+    return redirect('tests:add_questions', test_id=test.id)
 
 
 def complete_questions(request, test_id):
@@ -205,6 +217,13 @@ def add_answers(request, question_id):
         'form_type':'Ответ',
         'action_url':'tests:add_answers',
     })
+
+def delete_answer(request, answer_id):
+    answer = get_object_or_404(Answer, id=answer_id)
+    question = get_object_or_404(Question, id=answer.question.id)
+    
+    answer.delete()
+    return redirect('tests:add_answers', question_id=question.id)
 
 def add_matching_pair(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
