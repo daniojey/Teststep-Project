@@ -277,21 +277,80 @@ button:active {
     margin: 5px;
 }
 
+.test-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный слой */
+    z-index: 1; /* Устанавливаем поверх фоновой картинки, но ниже текста */
+}
+
 .test-overlay {
+    position: relative;
+    z-index: 2; /* Устанавливаем поверх полупрозрачного слоя */
+}
+
+/* Верхний заголовок с названием теста */
+.test-overlay-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.0); /* Полупрозрачный фон */
+    color: #fff;
+    padding: 5px 10px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    text-align: left;
+    border-radius: 8px 8px 0 0; /* Закругляем верхний угол */
+}
+
+/* Нижняя полоса с датами */
+.test-overlay-footer {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.0); /* Полупрозрачный фон */
     color: #fff;
-    padding: 10px;
-    text-align: center;
-    border-radius: 8px 8px 0 0;
+    padding: 5px 10px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 0 0 8px 8px; /* Закругляем нижний угол */
 }
 
-/* Заголовок теста */
-.test-overlay h2 {
-    margin: 0;
+/* Иконка календаря */
+.test-overlay-footer .date-icon {
+    margin-right: 5px;
+}
+
+.date-icon img{
+    height: 24px;
+    width: 24px;
+}
+
+.date-icon span {
+    font-size: 18px; /* Размер текста */
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    font-family: Roboto;
+    color: #ffffff; /* Белый текст */
+    white-space: nowrap; /* Запрещает перенос текста на новую строку */
+    padding-left: 5px;
+    position: relative; /* Устанавливаем относительное позиционирование */
+    top: -5px; /* Смещаем элемент вверх на 5px */
+}
+
+.test-overlay-header, .test-overlay-footer {
+    z-index: 3; /* Эти контейнеры остаются выше затемняющего слоя */
 }
 
 /* Анимация на hover */

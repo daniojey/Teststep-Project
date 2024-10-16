@@ -10,164 +10,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static "css/bootstrap/bootstrap.min.css" %}">
     <link rel="stylesheet" href="{% static "css/app.css" %}">
+    <link rel="stylesheet" href="{% static "css/profile.css" %}">
     <title>Профіль</title>
 </head>
 
 <body>
-    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" align='center'>
-        <div class="container" id="cart-items-container">
-            <p>Ваша группа - {{ group_name }}</p>
-            {% if group_memberships %}
-                {% for us in group_memberships %}
-                    <li>{{ us.user }}</li>
-                {% endfor %}
-            {% endif %}
-        </div>        
-    </div>
-    
-    <section>
-        <!-- Контент -->
-        <div class="container">
-            <div class="row mt-2">
-                <div class="col-lg-2">
-                    <!-- Пустой блок на усмотрение -->
-                    <h3><a class="custom-link" href="{% url "users:logout" %}">Вийти</a></h3>
-                </div>
-                <div class="col-lg-10">
-                    <!-- Контент на странице -->
-                    <div class="row">
-                        <div class="container mt-5">
+                    {% comment %} <h3><a class="custom-link" href="{% url "users:logout" %}">Вийти</a></h3> {% endcomment %}
+
+                    <div class="profile-container">
+                        <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data" class='custom-form'>
+                            {% csrf_token %}
                             <div class="row">
-                                <!-- Профиль с данными пользователя -->
-                                <div class="col-md-5">
-                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow" >
-                                        <h3 class="text-center mb-4">Профіль користувача</h3>
-                                        <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data">
-                                            {% csrf_token %}
-                                            <div class="row">
-                                                <div class="col-md-12 mb-3 text-center">
-                                                    {% if user.image %}
-                                                        <img src="{{ user.image.url }}"
-                                                            alt="Аватар пользователя" class="img-fluid rounded-circle"
-                                                            style="max-width: 150px;">
-                                                    {% else %}
-                                                        <img src="{% static "user_image/default.jpg" %}"
-                                                            alt="Аватар пользователя" class="img-fluid rounded-circle"
-                                                            style="max-width: 150px;">
-                                                    {% endif %}
-                                                    <input type="file" class="form-control mt-3" id="id_image"
-                                                        name="image"
-                                                        accept="image/*">
-                                                        {% if form.image.errors %}
-                                                        <div class="alert alert-danger alert-dismissible fade show">{{ form.image.errors }}</div>
-                                                        {% endif %}
-                                                </div>
-                                                <div class="col-md-12 mb-3">
-                                                    <label for="id_first_name" class="form-label">Имя*</label>
-                                                    <input type="text" class="form-control" id="id_first_name"
-                                                        name="first_name"
-                                                        placeholder="Введите ваше имя" value="{{ form.first_name.value }}" required>
-                                                        {% if form.first_name.errors %}
-                                                        <div class="alert alert-danger alert-dismissible fade show">{{ form.first_name.errors }}</div>
-                                                        {% endif %}
-                                                </div>  
-                                                <div class="col-md-12 mb-3">
-                                                    <label for="id_last_name" class="form-label">Фамилия*</label>
-                                                    <input type="text" class="form-control" id="id_last_name"
-                                                        name="last_name"
-                                                        placeholder="Введите вашу фамилию" value="{{ form.last_name.value }}" required>
-                                                        {% if form.last_name.errors %}
-                                                        <div class="alert alert-danger alert-dismissible fade show">{{ form.last_name.errors }}</div>
-                                                        {% endif %}
-                                                </div>
-                                                <div class="col-md-12 mb-3">
-                                                    <label for="id_username" class="form-label">Имя пользователя*</label>
-                                                    <input type="text" class="form-control" id="id_username"
-                                                        name="username"
-                                                        placeholder="Введите ваше имя пользователя" value="{{ form.username.value }}" required>
-                                                        {% if form.username.errors %}
-                                                        <div class="alert alert-danger alert-dismissible fade show">{{ form.username.errors }}</div>
-                                                        {% endif %}
-                                                </div>
-                                                <div class="col-md-12 mb-3">
-                                                    <label for="id_email" class="form-label">Email*</label>
-                                                    <input type="email" class="form-control" id="id_email"
-                                                        name="email"
-                                                        placeholder="Введите ваш email *youremail@example.com" value="{{ form.email.value }}"
-                                                        required>
-                                                        {% if form.email.errors %}
-                                                        <div class="alert alert-danger alert-dismissible fade show">{{ form.email.errors }}</div>
-                                                        {% endif %}
-                                                </div>
-                                            </div>
-                                            <button type="submit" class="btn btn-dark">Сохранить</button>
-                                        </form>
-                                    </div>
+                                <h2>Персональні данні</h2>
+
+                                <div class="profile-avatar-container">
+                                    {% if user.image %}
+                                    <img id="profile-image" src="{{ user.image.url }}" alt="Аватар пользователя" class="profile-avatar">
+                                    {% else %}
+                                    <img id="profile-image" src="{% static 'user_image/default.jpg' %}" alt="Аватар пользователя" class="profile-avatar">
+                                    {% endif %}
+                                
+                                    <!-- Иконка для загрузки фото -->
+                                    <label for="id_image" class="upload-icon">
+                                        <img src="{% static 'media/camera-icon.svg' %}" alt="Upload">
+                                    </label>
+                                    
+                                    <!-- Поле загрузки файла -->
+                                    <input type="file" id="id_image" name="image" accept="image/*" onchange="uploadImage(this)">
                                 </div>
 
-                                <div class="col-md-7">
-                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-                                        <h3 class="text-center mb-4">Мои результаты тестов</h3>
-                                        <div class="container" id="cart-items-container">
-                                            <!-- Разметка Результатов теста -->
-                                            <div class="card mb-3 text-bg-light shadow-lg">
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item">
-                                                        <div class="row text-center">
-                                                            <div class="col p-0">
-                                                                {% if test_results %}
-                                                                    {% for result in test_results %}
-                                                                        <li><a href="{% url "tests:test_preview" result.test.id %}">{{ result.test.name }}</a>: {{ result.score }}% - {{ result.date_taken }}</li>
-                                                                    {% endfor %}
-                                                                {% else %}
-                                                                    <a href="{% url "app:index" %}">У вас ещё нет пройденных тестов, нажмите чтобы начать прохождение :D</a>
-                                                                {% endif %}
-                                                            </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <!-- Закончилась разметка Результатов теста -->
-                                        </div>
-                                    </div>
+                                <label class="form-label">Ім’я та прізвище</label>
+                                <div class="form-row">
+
+                                    <input type="text" class="form-control" id="id_first_name"
+                                    name="first_name"
+                                    placeholder="Введите ваше имя" value="{{ form.first_name.value }}" readonly>
+                                    {% if form.first_name.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.first_name.errors }}</div>
+                                    {% endif %}
+
+                                    <input type="text" class="form-control" id="id_last_name"
+                                    name="last_name"
+                                    placeholder="Введите вашу фамилию" value="{{ form.last_name.value }}" readonly>
+                                    {% if form.last_name.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.last_name.errors }}</div>
+                                    {% endif %}
                                 </div>
-                                <div class="col-md-12">
-                                    <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-                                        <h3 class="text-center mb-4">Ожидают проверки</h3>
-                                        <div class="container" id="cart-items-container">
-                                            <div class="card mb-3 text-bg-light shadow-lg">
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item">
-                                                        <div class="row text-center">
-                                                            <div class="col p-0">
-                                                                {% if user_test_reviews %}
-                                                                    {% for item in user_test_reviews %}
-                                                                        <li><a href="{% url "tests:test_preview" item.test.id %}">{{ item.test.name }}</a> - {{ item.date_taken }}</li>
-                                                                    {% endfor %}
-                                                                {% else %}
-                                                                    Отсутствуют тесты ожидающие проверки
-                                                                {% endif %}
-                                                            </div>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                                <label for="id_email" class="form-label">Пошта</label>
+                                <div class="form-group">
+                                    <input type="email" class="form-control" id="id_email"
+                                    name="email"
+                                    placeholder="Введите ваш email *youremail@example.com" value="{{ form.email.value }}"
+                                    readonly>
+                                    {% if form.email.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.email.errors }}</div>
+                                    {% endif %}
                                 </div>
+
+                                <label for="id_password" class="form-label">Пароль</label>
+                                <div class="form-group">
+                                    <input type="password" class="form-control" id="id_password"
+                                    name="password"
+                                    placeholder="Введите ваш email *youremail@example.com" value="{{ form.password.value }}"
+                                    readonly>
+                                    {% if form.password.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.password.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <button id="logout-button">Вийти з аккаунту</button>
                             </div>
-                        </div>
+                            {% comment %} <button type="submit" class="btn btn-dark">Сохранить</button> {% endcomment %}
+                        </form>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-</body>
-
-
-{% endblock content %}
-
-
+                    
+                    {% comment  %} Отправка формы {% endcomment %}
+                    <script>
+                        function uploadImage(input) {
+                            var formData = new FormData();
+                            formData.append('image', input.files[0]);
+                        
+                            // Отправляем запрос с помощью Fetch API
+                            fetch("{% url 'users:profile_image_upload' %}", {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Обновляем изображение профиля без перезагрузки страницы
+                                    document.getElementById('profile-image').src = data.image_url;
+                                } else {
+                                    console.error('Ошибка при загрузке изображения:', data.error);
+                                }
+                            })
+                            .catch(error => console.error('Ошибка при отправке запроса:', error));
+                        }
+                    </script>
+                        
+                    {% comment  %} Кнопка выхода {% endcomment %}
+                    <script>
+                        document.getElementById('logout-button').addEventListener('click', function(event) {
+                            event.preventDefault();  // предотвратить стандартное поведение
+                            window.location.href = "{% url 'users:logout' %}";
+                        });
+                    </script>
+                    </body>
+                    {% endblock content %}
+                    
+                    
+                    

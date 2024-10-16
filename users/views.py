@@ -3,7 +3,9 @@ from django.contrib import auth
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
+from django.http import JsonResponse
 
 from .models import User, UsersGroup, UsersGroupMembership
 
@@ -109,6 +111,26 @@ def profile(request):
     }
 
     return render(request, 'users/profile.html', context=context)
+
+@login_required
+@csrf_exempt  # Для AJAX запросов без формы
+def profile_image_upload(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        user_profile = request.user  # Достаем профиль пользователя
+        user_profile.image = request.FILES['image']
+        user_profile.save()
+
+        # Отправляем обратно URL нового изображения
+        return JsonResponse({
+            'success': True,
+            'image_url': user_profile.image.url
+        })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Не удалось загрузить изображение'
+    })
+
 
 @login_required
 def logout(request):

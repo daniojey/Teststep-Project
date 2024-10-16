@@ -70,8 +70,8 @@ class ProfileForm(UserChangeForm):
             'image',
             'first_name',
             'last_name',
-            'username',
             'email',
+            'password'
         )
 
 
@@ -81,3 +81,4 @@ class ProfileForm(UserChangeForm):
     last_name = forms.CharField()
     username = forms.CharField()
     email = forms.CharField()
+    password = forms.CharField()

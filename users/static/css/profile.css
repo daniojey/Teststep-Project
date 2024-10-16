@@ -1,0 +1,153 @@
+.profile-container {
+    width: 630px;
+    display: inline-flex;
+    align-items: left;
+    /* flex-direction: column; */
+    background-color: #363242;
+    padding: 24px 24px 40px 24px;
+    margin-top: 74px;
+    margin-bottom: auto;
+    border-radius: 12px;
+    background: #363242;
+}
+
+.custom-form {
+    width: 100%;
+    height: 100%;
+}
+
+/* Часть с картинкой профиля */
+.profile-avatar-container {
+    position: relative;
+    width: 103px; /* Соответствует ширине аватара */
+    height: 103px; /* Соответствует высоте аватара */
+    margin: 0 auto; /* Центрирует контейнер аватара */
+    margin-bottom: 32px; /* Отступ снизу */
+    padding: 0;
+}
+
+.profile-avatar {
+    width: 103px; /* Ширина контейнера */
+    height: 100%; /* Высота контейнера */
+    object-fit: cover;
+    border-radius: 50%;
+    border: 0px solid #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.upload-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #7260F5;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: translate(20%, -10%); /* Смещение для точного позиционирования */
+}
+
+.upload-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+#id_image {
+    display: none;
+}
+
+.form-label {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    padding-bottom: 24px;
+    text-align: left;
+    margin-bottom: 0;
+}
+
+.form-row input{
+    width: 50%;
+}
+
+.form-row input{
+    color: #FFF;
+    height: 61px;
+    background-color: #363242;
+    border-radius: 12px;
+    border: 2px solid #898790;
+    padding-left: 19px;
+}
+
+.form-row input::placeholder{
+    padding-left: 10px;
+    color: #FFF;
+}
+
+.form-row input:focus{
+    background-color: #363242;
+    color: #FFF;
+}
+
+.custom-form h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    padding-bottom: 32px;
+    text-align: left;
+}
+
+/* Стили для формы */
+.custom-form .form-row {
+    display: flex;
+    gap: 24px; /* Отступы между полями */
+    margin-bottom: 25px;
+}
+
+.form-group {
+    color: #363242;
+    padding-bottom: 32px;
+}
+
+.form-group input{
+    color: #FFF;
+    height: 61px;
+    background-color: #363242;
+    border-radius: 12px;
+    border: 2px solid #898790;
+    padding-left: 19px;
+}
+
+.form-group input:focus{
+    background-color: #363242;
+    color: #FFF;
+}
+
+.form-group input::placeholder{
+    color: #FFF;
+    padding-left: 10px;
+}
+
+.custom-form button{
+    width: 582px;
+    height: 61px;
+    background-color: #BF4949;
+    border-radius: 12px;
+    background: #BF4949;
+    margin: 0 auto;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
