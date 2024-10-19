@@ -35,29 +35,30 @@ def rating_test(request, test_id):
     test = Tests.objects.filter(id=test_id).first()
 
     user = get_object_or_404(User, id=request.user.id)
-    
+
     user_group = UsersGroupMembership.objects.filter(user=user).first()
 
     if user_group:
         # Получаем всех пользователей, принадлежащих к той же группе, что и текущий пользователь
         group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
     else:
-        # Если у пользователя нет группы
         group_members = []
 
-    results = []
-    for item in group_members:
+    # Список результатов для каждого члена группы
+    results = [
+        TestResult.objects.filter(user=item.user, test=test).first()
+        for item in group_members
+        if TestResult.objects.filter(user=item.user, test=test).exists()
+    ]
 
-        result = TestResult.objects.filter(user=item.user, test=test)
-        results.append(result)
+    # Сортировка результатов по score
+    results = sorted(results, key=lambda x: x.score, reverse=True)
 
-    
     context = {
         'test': test,
         'user': user,
-        'results':results
+        'results': results,
     }
-
 
     return render(request, 'tests/rating_test.html', context=context)
 

@@ -2,14 +2,36 @@
 {% load static %}
 
 {% block content %}
-    <h2 align='center'>Результати по вашій группі</h2>
-    {% for res in results %}
-        {% for item in res %}
-            {% if user == item.user %}
-                <h3>{{ item }}</h3>
-            {% else %}
-                <li>{{ item }}</li>
+<link rel="stylesheet" href="{% static "css/rating_tests.css" %}">
+
+    <body>
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
+                    <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
+                </a>
+                <h2>Емоційний тест</h2>
+            </div>
+        
+            {% if results %}
+                {% for item in results %}
+                <div class="leaderboard-item">
+                    <div class='leader-item-header'>
+                        {% if forloop.counter == 1 %}
+                        <img src="{% static 'icons/1st.svg' %}" alt="1 место">
+                        {% elif forloop.counter == 2 %}
+                        <img src="{% static 'icons/2st.svg' %}" alt="2 место">
+                        {% elif forloop.counter == 3 %}
+                        <img src="{% static 'icons/3st.svg' %}" alt="3 место">
+                        {% else %}
+                        <span class="count-user">{{ forloop.counter }}.</span>
+                        {% endif %}
+                        <span class='name-user'>{{ item.user.first_name }} {{ item.user.last_name }}</span>
+                    </div>
+                    <span class='score-and-time'>{{ item.score|floatformat:0 }}% | 7 хв 32 с</span>
+                </div>
+                {% endfor %}
             {% endif %}
-        {% endfor %}
-    {% endfor %}
+        </div>
+    </body>
 {% endblock %}
