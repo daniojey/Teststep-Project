@@ -1,7 +1,5 @@
 # tests/views.py
 import random
-from traceback import print_tb
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -58,6 +56,7 @@ def rating_test(request, test_id):
         'test': test,
         'user': user,
         'results': results,
+        'active_tab': 'rating'
     }
 
     return render(request, 'tests/rating_test.html', context=context)
@@ -279,6 +278,7 @@ def test_preview(request, test_id):
 
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
+    request.session['test_id'] = test.id
     
     # Если тест только начался, инициализируем сессию для теста
     if 'question_order' not in request.session:
@@ -314,7 +314,11 @@ def take_test(request, test_id):
         request.session['question_order'] = [q.id for q in all_questions]
         request.session['question_index'] = 0  # Начинаем с первого вопроса
         request.session['test_responses'] = {}  # Для хранения ответов пользователя
-        
+
+        print(request.session['question_order'])
+        print(request.session['question_index'])
+        print(request.session['test_responses'])
+
     question_order = request.session['question_order']
     question_index = request.session['question_index']
     
@@ -376,6 +380,10 @@ def take_test(request, test_id):
     else:
         form = TestTakeForm(question=current_question)
 
+    print(request.session['question_order'])
+    print(request.session['question_index'])
+    print(request.session['test_responses'])
+
     # Статистика по вопросам
     all_questions = {
         "current": question_index + 1,
@@ -431,6 +439,7 @@ def test_results(request, test_id):
                 # group=request.user.profile.group,  # Если у пользователя есть группа
         )
 
+        # print(request.session)
         if 'question_order' in request.session:
             del request.session['question_order']
         if 'question_index' in request.session:
@@ -478,9 +487,12 @@ def test_results(request, test_id):
                     if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
                         correct_answers += points 
 
-
-    score = (correct_answers / total_questions) * 100
-    score = round(score)
+    try:
+        score = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
+        score = round(score)
+    except ZeroDivisionError as e:
+        print(e)
+        score = 0
 
     if request.user.is_authenticated:
         test_result, created = TestResult.objects.get_or_create(
@@ -496,13 +508,19 @@ def test_results(request, test_id):
                 test_result.save()
             else:
                 return render(request, 'users/profile.html')
-            
+    
+    print(request.session['question_order'])
+    print(request.session['question_index'])
+    print(request.session['test_responses'])
+    
     if 'question_order' in request.session:
         del request.session['question_order']
     if 'question_index' in request.session:
         del request.session['question_index']
     if 'test_responses' in request.session:
         del request.session['test_responses']
+    if 'test_id' in request.session:
+        del request.session['test_id']
 
     correct_answers = int(correct_answers)
             
