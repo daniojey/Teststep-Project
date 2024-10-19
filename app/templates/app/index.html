@@ -22,7 +22,7 @@
                     <h3 align='left'>Невиконані тести</h3>
                     <div class="tests">
                         <!-- Тесты первой категории -->
-                        {% for test in uncompeted_tests %}
+                        {% for test in uncompleted_tests %}
                             <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
                                 <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
                                     <div class="test-overlay-header">
