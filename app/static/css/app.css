@@ -24,7 +24,6 @@ header {
 
 .nav-panel ul {
     width: 100%;
-    max-height: 50px;
     gap: 38px;
     margin: 0;
     padding: 0;
@@ -33,6 +32,21 @@ header {
     display: flex;
     justify-content: space-between;
 }
+
+.nav-panel h3 {
+    margin: 0;
+    padding: 0;
+    line-height: normal;  /* Нормализуем line-height */
+    display: flex;  /* Делаем flex-контейнером для выравнивания */
+    align-items: center;  /* Центрируем содержимое по вертикали */
+}
+
+/* .nav-panel a {
+    height: 100%; 
+    display: flex;
+    align-items: center;  
+    padding: 0 10px;  
+} */
 
 .burger{
     display: none;
@@ -97,7 +111,6 @@ header {
 
     .nav-panel ul{
         flex-direction: column;
-        row-gap: 30px;
     }
 
     .nav-panel h3{

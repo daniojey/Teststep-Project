@@ -25,7 +25,7 @@
                         {% elif forloop.counter == 3 %}
                         <img src="{% static 'icons/3st.svg' %}" alt="3 место">
                         {% else %}
-                        <span class="count-user">{{ forloop.counter }}.</span>
+                        <span class="count-user">{{ forloop.counter }}</span>
                         {% endif %}
                         <span class='name-user'>{{ item.user.first_name }} {{ item.user.last_name }}</span>
                     </div>
