@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
+from django.db.models import QuerySet
+from django.db.models.base import Model as Model
 from django.forms import BaseModelForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,8 +9,9 @@ from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
 from django.http import JsonResponse
-from django.views.generic import FormView, CreateView
+from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import User, UsersGroup, UsersGroupMembership
 
@@ -136,49 +139,95 @@ class UserRegistrationView(CreateView):
 #     }
 
 #     return render(request, 'users/registration.html', context=context)
+    
 
-@login_required
-def profile(request):
-    test_results = request.user.test_results.all().order_by('-date_taken')
-    user = get_object_or_404(User, id=request.user.id)
-    tests_reviews = TestsReviews.objects.filter(user=user).order_by('date_taken')
+class UserProfileView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = ProfileForm
+    template_name = "users/profile.html"
+    success_url = reverse_lazy('users:profile')
 
-    user_groups = UsersGroupMembership.objects.filter(user=user)
+    def get_object(self):
+        return self.request.user
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-    if user_groups.exists():
-        group = user_groups.first().group
-        group_memberships = UsersGroupMembership.objects.filter(group=group)
-        group_name = group.name
-    else:
-        group = None
-        group_memberships = None
-        group_name = "Вы не присоединились к группе"
+        # Тесты пользователя
+        test_results = user.test_results.all().order_by('-date_taken')
+        tests_reviews = TestsReviews.objects.filter(user=user).order_by('-date_taken')
+
+        # Получаем группу пользователя
+        user_groups = UsersGroupMembership.objects.filter(user=user)
+
+        if user_groups.exists():
+            group = user_groups.first().group
+            group_memberships = UsersGroupMembership.objects.filter(group=group)
+            group_name = group.name
+        else:
+            group = None
+            group_memberships = None
+            group_name = "Вы не присоединились к группе"
+
+        context.update({
+            "test_results": test_results,
+            "user_group": group,
+            "group_name": group_name,
+            "group_memberships": group_memberships,
+            "user_test_rewiews": tests_reviews,
+            "active_tab":"profile",
+        })
+
+        return context
+    
+    def form_valid(self, form):
+        # Сохраняем данные формы
+        form.save()
+        return super().form_valid(form)
+
+# @login_required
+# def profile(request):
+#     test_results = request.user.test_results.all().order_by('-date_taken')
+#     user = get_object_or_404(User, id=request.user.id)
+#     tests_reviews = TestsReviews.objects.filter(user=user).order_by('date_taken')
+
+#     user_groups = UsersGroupMembership.objects.filter(user=user)
+
+    # if user_groups.exists():
+    #     group = user_groups.first().group
+    #     group_memberships = UsersGroupMembership.objects.filter(group=group)
+    #     group_name = group.name
+    # else:
+    #     group = None
+    #     group_memberships = None
+    #     group_name = "Вы не присоединились к группе"
 
 
-    if request.method == 'POST':
-        form = ProfileForm(data=request.POST, instance=request.user, files=request.FILES)
-        if form.is_valid():
+#     if request.method == 'POST':
+#         form = ProfileForm(data=request.POST, instance=request.user, files=request.FILES)
+#         if form.is_valid():
 
-            form.save()
+#             form.save()
 
-            return HttpResponseRedirect(reverse('users:profile'))
+#             return HttpResponseRedirect(reverse('users:profile'))
         
         
-    else:
-        form = ProfileForm(instance=request.user)
+#     else:
+#         form = ProfileForm(instance=request.user)
 
-    context = {
-        'form': form,
-        'test_results': test_results,
-        'user_group': group,
-        'group_name': group_name,
-        'group_memberships': group_memberships,
-        'user_test_reviews': tests_reviews,
-        'active_tab': 'profile',
+#     context = {
+#         'form': form,
+#         'test_results': test_results,
+#         'user_group': group,
+#         'group_name': group_name,
+#         'group_memberships': group_memberships,
+#         'user_test_reviews': tests_reviews,
+#         'active_tab': 'profile',
 
-    }
+#     }
 
-    return render(request, 'users/profile.html', context=context)
+#     return render(request, 'users/profile.html', context=context)
 
 @login_required
 @csrf_exempt  # Для AJAX запросов без формы
