@@ -1,45 +1,79 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
 from django.http import JsonResponse
+from django.views.generic import FormView
+from django.contrib.auth import authenticate, login
 
 from .models import User, UsersGroup, UsersGroupMembership
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 
 
-def login(request):
-    if request.method == 'POST':
-        form = UserLoginForm(data=request.POST)
-        if form.is_valid():
-            email = request.POST['email']
-            password = request.POST['password']
-            user = auth.authenticate(email=email, password=password)
-            if user:
-                auth.login(request, user)
+class UserLoginView(FormView):
+    template_name = "users/login.html"
+    form_class = UserLoginForm
+    success_url = reverse_lazy("app:index")
 
-                if request.POST.get('next', None):
-                    return HttpResponseRedirect(request.POST.get('next'))
+    def form_valid(self, form):
+        email = form.cleaned_data.get('email')
+        password = form.cleaned_data.get('password')
+        user = authenticate(self.request, email=email, password=password)
 
+        if user is not None:
+            login(self.request, user)
 
-                return redirect("app:index")
-                # return HttpResponseRedirect(reverse('app:index'))
-        else:
-                print(form.errors)
+            # Если есть параметр next в post запросе
+            next_url = self.request.POST.get('next', None)
+            if next_url:
+                return redirect(next_url)
             
-    else:
-        form = UserLoginForm()
+            return redirect(self.get_success_url())
+        else:
+            form.add_error(None, 'Невірний логін або пароль')
+            return self.form_invalid(form)
+        
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        
+    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "LOGIN"
+        return context
+
+# def login(request):
+#     if request.method == 'POST':
+#         form = UserLoginForm(data=request.POST)
+#         if form.is_valid():
+#             email = request.POST['email']
+#             password = request.POST['password']
+#             user = auth.authenticate(email=email, password=password)
+#             if user:
+#                 auth.login(request, user)
+
+#                 if request.POST.get('next', None):
+#                     return HttpResponseRedirect(request.POST.get('next'))
+
+
+#                 return redirect("app:index")
+#         else:
+#                 print(form.errors)
+            
+#     else:
+#         form = UserLoginForm()
 
         
-    context = {
-        "form": form
-    }
+#     context = {
+#         "form": form
+#     }
 
-    return render(request, 'users/login.html', context=context)
+#     return render(request, 'users/login.html', context=context)
 
 def registration(request):
     if request.method == 'POST':
