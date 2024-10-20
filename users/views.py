@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
+from django.forms import BaseModelForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
 from django.http import JsonResponse
-from django.views.generic import FormView
+from django.views.generic import FormView, CreateView
 from django.contrib.auth import authenticate, login
 
 from .models import User, UsersGroup, UsersGroupMembership
@@ -25,6 +26,7 @@ class UserLoginView(FormView):
         user = authenticate(self.request, email=email, password=password)
 
         if user is not None:
+            self.object = user
             login(self.request, user)
 
             # Если есть параметр next в post запросе
@@ -74,34 +76,66 @@ class UserLoginView(FormView):
 #     }
 
 #     return render(request, 'users/login.html', context=context)
+    
+class UserRegistrationView(CreateView):
+    template_name = "users/registration.html"
+    form_class = UserRegistrationForm
+    success_url = reverse_lazy('app:index')
 
-def registration(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(data=request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
+    def form_valid(self, form):
+        user = form.save(commit=False)  # Сохраняем форму без коммита, чтобы задать username вручную
+
+        # Генерация уникального имени пользователя
+        base_name = f"{form.cleaned_data['first_name'][0]}{form.cleaned_data['last_name']}".lower()
+        username = base_name
+        count = 1
+
+        while User.objects.filter(username=username).exists():
+            username = f"{base_name}_{count}"
+            count += 1
+
+        user.username = username
+        user.save()  # Сохраняем пользователя с новым именем
+
+        self.object = user
+        auth.login(self.request, user)  # Автоматическая авторизация пользователя после регистрации
+
+        return redirect(self.get_success_url())  # Перенаправляем на главную страницу
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+# def registration(request):
+#     if request.method == 'POST':
+#         form = UserRegistrationForm(data=request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
             
-            base_name = f"{form.cleaned_data['first_name'][0]}{form.cleaned_data['last_name']}".lower()
-            username = base_name
-            count = 1
+#             base_name = f"{form.cleaned_data['first_name'][0]}{form.cleaned_data['last_name']}".lower()
+#             username = base_name
+#             count = 1
 
-            while User.objects.filter(username=username).exists():
-                username = f"{base_name}_{count}"
-                count += 1
+#             while User.objects.filter(username=username).exists():
+#                 username = f"{base_name}_{count}"
+#                 count += 1
 
-            user.username = username
+#             user.username = username
             
-            user.save()
-            auth.login(request, user)
-            return HttpResponseRedirect(reverse('app:index'))
-    else:
-        form = UserRegistrationForm()
+#             user.save()
+#             auth.login(request, user)
+#             return HttpResponseRedirect(reverse('app:index'))
+#     else:
+#         form = UserRegistrationForm()
 
-    context = {
-        'form': form
-    }
+#     context = {
+#         'form': form
+#     }
 
-    return render(request, 'users/registration.html', context=context)
+#     return render(request, 'users/registration.html', context=context)
 
 @login_required
 def profile(request):
