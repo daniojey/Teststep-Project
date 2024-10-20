@@ -2,6 +2,7 @@
 import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.timezone import now
 
 from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroupMembership
@@ -11,6 +12,7 @@ from django.core.files.base import ContentFile
 import base64
 import os
 from django.core.files.storage import default_storage
+from datetime import timedelta
 
 def index(request):
     return render(request, 'tests/index.html')
@@ -279,6 +281,14 @@ def test_preview(request, test_id):
 def take_test(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     request.session['test_id'] = test.id
+
+     # Сохраняем время начала теста, если оно ещё не сохранено
+    if 'test_start_time' not in request.session:
+        request.session['test_start_time'] = now().timestamp()  # Сохраняем текущую метку времени
+
+    # Если тест ещё не завершён
+    if 'remaining_time' not in request.session:
+        request.session['remaining_time'] = test.duration.total_seconds()  # Начальное значение таймера
     
     # Если тест только начался, инициализируем сессию для теста
     if 'question_order' not in request.session:
@@ -286,7 +296,6 @@ def take_test(request, test_id):
         questions_by_group = {}
         for group in QuestionGroup.objects.filter(test=test):
             questions_by_group[group.name] = list(group.questions_group.all())
-
 
         # Перемешиваем вопросы внутри каждой группы
         for group_name, questions in questions_by_group.items():
@@ -301,7 +310,6 @@ def take_test(request, test_id):
         questions_not_group = {}
         # for group in Question.objects.filter(test=test, group=None):
         questions_not_group['All'] = list(Question.objects.filter(test=test, group=None))
-        print(questions_not_group)
 
         # Перемешиваем вопросы и добавляем их к остальным
         for _ , questions in questions_not_group.items():
@@ -315,9 +323,6 @@ def take_test(request, test_id):
         request.session['question_index'] = 0  # Начинаем с первого вопроса
         request.session['test_responses'] = {}  # Для хранения ответов пользователя
 
-        print(request.session['question_order'])
-        print(request.session['question_index'])
-        print(request.session['test_responses'])
 
     question_order = request.session['question_order']
     question_index = request.session['question_index']
@@ -372,6 +377,9 @@ def take_test(request, test_id):
                 # Для всех остальных типов вопросов используем 'question_{id}'
                 if answer is not None:
                     request.session['test_responses'][f"question_{current_question_id}"] = answer
+
+            remaining_time = int(request.POST.get('remaining_time', 0))
+            request.session['remaining_time'] = remaining_time  # Обновляем оставшееся время
                             
             # Переход к следующему вопросу
             request.session['question_index'] += 1
@@ -379,10 +387,6 @@ def take_test(request, test_id):
             return redirect('tests:take_test', test_id=test_id)  # Перезагрузка на следующий вопрос
     else:
         form = TestTakeForm(question=current_question)
-
-    print(request.session['question_order'])
-    print(request.session['question_index'])
-    print(request.session['test_responses'])
 
     # Статистика по вопросам
     all_questions = {
@@ -396,6 +400,7 @@ def take_test(request, test_id):
         'question': current_question,
         'all_questions': all_questions,
         'current_question_group': current_question_group,
+        'remaining_time': request.session['remaining_time'],
     })
 
 
@@ -403,7 +408,8 @@ def test_results(request, test_id):
     test = get_object_or_404(Tests, id=test_id)
     responses = request.session.get('test_responses', {})
     audio_answers = request.session.get('audio_answer_', {})
-
+    test_time = request.session.get('remaining_time', None)
+    
 
     if test.check_type == Tests.MANUAL_CHECK:
             for key, value in responses.items():
@@ -446,6 +452,8 @@ def test_results(request, test_id):
             del request.session['question_index']
         if 'test_responses' in request.session:
             del request.session['test_responses']
+        if 'remaining_time' in request.session:
+            del request.session['remaining_time']
 
         return render(request, 'app/success_page_manual_test.html')
     
@@ -494,24 +502,26 @@ def test_results(request, test_id):
         print(e)
         score = 0
 
+
+    test_duration = test.duration.total_seconds() - test_time
+    test_duration = timedelta(seconds=test_duration)
+
+
     if request.user.is_authenticated:
         test_result, created = TestResult.objects.get_or_create(
             user=request.user,
             test=test,
-            defaults={'score': score, 'attempts': 1}
+            defaults={'score': score, 'attempts': 1, 'duration': test_duration}
         )
         
         if not created:
             if test_result.remaining_atemps > 0:
                 test_result.attempts += 1
+                test_result.duration = test_duration
                 test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
                 test_result.save()
             else:
                 return render(request, 'users/profile.html')
-    
-    print(request.session['question_order'])
-    print(request.session['question_index'])
-    print(request.session['test_responses'])
     
     if 'question_order' in request.session:
         del request.session['question_order']
@@ -521,6 +531,8 @@ def test_results(request, test_id):
         del request.session['test_responses']
     if 'test_id' in request.session:
         del request.session['test_id']
+    if 'remaining_time' in request.session:
+        del request.session['remaining_time']
 
     correct_answers = int(correct_answers)
             

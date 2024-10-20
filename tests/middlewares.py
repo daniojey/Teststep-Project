@@ -34,5 +34,7 @@ class TestExitMiddleware(MiddlewareMixin):
                     del request.session['question_index']
                 if 'test_responses' in request.session:
                     del request.session['test_responses']
+                if 'remaining_time' in request.session:
+                    del request.session['remaining_time']
 
         return response

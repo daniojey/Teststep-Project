@@ -11,7 +11,9 @@
 <body>
     <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
     <h2>Категорія питання: {{ current_question_group }}</h2>
-    <div id="timer" align='right'></div>
+    <div>
+        Час до закінчення тесту: <span id="timer"></span>
+    </div>
     
     <form id="test-form" method="POST" action="{% url 'tests:take_test' test.id %}">
         {% csrf_token %}
@@ -60,6 +62,7 @@
 
             
         {% endfor %}
+        <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
         <button type="submit">Підтвердити</button>
     </form>
 
@@ -168,38 +171,34 @@
 
 
 <script>
-    var countDownDuration = parseInt("{{ test.duration.total_seconds }}", 10) * 1000;
+    var countDownDuration = parseInt("{{ remaining_time }}", 10) * 1000;  // Остаток времени в миллисекундах
 
     if (isNaN(countDownDuration)) {
-        console.error("Invalid duration:", "{{ test.duration.total_seconds }}");
+        console.error("Invalid duration:", "{{ remaining_time }}");
     } else {
         var timer = setInterval(function() {
             if (countDownDuration <= 0) {
                 clearInterval(timer);
-                window.location.href = "{% url 'tests:test_results' test.id %}";
+                document.getElementById("remaining_time").value = 0;
+                document.getElementById("test-form").submit();  // Автоматическая отправка формы
             }
+
+            // Рассчитываем часы, минуты и секунды
             var hours = Math.floor((countDownDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((countDownDuration % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((countDownDuration % (1000 * 60)) / 1000);
             
-            var display = hours > 0 ? hours + "h " : "";
-            display += minutes + "m " + seconds + "s ";
+            var display = (hours > 0 ? hours + "h " : "") + minutes + "m " + seconds + "s ";
 
             document.getElementById('timer').innerText = display;
+
+            // Уменьшаем время на одну секунду
             countDownDuration -= 1000;
+
+            // Обновляем скрытое поле для отправки времени на сервер
+            document.getElementById("remaining_time").value = countDownDuration / 1000;
         }, 1000);
     }
-
-    document.oncontextmenu = function() {
-        return false;
-    }
-    
-    document.onkeydown = function(e) {
-        if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 'p')) {
-            e.preventDefault();
-        }
-    }
-
 </script>
 
 

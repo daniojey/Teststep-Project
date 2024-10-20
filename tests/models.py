@@ -125,6 +125,7 @@ class TestResult(models.Model):
     score = models.DecimalField(max_digits=5, decimal_places=2)
     date_taken = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=1)
+    duration = models.DurationField(null=True, blank=True)
     max_attempts = models.PositiveIntegerField(default=2)
     extra_attempts = models.PositiveIntegerField(default=0)
 
