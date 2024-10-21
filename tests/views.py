@@ -9,6 +9,8 @@ from users.models import User, UsersGroupMembership
 from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 import base64
 import os
 from django.core.files.storage import default_storage
@@ -17,62 +19,136 @@ from datetime import timedelta
 def index(request):
     return render(request, 'tests/index.html')
 
+class UserRatingView(LoginRequiredMixin, TemplateView):
+    template_name = 'tests/rating.html'
 
-def rating(request):
-    user = get_object_or_404(User, id=request.user.id)
-    tests = Tests.objects.all()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Проверка на принадлежность к группе и статус учителя
+        membership = UsersGroupMembership.objects.filter(user=user).first()
+        if membership and membership.owner:
+            # Пользователь - учитель группы, выводим тесты, которые он выгружал
+            context['tests'] = Tests.objects.filter(user=user)  # Все тесты, созданные учителем
+        else:
+            # Пользователь - студент, выводим его результаты
+            test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
+            context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
+        
+        context['user'] = user
+        context['active_tab'] = 'rating'
+        return context
 
-    context = {
-        'tests': tests,
-        'user': user,
-        'active_tab': 'rating'
-    }
+        return context
+    
 
-    return render(request, 'tests/rating.html', context)
+# def rating(request):
+#     user = get_object_or_404(User, id=request.user.id)
+#     tests = Tests.objects.all()
 
+#     context = {
+#         'tests': tests,
+#         'user': user,
+#         'active_tab': 'rating'
+#     }
 
-def rating_test(request, test_id):
-    test = Tests.objects.filter(id=test_id).first()
-
-    user = get_object_or_404(User, id=request.user.id)
-
-    user_group = UsersGroupMembership.objects.filter(user=user).first()
-
-    if user_group:
-        # Получаем всех пользователей, принадлежащих к той же группе, что и текущий пользователь
-        group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
-    else:
-        group_members = []
-
-    # Список результатов для каждого члена группы
-    results = [
-        TestResult.objects.filter(user=item.user, test=test).first()
-        for item in group_members
-        if TestResult.objects.filter(user=item.user, test=test).exists()
-    ]
-
-    # Сортировка результатов по score
-    results = sorted(results, key=lambda x: x.score, reverse=True)
-
-    context = {
-        'test': test,
-        'user': user,
-        'results': results,
-        'active_tab': 'rating'
-    }
-
-    return render(request, 'tests/rating_test.html', context=context)
+#     return render(request, 'tests/rating.html', context)
 
 
-def all_tests(request):
-    # messages.success(request, 'Тест!')
-    if request.user.is_superuser:
-        tests = Tests.objects.all()
-    else:
-        tests = Tests.objects.filter(user=request.user)
+class RatingTestView(LoginRequiredMixin, TemplateView):
+    template_name = "tests/rating_test.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = get_object_or_404(User, id=self.request.user.id)
+
+        test_id = self.kwargs.get('test_id')
+
+        test = Tests.objects.filter(id=test_id).first()
+
+        user_group = UsersGroupMembership.objects.filter(user=user).first()
+
+        if user_group:
+            group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
+        else:
+            group_members = []
+
+        results = [
+            TestResult.objects.filter(user=item.user, test=test).first()
+            for item in group_members
+            if TestResult.objects.filter(user=item.user, test=test).exists()
+        ]
+
+        results = sorted(results, key=lambda x: x.score, reverse=True)
+
+        context['test'] = test
+        context['user'] = user
+        context['results'] = results
+        context['active_tab'] = 'rating'
+
+        return context
+
+# def rating_test(request, test_id):
+#     test = Tests.objects.filter(id=test_id).first()
+
+#     user = get_object_or_404(User, id=request.user.id)
+
+#     user_group = UsersGroupMembership.objects.filter(user=user).first()
+
+#     if user_group:
+#         # Получаем всех пользователей, принадлежащих к той же группе, что и текущий пользователь
+#         group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
+#     else:
+#         group_members = []
+
+#     # Список результатов для каждого члена группы
+#     results = [
+#         TestResult.objects.filter(user=item.user, test=test).first()
+#         for item in group_members
+#         if TestResult.objects.filter(user=item.user, test=test).exists()
+#     ]
+
+#     # Сортировка результатов по score
+#     results = sorted(results, key=lambda x: x.score, reverse=True)
+
+#     context = {
+#         'test': test,
+#         'user': user,
+#         'results': results,
+#         'active_tab': 'rating'
+#     }
+
+#     return render(request, 'tests/rating_test.html', context=context)
 
 
-    return render(request, 'tests/all_tests.html', {'tests': tests, "active_tab": "my_tests"})
+class AllTestsView(TemplateView):
+    template_name = "tests/all_tests.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_superuser:
+            tests = Tests.objects.all()
+        else:
+            tests = Tests.objects.filter(user=self.request.user)
+
+        context['tests'] = tests
+        context['active_tab'] = 'my_tests'
+
+        return context
+
+
+# def all_tests(request):
+#     # messages.success(request, 'Тест!')
+#     if request.user.is_superuser:
+#         tests = Tests.objects.all()
+#     else:
+#         tests = Tests.objects.filter(user=request.user)
+
+
+#     return render(request, 'tests/all_tests.html', {'tests': tests, "active_tab": "my_tests"})
 
 
 @login_required

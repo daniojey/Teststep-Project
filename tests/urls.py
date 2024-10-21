@@ -7,9 +7,9 @@ app_name = "tests"
 
 urlpatterns = [
     path('', views.index, name="index"),
-    path("rating/", views.rating, name="rating"),
-    path("rating/<int:test_id>", views.rating_test, name="rating_test"),
-    path('all_tests/', views.all_tests , name='all_tests'),
+    path("rating/", views.UserRatingView.as_view(), name="rating"),
+    path("rating/<int:test_id>", views.RatingTestView.as_view(), name="rating_test"),
+    path('all_tests/', views.AllTestsView.as_view() , name='all_tests'),
     path('test/<int:test_id>', views.test_preview , name='test_preview'),
     path('create/', views.create_test, name='create_test'),
     path('delete/<int:test_id>', views.delete_test, name='delete_test'),
