@@ -69,7 +69,48 @@ body {
 .custom-form .form-row {
     display: flex;
     gap: 20px; /* Отступы между полями */
-    margin-bottom: 25px;
+    margin-bottom: 32px;
+}
+
+/* Удалите appearance: none для чекбокса */
+.custom-form input[type="checkbox"] {
+    appearance: checkbox; /* Включаем стандартный вид чекбокса */
+    width: 24px; /* Возвращаем стандартный размер чекбокса */
+    height: 24px; /* Возвращаем стандартный размер чекбокса */
+    margin-right: 16px; /* Добавляем отступ справа от чекбокса */
+    color: #000000;
+    background-color: #FFFFFF;
+    accent-color: #ffffff;
+}
+
+.custom-form label{
+    display: flex;
+    align-items: center;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.custom-form label a{
+    padding-left: 5px;
+    color: #7260F5;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-decoration-line: underline;
+}
+
+.toggle-password {
+    position: absolute; /* Абсолютное позиционирование иконки */
+    right: 20px; /* Располагаем иконку справа */
+    cursor: pointer; /* Указатель мыши меняется на указатель */
+    width: 24px; /* Задаем ширину иконки */
+    height: 24px; /* Задаем высоту иконки */
 }
 
 .custom-form h1 {
@@ -82,8 +123,8 @@ body {
 .custom-form input {
     padding: 20px 24px;
     background-color: #2E303E;
-    /* color: #FFFFFF; */
     border: none;
+    color: #ffffff;
     border-radius: 8px;
     font-size: 18px;
     width: 100%;
@@ -108,20 +149,39 @@ body {
     margin-bottom: 32px;
 }
 
+.form-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .custom-form .submit-btn {
     width: 100%;
     padding: 17px;
-    background-color: #8265F5;
+    background-color: #3d3d3d; /* Цвет для неактивной кнопки */
     color: #FFFFFF;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 32px;
+    transition: background-color 0.3s ease; /* Плавный переход фона */
+}
+
+.custom-form .submit-btn.active {
+    background-color: #8265F5; /* Цвет для активной кнопки */
+}
+
+.custom-form .submit-btn:active {
+    background-color: #6953D9; /* Цвет при нажатии */
 }
 
 .custom-form .submit-btn:hover {
-    background-color: #6953D9;
+    background-color: #504e54; /* Цвет при наведении на неактивную кнопку */
+}
+
+.custom-form .submit-btn.active:hover {
+    background-color: #6953D9; /* Цвет при наведении на активную кнопку */
 }
 
 /* Стили для текста под кнопкой */
@@ -147,19 +207,58 @@ body {
 }
 
 
-/* Общее правило для всех полей автозаполнения */
-input:-webkit-autofill {
-    background-color: #001eff !important; /* Цвет фона */
+
+/* input:-webkit-autofill {
+    background-color: #ffffff !important; 
+    -webkit-text-fill-color: #ffffff !important; 
+    border: none;
+    font-size: 18px !important;  
+    caret-color: #ffffff !important;
+}  */
+
+/* 
+input {
+    appearance: none; 
+    contain: style; 
+    font-size: 18px; 
+} */
+
+/* Отключаем встроенные стили для текстовых полей, но не для чекбоксов */
+.custom-form input[type="text"],
+.custom-form input[type="email"],
+.custom-form input[type="password"] {
+    appearance: none;
+    font-size: 18px;
+    color: #ffffff;
+    background-color: #2E303E;
+    border-radius: 12px;
+    padding: 20px 24px;
+    width: 100%;
+    height: 55px;
+    border: none;
+    -webkit-box-shadow: inset 0 0 0 1000px #3A3646;
 }
 
 
-/* Чтобы сделать текст ярче */
-input:-webkit-autofill {
-    color: #030303 !important; /* Сделать текст автозаполнения чуть ярче */
+/* .custom-form input{
+    -webkit-box-shadow: inset 0 0 0 1000px #3A3646;
+    font-size: 18px;
+} */
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
 }
 
-
-.custom-form input{
-    -webkit-box-shadow: inset 0 0 0 50px #3A3646;
-    -webkit-text-fill-color: #898790;
+/* Базовый стиль для всех input полей */
+input {
+    appearance: none;
+    font-size: 18px; /* Устанавливаем единый размер шрифта */
+    color: #ffffff; /* Цвет текста */
 }

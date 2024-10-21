@@ -22,10 +22,10 @@ body {
 
 /* Левая часть: форма */
 .form-section {
+    width: 51%; /* Чуть меньше половины экрана для формы */
     background-color: #1E1F29;
-    width: 51%; 
     padding: 85px;
-    
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -64,6 +64,19 @@ body {
     }
 }
 
+.form-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password {
+    position: absolute; /* Абсолютное позиционирование иконки */
+    right: 20px; /* Располагаем иконку справа */
+    cursor: pointer; /* Указатель мыши меняется на указатель */
+    width: 24px; /* Задаем ширину иконки */
+    height: 24px; /* Задаем высоту иконки */
+}
 
 /* Стили для формы */
 .custom-form .form-row {
@@ -93,7 +106,7 @@ body {
     background-color: #2E303E;
     border: none;
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 18px;
     width: 100%;
     height: 55px;
@@ -115,7 +128,7 @@ body {
     background-color: #8265F5;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     cursor: pointer;
     margin-top: 64px;
@@ -159,12 +172,16 @@ body {
     color: #6953D9;  /* Изменяем цвет при наведении */
 }
 
-input:-webkit-autofill {
-    background-color: #2E303E !important; 
-    -webkit-text-fill-color: #dbbfff !important; 
-    border: none;
-    font-size: 18px !important;  
-} 
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
 
 
 /* Хак с appearance для Chrome */

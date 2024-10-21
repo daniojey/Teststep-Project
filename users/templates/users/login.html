@@ -35,7 +35,10 @@
                     </div> {% endcomment %}
 
                     <div class="form-group">
-                        <input type="password" class="form-control" name="password" id="password-input" placeholder="Введить свій пароль" required >
+                        <input type="password" class="form-control" name="password" id="id_password1" placeholder="Введить свій пароль" required >
+                        <img src="{% static 'icons/mdi_eye.svg' %}" class="toggle-password" id="eyeicon" 
+                             data-eye-open="{% static 'icons/mdi_eye.svg' %}" 
+                             data-eye-closed="{% static 'icons/mdi_eye-off.svg' %}">
                         {% comment %} <img src="{% static "media/pass-icon.png" %}" onclick="pass()" class='pass-icon'> {% endcomment %}
                     </div>
 
@@ -52,12 +55,14 @@
                     <img src="{% static "media/registration.svg" %}" alt="Placeholder Image">
                 </div>        
     </div>
+
+    <script src="{% static 'js/togglePassword.js' %}"></script>
 </body>            
                 
-            </div>
+            {% comment %} </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 
 {% endblock %}
