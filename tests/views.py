@@ -3,13 +3,14 @@ import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
+from django.urls import reverse
 
 from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroupMembership
 from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
-from django.views.generic import TemplateView
+from django.views.generic import FormView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 import base64
 import os
@@ -81,7 +82,7 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
             if TestResult.objects.filter(user=item.user, test=test).exists()
         ]
 
-        results = sorted(results, key=lambda x: x.score, reverse=True)
+        results = sorted(results, key=lambda x: (x.score, -x.duration.total_seconds()), reverse=True)
 
         context['test'] = test
         context['user'] = user
@@ -151,30 +152,56 @@ class AllTestsView(TemplateView):
 #     return render(request, 'tests/all_tests.html', {'tests': tests, "active_tab": "my_tests"})
 
 
-@login_required
-def create_test(request):
-    if request.method == 'POST':
-        form = TestForm(request.POST, request.FILES, user=request.user)
-        if form.is_valid():
-            # Сначала создаем тест, но не сохраняем его в базе
-            test = form.save(commit=False)  
-            test.user = request.user  # Присваиваем пользователя
+class CreateTestView(LoginRequiredMixin, FormView):
+    template_name = 'tests/create_test.html'
+    form_class = TestForm
 
-            # Получаем список ID студентов
-            selected_students = form.cleaned_data.get('students')
-            
-            # Сохраняем студентов в поле JSON в формате [1, 2, 3]
-            test.students = {'students': selected_students}
-            
-            # Сохраняем тест
-            test.save()
-
-            # Далее можно перенаправить на другую страницу
-            return redirect('tests:add_questions', test_id=test.id)
-    else:
-        form = TestForm(user=request.user)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
     
-    return render(request, 'tests/create_test.html', {'form': form})
+    def form_valid(self, form):
+        test = form.save(commit=False)
+        test.user = self.request.user
+
+        # Получаем список студентов из формы
+        selected_students = form.cleaned_data.get('students')
+
+        test.students = {'students': selected_students}
+
+        test.save()
+
+        return redirect('tests:add_questions', test_id=test.id)
+    
+    def get_success_url(self) -> str:
+        return reverse('tests:add_questions', kwargs={'test_id': self.object.id})
+
+
+# @login_required
+# def create_test(request):
+#     if request.method == 'POST':
+#         form = TestForm(request.POST, request.FILES, user=request.user)
+#         if form.is_valid():
+#             # Сначала создаем тест, но не сохраняем его в базе
+#             test = form.save(commit=False)  
+#             test.user = request.user  # Присваиваем пользователя
+
+#             # Получаем список ID студентов
+#             selected_students = form.cleaned_data.get('students')
+            
+#             # Сохраняем студентов в поле JSON в формате [1, 2, 3]
+#             test.students = {'students': selected_students}
+            
+#             # Сохраняем тест
+#             test.save()
+
+#             # Далее можно перенаправить на другую страницу
+#             return redirect('tests:add_questions', test_id=test.id)
+#     else:
+#         form = TestForm(user=request.user)
+    
+#     return render(request, 'tests/create_test.html', {'form': form})
 
 
 def delete_test(request, test_id):
@@ -184,25 +211,40 @@ def delete_test(request, test_id):
     return redirect('app:index')
 
 
-@login_required
-def add_question_group(request, test_id):
-    test = get_object_or_404(Tests, pk=test_id)
+class AddQuestionGroupView(LoginRequiredMixin, FormView):
+    template_name = 'tests/adq.html'
+    form_class = QuestionGroupForm
 
-    if request.method == 'POST':
-        form = QuestionGroupForm(request.POST)
-        if form.is_valid():
-            question_group = form.save(commit=False)
-            question_group.test = test
-            question_group.save()
-            return redirect("tests:add_questions",  test_id=test.id)
+    def form_valid(self, form):
+        test_id = self.kwargs.get('test_id')
+        test = get_object_or_404(Tests, id=test_id)
 
-    else:
-        form = QuestionGroupForm()
+        question_group = form.save(commit=False)
+        question_group.test = test
+        question_group.save()
+
+        return redirect("tests:add_questions",  test_id=test.id)
+    
+
+# @login_required
+# def add_question_group(request, test_id):
+#     test = get_object_or_404(Tests, pk=test_id)
+
+#     if request.method == 'POST':
+#         form = QuestionGroupForm(request.POST)
+#         if form.is_valid():
+#             question_group = form.save(commit=False)
+#             question_group.test = test
+#             question_group.save()
+#             return redirect("tests:add_questions",  test_id=test.id)
+
+#     else:
+#         form = QuestionGroupForm()
 
 
-    context = dict(form=form)
+#     context = dict(form=form)
 
-    return render(request, 'tests/adq.html', context=context)
+#     return render(request, 'tests/adq.html', context=context)
 
 
 @login_required
