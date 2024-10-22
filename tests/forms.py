@@ -275,7 +275,6 @@ class TestReviewForm(forms.Form):
 
             # Извлекаем ответы пользователя из JSON
             user_answer_ids = answers.get(f'question_{question.id}', [])
-            print(user_answer_ids)
 
 
             # Получаем правильные ответы
@@ -283,7 +282,6 @@ class TestReviewForm(forms.Form):
             ans = [i for i in item]
             result = [i.text for i in ans]
             question_correct = ', '.join(result)
-
 
             # Получаем список  по ответам
             try:
@@ -326,7 +324,7 @@ class TestReviewForm(forms.Form):
                 item = item[0]
                 self.fields[f'question_{question.id}_user_answer'] = forms.CharField(
                     label=f"{question.text}:\nВірна відповідь ? - {item.text}",
-                    widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+                    widget=forms.Textarea(attrs={'readonly': 'readonly'}),
                     initial=f"Відповідь студента - {ans_resp}",
                     required=False,
                 )
@@ -334,6 +332,25 @@ class TestReviewForm(forms.Form):
                 self.fields[f"question_{question.id}_correct"] = forms.BooleanField(
                     label="Відповідь вірна ?",
                     required=False,
+                )
+            elif question.question_type == 'MTCH':
+                answers_mtch = [f"{item.left_item}-{item.right_item}|" for item in MatchingPair.objects.filter(question=question)]
+                user_answers = answers.get(f"question_{question.id}_type_matching", None)
+                answer_choise = [(i, f"{key}-{value}") for i, (key, value) in enumerate(user_answers.items())]
+                answers_mtch = " ".join(answers_mtch)
+
+                self.fields[f'question_{question.id}_MT'] = forms.CharField(
+                    label=f"{question.text}:\nВірна відповідь ? ",
+                    widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+                    initial=answers_mtch,
+                    required=False,
+                )
+
+                self.fields[f"question_{question.id}_mtch"] = forms.MultipleChoiceField(
+                    label='Відповіді студента',
+                    choices=answer_choise,
+                    widget=forms.CheckboxSelectMultiple,
+                    required=False
                 )
 
             else:
