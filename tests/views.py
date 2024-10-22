@@ -1,6 +1,7 @@
 # tests/views.py
 import random
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 from django.urls import reverse
@@ -245,60 +246,108 @@ class AddQuestionGroupView(LoginRequiredMixin, FormView):
 #     context = dict(form=form)
 
 #     return render(request, 'tests/adq.html', context=context)
+    
+class AddQuestionsView(LoginRequiredMixin, TemplateView):
+    template_name = 'tests/add_questions.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        test_id = self.kwargs.get('test_id')
+        test = get_object_or_404(Tests, id=test_id)
+        user = self.request.user
 
-@login_required
-def add_questions(request, test_id):
-    user = get_object_or_404(User, id=request.user.id)
-    test = get_object_or_404(Tests, pk=test_id)
-    question_groups = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
-    ungrouped_questions = Question.objects.filter(test=test, group__isnull=True)
+        context['test'] = test
+        context['question_groups'] = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
+        context['ungrouped_questions'] = Question.objects.filter(test=test, group__isnull=True)
+        context['questions'] = Question.objects.filter(test=test)
 
-    # POST-запрос: Обрабатываем форму в зависимости от переданного form_type
-    if request.method == 'POST':
-        form_type = request.POST.get('form_type')  # Определяем тип формы
+        context['question_form'] = QuestionForm(test=test)
+        context['form_student'] = QuestionStudentsForm(test=test, user=user)
 
-        # Обработка формы вопросов
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        test_id = self.kwargs.get('test_id')
+        test = get_object_or_404(Tests, id=test_id)
+        user = request.user
+
+        form_type = request.POST.get('form_type')
+
         question_form = QuestionForm(request.POST, request.FILES, test=test)
-
-        # Обработка формы студентов
-        student_form = QuestionStudentsForm(request.POST, request.FILES, test=test, user=user)
+        students_form = QuestionStudentsForm(request.POST, request.FILES, test=test, user=user)
 
         if form_type == 'form_question':
             if question_form.is_valid():
                 question = question_form.save(commit=False)
-                question.test = test  # Привязываем вопрос к текущему тесту
+                question.test = test
                 question.save()
                 return redirect('tests:add_questions', test_id=test.id)
-
+            
         elif form_type == 'form_student':
-            if student_form.is_valid():
-                test.students = {'students': student_form.cleaned_data.get('students')}
+            if students_form.is_valid():
+                test.students = {'students': students_form.cleaned_data.get('students')}
                 test.save()
-                return redirect('tests:add_questions', test_id=test.id)
-            else:
-                print(student_form.errors)
-                return redirect('tests:add_questions', test_id=test.id)
-
-    else:
-        question_form = QuestionForm(test=test)
-        student_form = QuestionStudentsForm(test=test, user=user)    
-
-    # Запросы для отображения данных
-    questions = Question.objects.filter(test=test)
-
-    # Контекст для шаблона
-    context = {
-        'test': test,
-        'question_form': question_form,  
-        'questions': questions,  # Список всех вопросов
-        'question_groups': question_groups,  # Группированные вопросы
-        'ungrouped_questions': ungrouped_questions,  # Негруппированные вопросы
-        'form_student': student_form  # Форма для выбора студентов
+                return redirect('tests:add_questions', test_id = test.id)
+            
         
-    }
+        context = self.get_context_data()
+        context['question_form'] = question_form
+        context['form_students'] = students_form
+        return self.render_to_response(context)
 
-    return render(request, 'tests/add_questions.html', context=context)
+
+# @login_required
+# def add_questions(request, test_id):
+#     user = get_object_or_404(User, id=request.user.id)
+#     test = get_object_or_404(Tests, pk=test_id)
+#     question_groups = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
+#     ungrouped_questions = Question.objects.filter(test=test, group__isnull=True)
+
+#     # POST-запрос: Обрабатываем форму в зависимости от переданного form_type
+#     if request.method == 'POST':
+#         form_type = request.POST.get('form_type')  # Определяем тип формы
+
+#         # Обработка формы вопросов
+#         question_form = QuestionForm(request.POST, request.FILES, test=test)
+
+#         # Обработка формы студентов
+#         student_form = QuestionStudentsForm(request.POST, request.FILES, test=test, user=user)
+
+#         if form_type == 'form_question':
+#             if question_form.is_valid():
+#                 question = question_form.save(commit=False)
+#                 question.test = test  # Привязываем вопрос к текущему тесту
+#                 question.save()
+#                 return redirect('tests:add_questions', test_id=test.id)
+
+#         elif form_type == 'form_student':
+#             if student_form.is_valid():
+#                 test.students = {'students': student_form.cleaned_data.get('students')}
+#                 test.save()
+#                 return redirect('tests:add_questions', test_id=test.id)
+#             else:
+#                 print(student_form.errors)
+#                 return redirect('tests:add_questions', test_id=test.id)
+
+#     else:
+#         question_form = QuestionForm(test=test)
+#         student_form = QuestionStudentsForm(test=test, user=user)    
+
+#     # Запросы для отображения данных
+#     questions = Question.objects.filter(test=test)
+
+#     # Контекст для шаблона
+#     context = {
+#         'test': test,
+#         'question_form': question_form,  
+#         'questions': questions,  # Список всех вопросов
+#         'question_groups': question_groups,  # Группированные вопросы
+#         'ungrouped_questions': ungrouped_questions,  # Негруппированные вопросы
+#         'form_student': student_form  # Форма для выбора студентов
+        
+#     }
+
+#     return render(request, 'tests/add_questions.html', context=context)
 
 
 def delete_question(request, question_id):
@@ -313,30 +362,58 @@ def complete_questions(request, test_id):
     return redirect('app:index')
 
 
-@login_required
-def add_answers(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    test = question.test
-    questions = test.questions.all()
+class AddAnswersView(LoginRequiredMixin, FormView):
+    template_name = 'tests/add_answer.html'
+    form_class = AnswerForm
+
+    def form_valid(self, form):
+        question_id = self.kwargs.get('question_id')
+        question = get_object_or_404(Question, id=question_id)
+
+        answer = form.save(commit=False)
+        answer.question = question
+        answer.save()
+        return redirect('tests:add_answers', question_id=question.id)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question_id = self.kwargs.get('question_id')
+        question = get_object_or_404(Question, id=question_id)
+        test = question.test
+        questions = test.questions.all()
+
+        context['test'] = test
+        context['question'] = question
+        context['questions'] = questions
+        context['form_type'] = 'Ответ'
+        context['action_url'] = 'tests:add_answers'
+
+        return context
+
+# @login_required
+# def add_answers(request, question_id):
+#     question = get_object_or_404(Question, pk=question_id)
+#     test = question.test
+#     questions = test.questions.all()
 
 
-    if request.method == 'POST':
-        answer_form = AnswerForm(request.POST)
-        if answer_form.is_valid():
-            answer = answer_form.save(commit=False)
-            answer.question = question
-            answer.save()
-            return redirect('tests:add_answers', question_id=question.id)
-    else:
-        answer_form = AnswerForm()
-    return render(request, 'tests/add_answer.html', {
-        'test': test,
-        'question': question,
-        'questions': questions,
-        'form': answer_form,
-        'form_type':'Ответ',
-        'action_url':'tests:add_answers',
-    })
+#     if request.method == 'POST':
+#         answer_form = AnswerForm(request.POST)
+#         if answer_form.is_valid():
+#             answer = answer_form.save(commit=False)
+#             answer.question = question
+#             answer.save()
+#             return redirect('tests:add_answers', question_id=question.id)
+#     else:
+#         answer_form = AnswerForm()
+#     return render(request, 'tests/add_answer.html', {
+#         'test': test,
+#         'question': question,
+#         'questions': questions,
+#         'form': answer_form,
+#         'form_type':'Ответ',
+#         'action_url':'tests:add_answers',
+#     })
 
 def delete_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id)
@@ -345,29 +422,63 @@ def delete_answer(request, answer_id):
     answer.delete()
     return redirect('tests:add_answers', question_id=question.id)
 
-def add_matching_pair(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    test = question.test
-    questions = test.questions.all()
+
+class AddMathicngPairView(LoginRequiredMixin, FormView):
+    template_name = 'tests/add_answer.html'
+    form_class = MatchingPairForm
+
+    def form_valid(self, form):
+        question_id = self.kwargs.get('question_id')
+        question = get_object_or_404(Question, id=question_id)
+
+        answer = form.save(commit=False)
+        answer.question = question
+        answer.save()
+
+        return redirect('tests:add_matching_pair', question_id=question.id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question_id = self.kwargs.get('question_id')
+        question = get_object_or_404(Question, id=question_id)
+        test = question.test
+        questions = test.questions.all()
+
+        context['test'] = test
+        context['question'] = question
+        context['questions'] = questions
+        context['form_type'] = 'Соотвецтвие'
+        context['action_url'] = 'tests:add_matching_pair'
+
+        return context
+
+#     test = question.test
+#     questions = test.questions.all()
+        
+
+# def add_matching_pair(request, question_id):
+#     question = get_object_or_404(Question, pk=question_id)
+#     test = question.test
+#     questions = test.questions.all()
 
 
-    if request.method == "POST":
-        matching_pair_form = MatchingPairForm(request.POST)
-        if matching_pair_form.is_valid():
-            answer = matching_pair_form.save(commit=False)
-            answer.question = question
-            answer.save()
-            return redirect('tests:add_matching_pair', question_id=question.id)
-    else:
-        matching_pair_form = MatchingPairForm()
-    return render(request, 'tests/add_answer.html', {
-        'test': test,
-        'question': question,
-        'questions': questions,
-        'form': matching_pair_form,
-        "form_type":"Соотвецтвие",
-        "action_url":'tests:add_matching_pair',
-    })
+#     if request.method == "POST":
+#         matching_pair_form = MatchingPairForm(request.POST)
+#         if matching_pair_form.is_valid():
+#             answer = matching_pair_form.save(commit=False)
+#             answer.question = question
+#             answer.save()
+#             return redirect('tests:add_matching_pair', question_id=question.id)
+#     else:
+#         matching_pair_form = MatchingPairForm()
+#     return render(request, 'tests/add_answer.html', {
+#         'test': test,
+#         'question': question,
+#         'questions': questions,
+#         'form': matching_pair_form,
+#         "form_type":"Соотвецтвие",
+#         "action_url":'tests:add_matching_pair',
+#     })
 
 def test_preview(request, test_id):
     if request.user.is_authenticated:
