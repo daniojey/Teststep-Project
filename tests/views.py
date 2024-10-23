@@ -1049,35 +1049,59 @@ class TestsResultsView(View):
 def success_manual_test(request):
     return render(request, 'tests/success_page_manual_test.html')
 
+class TestsForReviewView(TemplateView):
+    template_name = 'tests/tr.html'
 
-def tests_for_review(request):
-    user = get_object_or_404(User, id=request.user.id)
-    user_groups = UsersGroupMembership.objects.filter(user=user)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_object_or_404(User, id=self.request.user.id)
+        user_groups = UsersGroupMembership.objects.filter(user=user)
 
-    # Проверяем в какой группе находиться пользоваетель
-    if user_groups.exists():
-        group = user_groups.first().group
-        group_memberships = UsersGroupMembership.objects.filter(group=group)
+        if user_groups.exists():
+            group = user_groups.first().group
+            group_memberships = UsersGroupMembership.objects.filter(group=group)
+
+        
+        tests_reviews = [
+            test for item in group_memberships 
+            for test in Tests.objects.filter(user=item.user, check_type='manual')
+            ]
+
+        # Если нужно сохранить логику фильтрации, можно сделать так:
+        tests_results = [t for t in tests_reviews if t]
+
+        context['test_result'] = tests_results
+
+        return context
+
+# def tests_for_review(request):
+#     user = get_object_or_404(User, id=request.user.id)
+#     user_groups = UsersGroupMembership.objects.filter(user=user)
+
+#     # Проверяем в какой группе находиться пользоваетель
+#     if user_groups.exists():
+#         group = user_groups.first().group
+#         group_memberships = UsersGroupMembership.objects.filter(group=group)
     
     
-    tests_reviews = []
-    for item in group_memberships:
-        test = Tests.objects.filter(user=item.user, check_type='manual')
-        if test:
-            tests_reviews.append(test)
+#     tests_reviews = []
+#     for item in group_memberships:
+#         test = Tests.objects.filter(user=item.user, check_type='manual')
+#         if test:
+#             tests_reviews.append(test)
 
-    tests_results = []
-    for t in tests_reviews:
-        for ti in t:
-            if ti:
-                tests_results.append(ti)
+#     tests_results = []
+#     for t in tests_reviews:
+#         for ti in t:
+#             if ti:
+#                 tests_results.append(ti)
 
-    context = {
-        "test_result": tests_results,
-    }
+#     context = {
+#         "test_result": tests_results,
+#     }
 
 
-    return render(request, 'tests/tr.html', context=context)
+#     return render(request, 'tests/tr.html', context=context)
 
 
 def test_group_reviews(request, test_id):
