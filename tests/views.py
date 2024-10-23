@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 from django.urls import reverse
+from django.views import View
 from httpx import request
 
 from tests.strategy import MultypleChoiceStrategy
@@ -772,64 +773,55 @@ class TakeTestView(FormView):
 #     })
 
 
-def test_results(request, test_id):
-    test = get_object_or_404(Tests, id=test_id)
-    responses = request.session.get('test_responses', {})
-    audio_answers = request.session.get('audio_answer_', {})
-    test_time = request.session.get('remaining_time', None)
+class TestsResultsView(View):
+    template_name = 'tests/test_results.html'
+
+    def get(self, request, test_id):
+        test = get_object_or_404(Tests, id=test_id)
+        responses = request.session.get('test_responses', {})
+        audio_answers = request.session.get('autio_answer_', {})
+        test_time = request.session.get('remaining_time', None)
+
+        if test.check_type == Tests.MANUAL_CHECK:
+            self.save_audio_responses(request, responses, audio_answers)
+            self.clear_test_session(request)
+            test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
+            TestsReviews.objects.create(
+                test=test,
+                user=request.user,
+                answers=responses,
+                audio_answers=audio_answers,
+                duration=test_duration,
+            )
+            return render(request, 'tests/success_page_manual_test.html')
+        else:
+            score, correct_answers, total_questions, test_duration = self.calculate_results(test, responses, test_time)
+            self.save_test_results(request, test, score, test_duration)
+            self.clear_test_session(request)
+            context = self.get_context_data(test, score, correct_answers, total_questions)
+            return render(request, self.template_name, context)
+        
+    def save_audio_responses(self, request, responses, audio_answers):
+        """Сохраняем аудио ответы из сессии"""
+        for key, value in responses.items():
+            if 'audio_answer_' in key and value:
+                question_id = key.split('audio_answer_')[1]
+                audio_data = value.split(',')[1]
+                audio_content = base64.b64decode(audio_data)
+
+
+                filename = f'audio_answer_{question_id}_{request.user.id}.webm'
+                file_path = os.path.join('answers/audios/', filename)
+                audio_file = ContentFile(audio_content, filename)
+                saved_file = default_storage.save(file_path, audio_file) 
+                file_url = default_storage.url(saved_file)
+                audio_answers[question_id] = file_url
+
+        request.session['audio_answers'] = audio_answers   
+
     
-
-    if test.check_type == Tests.MANUAL_CHECK:
-            for key, value in responses.items():
-                if 'audio_answer_' in key and value:
-                    # Преобразуем base64 в файл
-                    question_id = key.split('audio_answer_')[1]
-                    audio_data = value.split(',')[1]  # Убираем префикс base64
-                    audio_content = base64.b64decode(audio_data)
-                    
-                    # Генерируем имя файла
-                    filename = f"audio_answer_{question_id}_{request.user.id}.webm"
-                    file_path = os.path.join('answers/audios/', filename)
-                    audio_file = ContentFile(audio_content, filename)
-                    
-                    # Сохраняем файл в систему
-                    saved_file = default_storage.save(file_path, audio_file)
-                    
-                    # Получаем URL файла
-                    file_url = default_storage.url(saved_file)
-                    
-                    # Сохраняем URL аудиофайла по вопросу в словаре
-                    audio_answers[question_id] = file_url
-
-            request.session['audio_answers'] = audio_answers
-
-
-    if test.check_type == Tests.MANUAL_CHECK:
-        print('hellow')
-        review = TestsReviews.objects.create(
-            test=test,
-            user=request.user,
-            answers=responses,
-            audio_answers=audio_answers,  # Сохраняем аудио-ответы для ручной проверки
-                # group=request.user.profile.group,  # Если у пользователя есть группа
-        )
-        print(review)
-
-        # print(request.session)
-        if 'question_order' in request.session:
-            del request.session['question_order']
-        if 'question_index' in request.session:
-            del request.session['question_index']
-        if 'test_responses' in request.session:
-            del request.session['test_responses']
-        if 'remaining_time' in request.session:
-            del request.session['remaining_time']
-
-        return render(request, 'tests/success_page_manual_test.html')
-    
-    else:
-    
-
+    def calculate_results(self, test, responses, test_time):
+        """Вычисляем результаты теста."""
         total_questions = test.questions.count()
         correct_answers = 0.0
 
@@ -838,84 +830,221 @@ def test_results(request, test_id):
             if key.startswith('question_'):
                 question_id = int(key.split('_')[1])
                 question = Question.objects.get(id=question_id)
-                
-                if question.question_type == 'SC':
-                    correct_answer = question.answers.filter(is_correct=True).first()
-                    if correct_answer and correct_answer.id == int(value):
-                        correct_answers += 1.0
-                elif question.question_type == 'MC':
-                    correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
-                    if set(map(int, value)) == set(correct_answers_list):
-                        correct_answers += 1.0
-                elif question.question_type == 'IMG':
-                    correct_answer = question.answers.filter(is_correct=True).first()
-                    if correct_answer and correct_answer.id == int(value):
-                        correct_answers += 1.0
-                elif question.question_type == 'AUD':
-                    correct_answer = question.answers.filter(is_correct=True).first()
-                    if correct_answer and correct_answer.id == int(value):
-                        correct_answers += 1.0
-                elif question.question_type == "INP":
-                    correct_answer = question.answers.filter(is_correct=True).first()
-                    if str(correct_answer).strip().lower() == str(value).strip().lower():
-                        correct_answers += 1.0
-                elif question.question_type == 'MTCH':
-                    questions_count = MatchingPair.objects.filter(question=question).count()
-                    points = 1 / questions_count
-                    
-                    for left, right in value.items():
-                        if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
-                            correct_answers += points 
+                correct_answers += self.evaluate_question(question, value)
 
-        try:
-            score = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
-            score = round(score)
-        except ZeroDivisionError as e:
-            print(e)
-            score = 0
-
-
-        test_duration = test.duration.total_seconds() - test_time
-        test_duration = timedelta(seconds=test_duration)
-
-
-        if request.user.is_authenticated:
-            test_result, created = TestResult.objects.get_or_create(
-                user=request.user,
-                test=test,
-                defaults={'score': score, 'attempts': 1, 'duration': test_duration}
-            )
-            
-            if not created:
-                if test_result.remaining_atemps > 0:
-                    test_result.attempts += 1
-                    test_result.duration = test_duration
-                    test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
-                    test_result.save()
-                else:
-                    return render(request, 'users/profile.html')
         
-        if 'question_order' in request.session:
-            del request.session['question_order']
-        if 'question_index' in request.session:
-            del request.session['question_index']
-        if 'test_responses' in request.session:
-            del request.session['test_responses']
-        if 'test_id' in request.session:
-            del request.session['test_id']
-        if 'remaining_time' in request.session:
-            del request.session['remaining_time']
+        score = round((correct_answers / total_questions) * 100) if total_questions > 0 else 0
+        test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
 
-        correct_answers = int(correct_answers)
-            
-    context = {
-        'test': test,
-        'score': score,
-        'correct_answers': correct_answers,
-        'total_questions': total_questions
-    }
+        return score, int(correct_answers), total_questions, test_duration
+
+    def evaluate_question(self, question, value):
+        """Оценка вопроса на основе типа"""
+        correct_answers = 0.0
+        if question.question_type == 'SC':
+            correct_answer = question.answers.filter(is_correct=True).first()
+            if correct_answer and correct_answer.id == int(value):
+                correct_answers += 1.0
+        elif question.question_type == 'MC':
+            correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
+            if set(map(int, value)) == set(correct_answers_list):
+                correct_answers += 1.0
+        elif question.question_type == 'IMG':
+            correct_answer = question.answers.filter(is_correct=True).first()
+            if correct_answer and correct_answer.id == int(value):
+                correct_answers += 1.0
+        elif question.question_type == 'AUD':
+            correct_answer = question.answers.filter(is_correct=True).first()
+            if correct_answer and correct_answer.id == int(value):
+                correct_answers += 1.0
+        elif question.question_type == "INP":
+            correct_answer = question.answers.filter(is_correct=True).first()
+            if str(correct_answer).strip().lower() == str(value).strip().lower():
+                correct_answers += 1.0
+        elif question.question_type == 'MTCH':
+                questions_count = MatchingPair.objects.filter(question=question).count()
+                points = 1 / questions_count
+                for left, right in value.items():
+                    if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
+                        correct_answers += points
+        return correct_answers
     
-    return render(request, 'tests/test_results.html', context)
+    def save_test_results(self, request, test, score, test_duration):
+        """Сохраняем результаты теста пользователя"""
+        test_result, created = TestResult.objects.get_or_create(
+            user=request.user,
+            test=test,
+            defaults={'score': score, 'attempts': 1, 'duration': test_duration}
+        )
+
+        if not created:
+            if test_result.remaining_atemps > 0:
+                test_result.attempts += 1
+                test_result.duration = test_duration
+                test_result.score = max(test_result.score, score)
+                test_result.save()
+
+    def clear_test_session(self, request):
+        """Очищаем данные теста из сессии"""
+        session_keys = ['question_order','question_index','test_responses','remaining_time', 'test_id']
+        for key in session_keys:
+            if key in session_keys:
+                del request.session[key]
+
+    def get_context_data(self, test, score, correct_answers, total_questions):
+        """Подготовка данных для шаблона"""
+        return {
+            'test': test,
+            'score': score,
+            'correct_answers': correct_answers,
+            'total_questions': total_questions,
+        }
+    
+
+# def test_results(request, test_id):
+#     test = get_object_or_404(Tests, id=test_id)
+#     responses = request.session.get('test_responses', {})
+#     audio_answers = request.session.get('audio_answer_', {})
+#     test_time = request.session.get('remaining_time', None)
+    
+
+#     if test.check_type == Tests.MANUAL_CHECK:
+#             for key, value in responses.items():
+#                 if 'audio_answer_' in key and value:
+#                     # Преобразуем base64 в файл
+#                     question_id = key.split('audio_answer_')[1]
+#                     audio_data = value.split(',')[1]  # Убираем префикс base64
+#                     audio_content = base64.b64decode(audio_data)
+                    
+#                     # Генерируем имя файла
+#                     filename = f"audio_answer_{question_id}_{request.user.id}.webm"
+#                     file_path = os.path.join('answers/audios/', filename)
+#                     audio_file = ContentFile(audio_content, filename)
+                    
+#                     # Сохраняем файл в систему
+#                     saved_file = default_storage.save(file_path, audio_file)
+                    
+#                     # Получаем URL файла
+#                     file_url = default_storage.url(saved_file)
+                    
+#                     # Сохраняем URL аудиофайла по вопросу в словаре
+#                     audio_answers[question_id] = file_url
+
+#             request.session['audio_answers'] = audio_answers
+
+
+#     if test.check_type == Tests.MANUAL_CHECK:
+#         print('hellow')
+#         review = TestsReviews.objects.create(
+#             test=test,
+#             user=request.user,
+#             answers=responses,
+#             audio_answers=audio_answers,  # Сохраняем аудио-ответы для ручной проверки
+#                 # group=request.user.profile.group,  # Если у пользователя есть группа
+#         )
+#         print(review)
+
+#         # print(request.session)
+#         if 'question_order' in request.session:
+#             del request.session['question_order']
+#         if 'question_index' in request.session:
+#             del request.session['question_index']
+#         if 'test_responses' in request.session:
+#             del request.session['test_responses']
+#         if 'remaining_time' in request.session:
+#             del request.session['remaining_time']
+
+#         return render(request, 'tests/success_page_manual_test.html')
+    
+#     else:
+    
+
+#         total_questions = test.questions.count()
+#         correct_answers = 0.0
+
+
+#         for key, value in responses.items():
+#             if key.startswith('question_'):
+#                 question_id = int(key.split('_')[1])
+#                 question = Question.objects.get(id=question_id)
+                
+#                 if question.question_type == 'SC':
+#                     correct_answer = question.answers.filter(is_correct=True).first()
+#                     if correct_answer and correct_answer.id == int(value):
+#                         correct_answers += 1.0
+#                 elif question.question_type == 'MC':
+#                     correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
+#                     if set(map(int, value)) == set(correct_answers_list):
+#                         correct_answers += 1.0
+#                 elif question.question_type == 'IMG':
+#                     correct_answer = question.answers.filter(is_correct=True).first()
+#                     if correct_answer and correct_answer.id == int(value):
+#                         correct_answers += 1.0
+#                 elif question.question_type == 'AUD':
+#                     correct_answer = question.answers.filter(is_correct=True).first()
+#                     if correct_answer and correct_answer.id == int(value):
+#                         correct_answers += 1.0
+#                 elif question.question_type == "INP":
+#                     correct_answer = question.answers.filter(is_correct=True).first()
+#                     if str(correct_answer).strip().lower() == str(value).strip().lower():
+#                         correct_answers += 1.0
+#                 elif question.question_type == 'MTCH':
+#                     questions_count = MatchingPair.objects.filter(question=question).count()
+#                     points = 1 / questions_count
+                    
+#                     for left, right in value.items():
+#                         if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
+#                             correct_answers += points 
+
+#         try:
+#             score = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
+#             score = round(score)
+#         except ZeroDivisionError as e:
+#             print(e)
+#             score = 0
+
+
+#         test_duration = test.duration.total_seconds() - test_time
+#         test_duration = timedelta(seconds=test_duration)
+
+
+#         if request.user.is_authenticated:
+#             test_result, created = TestResult.objects.get_or_create(
+#                 user=request.user,
+#                 test=test,
+#                 defaults={'score': score, 'attempts': 1, 'duration': test_duration}
+#             )
+            
+#             if not created:
+#                 if test_result.remaining_atemps > 0:
+#                     test_result.attempts += 1
+#                     test_result.duration = test_duration
+#                     test_result.score = max(test_result.score, score)  # Сохраняем лучший результат
+#                     test_result.save()
+#                 else:
+#                     return render(request, 'users/profile.html')
+        
+#         if 'question_order' in request.session:
+#             del request.session['question_order']
+#         if 'question_index' in request.session:
+#             del request.session['question_index']
+#         if 'test_responses' in request.session:
+#             del request.session['test_responses']
+#         if 'test_id' in request.session:
+#             del request.session['test_id']
+#         if 'remaining_time' in request.session:
+#             del request.session['remaining_time']
+
+#         correct_answers = int(correct_answers)
+            
+#     context = {
+#         'test': test,
+#         'score': score,
+#         'correct_answers': correct_answers,
+#         'total_questions': total_questions
+#     }
+    
+#     return render(request, 'tests/test_results.html', context)
 
 def success_manual_test(request):
     return render(request, 'tests/success_page_manual_test.html')
@@ -1081,10 +1210,10 @@ def take_test_review(request, user_id, test_id):
             score = correct_answers / total_questions * 100
             print(f"Балл по тесту: {int(score)}%")
 
-            # # # Создание TestResults и удаление TestReviews
-            # TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2)
-            # review.delete()
-            # return redirect('users:profile')
+            # # Создание TestResults и удаление TestReviews
+            TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2, duration=0)
+            review.delete()
+            return redirect('users:profile')
 
     else:
         form = TestReviewForm(test=test, answers=answers, audio_answers=audio_answers)

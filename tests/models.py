@@ -147,6 +147,7 @@ class TestsReviews(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date_taken = models.DateTimeField(auto_now_add=True)
+    duration = models.DurationField()
     answers = models.JSONField()  # Хранение ответов пользователя в формате JSON
     audio_answers = models.JSONField(blank=True, null=True)
     group = models.CharField(max_length=100, blank=True, null=True)  # Опционально: группа пользователя
