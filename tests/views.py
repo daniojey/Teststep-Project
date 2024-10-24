@@ -5,7 +5,7 @@ from django.forms.forms import BaseForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from httpx import request
 
@@ -1194,104 +1194,215 @@ class TestGroupReviewsView(TemplateView):
 
 #     return render(request, 'tests/test_group_reviews.html', context=context)
 
+class TakeTestReviewView(FormView):
+    template_name = 'tests/take_test_review.html'
+    form_class = TestReviewForm
 
-def take_test_review(request, user_id, test_id):
-    user = get_object_or_404(User, id=user_id)
-    test = get_object_or_404(Tests, id=test_id)
-    review = get_object_or_404(TestsReviews, user=user, test=test)
-    answers = review.answers
-    audio_answers = review.audio_answers or {}
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user_id = self.kwargs.get('user_id')
+        test_id = self.kwargs.get('test_id')
+
+        user = get_object_or_404(User, id=user_id)
+        test = get_object_or_404(Tests, id=test_id)
+        review = get_object_or_404(TestsReviews, user=user, test=test)
 
 
-    if request.method == 'POST':
-        form = TestReviewForm(test=test, answers=answers, data=request.POST)
-        if form.is_valid():
-            correct_answers = 0.0
-            total_questions = len(test.questions.all())
+        kwargs.update({
+            'test': test,
+            'answers': review.answers,
+            'audio_answers': review.audio_answers or {}
+        })
 
-            for question in test.questions.all():
-                if question.question_type == 'MC':
+        self.review = review
+        self.test = test
+
+        return kwargs
+    
+    def form_valid(self, form):
+        """
+        Логика обработки POST запроса, аналогична тому, что у тебя в POST методе в функциональном представлении.
+        """
+        correct_answers = 0.0
+        total_questions = len(self.test.questions.all())
+
+        for question in self.test.questions.all():
+            if question.question_type == 'MC':
+                # Получаем правильные ответы
+                correct_answer = question.answers.filter(is_correct=True)
+                corrects = [i for i in correct_answer]
+
+                selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
+                selected_unpack = [int(i) for i in selected_answer]
+
+                if len(corrects) > 1:
+                    points = 1 / len(corrects)
+                    for i in corrects:
+                        item = Answer.objects.filter(id=i.id).first()
+                        if item.id in selected_unpack:
+                            correct_answers += points
+
+                elif len(corrects) == 1:
+                    for i in corrects:
+                        item = Answer.objects.filter(id=i.id).first()
+                        if item.id in selected_unpack:
+                            correct_answers += 1
+
+            elif question.question_type == "SC":
+                correct_answer = question.answers.filter(is_correct=True).first()
+
+                try:
+                    selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
+                except (IndexError, TypeError):
+                    selected_answer = None
+
+                if correct_answer and correct_answer.id == selected_answer:
+                    correct_answers += 1
+
+            elif question.question_type == 'AUD':
+                audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
+
+                if audio_response == True:
+                    correct_answers += 1
+
+            elif question.question_type == 'INP':
+                selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
+                if selected_answer == True:
+                    correct_answers += 1
+
+            elif question.question_type == 'MTCH':
+                user_answers = form.cleaned_data.get(f"question_{question.id}_mtch")
+                correct_pair = MatchingPair.objects.filter(question=question).count()
+                scores = 1 / correct_pair
+                correct_answers += scores * len(user_answers)
+
+        # Сохраняем изменения в аудио ответах
+        self.review.audio_answers = form.cleaned_data.get('audio_answers', self.review.audio_answers)
+        self.review.save()
+
+        # Считаем итоговый балл
+        score = correct_answers / total_questions * 100
+        print(f"Балл по тесту: {int(score)}%")
+
+        # Сохраняем результат
+        TestResult.objects.create(
+            user=self.review.user,
+            test=self.review.test,
+            score=score,
+            attempts=2,
+            duration=self.review.duration
+        )
+
+        # Удаляем review, так как тест завершен
+        self.review.delete()
+
+        # Перенаправляем пользователя после завершения теста
+        return redirect('users:profile')
+
+    def get_success_url(self):
+        """
+        Указываем URL, на который будет происходить перенаправление
+        """
+        return reverse_lazy('users:profile')
+    
+
+# def take_test_review(request, user_id, test_id):
+#     user = get_object_or_404(User, id=user_id)
+#     test = get_object_or_404(Tests, id=test_id)
+#     review = get_object_or_404(TestsReviews, user=user, test=test)
+#     answers = review.answers
+#     audio_answers = review.audio_answers or {}
+
+
+#     if request.method == 'POST':
+#         form = TestReviewForm(test=test, answers=answers, data=request.POST)
+#         if form.is_valid():
+#             correct_answers = 0.0
+#             total_questions = len(test.questions.all())
+
+#             for question in test.questions.all():
+#                 if question.question_type == 'MC':
                     
-                    # Получаем правильные ответы
-                    correct_answer = question.answers.filter(is_correct=True)
+#                     # Получаем правильные ответы
+#                     correct_answer = question.answers.filter(is_correct=True)
                     
-                    corrects = [i for i in correct_answer]
+#                     corrects = [i for i in correct_answer]
 
-                    # Получаем выбранные ответы учителем
-                    selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
-                    selected_unpack = [int(i) for i in selected_answer]
+#                     # Получаем выбранные ответы учителем
+#                     selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
+#                     selected_unpack = [int(i) for i in selected_answer]
                     
 
-                    # TODO Реализовать стратегию позже 
-                    # multiple_choice_strategy = MultypleChoiceStrategy()
-                    # multiple_choice_strategy.calculate_point(question, selected_answer, correct_answer, form)
+#                     # TODO Реализовать стратегию позже 
+#                     # multiple_choice_strategy = MultypleChoiceStrategy()
+#                     # multiple_choice_strategy.calculate_point(question, selected_answer, correct_answer, form)
 
 
-                    if form.cleaned_data.get(f'question_{question.id}_approve'):
-                        # Если правильных ответов в вопросе несколько 
-                        if len(corrects) > 1:
-                            points = 1 / len(corrects)
-                            for i in corrects:
+#                     if form.cleaned_data.get(f'question_{question.id}_approve'):
+#                         # Если правильных ответов в вопросе несколько 
+#                         if len(corrects) > 1:
+#                             points = 1 / len(corrects)
+#                             for i in corrects:
                                 
-                                item = Answer.objects.filter(id=i.id).first()
-                                if item.id in selected_unpack:
-                                    correct_answers += points
+#                                 item = Answer.objects.filter(id=i.id).first()
+#                                 if item.id in selected_unpack:
+#                                     correct_answers += points
 
-                        # Если один правильный ответ
-                        elif len(corrects) == 1:
-                            for i in corrects:
+#                         # Если один правильный ответ
+#                         elif len(corrects) == 1:
+#                             for i in corrects:
                                 
-                                item = Answer.objects.filter(id=i.id).first()
-                                if item.id in selected_unpack:
-                                    correct_answers += 1
+#                                 item = Answer.objects.filter(id=i.id).first()
+#                                 if item.id in selected_unpack:
+#                                     correct_answers += 1
 
-                elif question.question_type == "SC":
-                    correct_answer = question.answers.filter(is_correct=True).first()
+#                 elif question.question_type == "SC":
+#                     correct_answer = question.answers.filter(is_correct=True).first()
 
-                    try:
-                        selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
-                    except (IndexError, TypeError):
-                        selected_answer = None  # Если пользователь не выбрал ответ
+#                     try:
+#                         selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
+#                     except (IndexError, TypeError):
+#                         selected_answer = None  # Если пользователь не выбрал ответ
 
-                    # Сравниваем ответ пользователя с правильным ответом
-                    if correct_answer and correct_answer.id == selected_answer:
-                        correct_answers += 1
+#                     # Сравниваем ответ пользователя с правильным ответом
+#                     if correct_answer and correct_answer.id == selected_answer:
+#                         correct_answers += 1
 
-                elif question.question_type == 'AUD':
-                    audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
+#                 elif question.question_type == 'AUD':
+#                     audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
 
-                    if audio_response == True:
-                        correct_answers += 1                   
+#                     if audio_response == True:
+#                         correct_answers += 1                   
                 
-                elif question.question_type == 'INP':
-                    correct_answer = question.answers.filter(is_correct=True).first()
+#                 elif question.question_type == 'INP':
+#                     correct_answer = question.answers.filter(is_correct=True).first()
 
 
-                    selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
+#                     selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
 
-                    if selected_answer == True:
-                        correct_answers += 1
-                elif question.question_type == 'MTCH':
-                    user_answers = form.cleaned_data.get(f"question_{question.id}_mtch")
-                    correct_pair = MatchingPair.objects.filter(question=question).count()
-                    scores =  1 / correct_pair
-                    correct_answers += scores * len(user_answers)
+#                     if selected_answer == True:
+#                         correct_answers += 1
+#                 elif question.question_type == 'MTCH':
+#                     user_answers = form.cleaned_data.get(f"question_{question.id}_mtch")
+#                     correct_pair = MatchingPair.objects.filter(question=question).count()
+#                     scores =  1 / correct_pair
+#                     correct_answers += scores * len(user_answers)
 
-            review.audio_answers = audio_answers
-            review.save()
+#             review.audio_answers = audio_answers
+#             review.save()
 
-            # TODO Переделать этот калл
+#             # TODO Переделать этот калл
 
-            # # Сохранение результата
-            score = correct_answers / total_questions * 100
-            print(f"Балл по тесту: {int(score)}%")
+#             # # Сохранение результата
+#             score = correct_answers / total_questions * 100
+#             print(f"Балл по тесту: {int(score)}%")
 
-            # # Создание TestResults и удаление TestReviews
-            TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2, duration=0)
-            review.delete()
-            return redirect('users:profile')
+#             # # Создание TestResults и удаление TestReviews
+#             TestResult.objects.create(user=review.user, test=review.test, score=score, attempts=2, duration=0)
+#             review.delete()
+#             return redirect('users:profile')
 
-    else:
-        form = TestReviewForm(test=test, answers=answers, audio_answers=audio_answers)
+#     else:
+#         form = TestReviewForm(test=test, answers=answers, audio_answers=audio_answers)
 
-    return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test, 'audio_answers': audio_answers})
+#     return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test, 'audio_answers': audio_answers})

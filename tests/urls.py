@@ -24,6 +24,6 @@ urlpatterns = [
     path('test_st/<int:test_id>/', views.TakeTestView.as_view(), name='take_test'),
     path('results/<int:test_id>/', views.TestsResultsView.as_view(), name='test_results'),
     path('tests_for_review/', views.TestsForReviewView.as_view(), name='tests_for_review'),
-    path('tests_for_review/<int:user_id>/<int:test_id>/', views.take_test_review, name='take_test_review'),
+    path('tests_for_review/<int:user_id>/<int:test_id>/', views.TakeTestReviewView.as_view(), name='take_test_review'),
     path('success_page/', views.success_manual_test, name='success_page'),
 ]
