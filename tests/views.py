@@ -492,8 +492,10 @@ class TestPreviewView(TemplateView):
         test_id = self.kwargs.get('test_id')
 
         if self.request.user.is_authenticated:
-            test_results = user.test_results.all()
+            # test_results = user.test_results.all()
             test = get_object_or_404(Tests, id=test_id)
+            test_results = TestResult.objects.filter(test=test, user=user).first()
+            test_review = TestsReviews.objects.filter(user=user, test=test)
             user_test = TestResult.objects.filter(user=user)
             if len(user_test) > 0:
                 if user_test[0].remaining_atemps > 0:
@@ -504,6 +506,7 @@ class TestPreviewView(TemplateView):
                 test_required = True
         else:
             test_results = ['Для того чтобы пройти тест зарегестрируйтесь :D']
+            test_review = ['None']
         
         test = get_object_or_404(Tests, id=test_id)
 
@@ -511,6 +514,7 @@ class TestPreviewView(TemplateView):
             'test': test,
             'test_results': test_results,
             'required_attemps': test_required,
+            'test_review': test_review,
         })
 
         return context

@@ -2,52 +2,44 @@
 {% load static %}
 
 {% block content %}
-<head>
-    <link rel="stylesheet" type='text/css' href="{% static "css/styles.css" %}">
-</head>
+<link rel="stylesheet" type="text/css" href="{% static "css/test_preview.css" %}">
 
-<div align='left'>
-    <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
-</div>
+<body>
+    {% load timedelta_filters %}
+    <div class='main-container'>
+        <div class="leaderboard-header">
+            <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
+                <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
+            </a>
+            <h2>{{ test }}({{ test.category }})</h2>
+        </div>
 
+        <div class='test-preview-image'>
+            <img src="{{ test.image.url }}" >
+        </div>
 
-<div align="center">
-    <div class='fixed-container'>
-        {% if test.image %}
-            <img src="{{ test.image.url }}" alt="{{ test.name }}" >
+        <div class='test-text-container'>
+            <p class="test-description">Опис:&nbsp;&nbsp;{{ test.description }}</p>
+            <p class="test-duration">Час проходження: {{ test.duration|format_duration_minutes }}</p>
+        </div>
+
+        {% if test_results %}
+            <button class="no-active-test-btn" disabled>Розпочати тестування</button>
+            <div class='user-test-result'>
+                <label class='test-result-text'>Ваш результат:</label>
+                <label class='score-and-time'>{{ test_results.score|floatformat:0 }}% | {{ test_results.duration|format_duration }}</label>
+            </div>
+        {% elif test_review %}
+            
+        {% else %}
+            <button class="start-test-btn" id="start-test">Розпочати тестування</button>
         {% endif %}
     </div>
-    <h1>{{ test.name }}</h1>
-    Час для проходження - {{test.duration}}
-    <div>
-        <h2>Категорія: {{ test.category }}</h2>
-        <h3>Опис: {{ test.description }}</h3>
-    </div>
-    {% if required_attemps %}
-        <button id="start-test">Почати тестування</button>
-    {% else %}
-        <p></p>
-    {% endif %}
 
-</div>
-
-<script>
-    document.getElementById('start-test').onclick = function() {
-        window.location.href = "{% url 'tests:take_test' test.id %}";
-    };
-</script>
-
-
-<ul align='left'>
-    <h2>Ваш результат по тесту</h2>
-    {% if test_results %}
-        {% for result in test_results %}
-            {% if test.id == result.test.id %}
-                <li>{{ result.score }}% - {{ result.date_taken }}</li>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-</ul>
- 
-{% endblock content %}
-
+    <script>
+        document.getElementById('start-test').onclick = function() {
+            window.location.href = "{% url 'tests:take_test' test.id %}";
+        };
+    </script>
+</body>
+{% endblock content%}
