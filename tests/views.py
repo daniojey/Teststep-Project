@@ -1107,44 +1107,92 @@ class TestsForReviewView(TemplateView):
 
 #     return render(request, 'tests/tr.html', context=context)
 
+class TestGroupReviewsView(TemplateView):
+    template_name = 'tests/test_group_reviews.html'
 
-def test_group_reviews(request, test_id):
-    test = get_object_or_404(Tests, id=test_id)
-    user = get_object_or_404(User, id=request.user.id)
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        test_id = self.kwargs.get('test_id')
+        test = get_object_or_404(Tests, id=test_id)
+        user = get_object_or_404(User, id=self.request.user.id)
 
-    user_groups = UsersGroupMembership.objects.filter(user=user)
+        # Получаем всех членов группы и название группы
+        group_memberships, group_name = self.get_user_group(user=user)
 
-    if user_groups.exists():
-        group = user_groups.first().group
-        group_memberships = UsersGroupMembership.objects.filter(group=group)
-        group_name = group.name
-    else:
-        group = None
-        group_memberships = None
-        group_name = "Вы не присоединились к группе"
+        user_completely_test = []
+        user_reviews = []
+        user_not_reviews = []
 
-    user_complitely_test = []
-    user_reviews = []
-    user_not_reviews = []
-    for us in group_memberships:
-        review = TestsReviews.objects.filter(user=us.user, test=test)
-        results = TestResult.objects.filter(user=us.user, test=test)
-        if review:    
-            user_reviews.append(review)
-        elif results:
-            user_complitely_test.append(results)
+        # Здесь мы можем сразу выбрать нужные данные
+        reviews_qs = TestsReviews.objects.filter(test=test).select_related('user')
+        results_qs = TestResult.objects.filter(test=test).select_related('user')
+
+        for us in group_memberships:
+            review = reviews_qs.filter(user=us.user).first()
+            results = results_qs.filter(user=us.user).first()
+            if review:    
+                user_reviews.append(review)
+            elif results:
+                user_completely_test.append(results)
+            else:
+                user_not_reviews.append(us.user)
+
+        
+        context['user_reviews'] = user_reviews
+        context['user_not_reviews'] = user_not_reviews
+        context['user_complete_test'] = user_completely_test
+
+        return context
+
+    def get_user_group(self, user):
+        user_group = UsersGroupMembership.objects.filter(user=user).first().group
+        
+        if user_group:
+            group_memberships = UsersGroupMembership.objects.filter(group=user_group)
+            group_name = user_group.name
         else:
-            user_not_reviews.append(us.user)
+            group_memberships = None
+            group_name = None
+
+        return group_memberships, group_name
+
+# def test_group_reviews(request, test_id):
+#     test = get_object_or_404(Tests, id=test_id)
+#     user = get_object_or_404(User, id=request.user.id)
+
+#     user_groups = UsersGroupMembership.objects.filter(user=user)
+
+#     if user_groups.exists():
+#         group = user_groups.first().group
+#         group_memberships = UsersGroupMembership.objects.filter(group=group)
+#         group_name = group.name
+#     else:
+#         group = None
+#         group_memberships = None
+#         group_name = "Вы не присоединились к группе"
+
+#     user_complitely_test = []
+#     user_reviews = []
+#     user_not_reviews = []
+#     for us in group_memberships:
+#         review = TestsReviews.objects.filter(user=us.user, test=test)
+#         results = TestResult.objects.filter(user=us.user, test=test)
+#         if review:    
+#             user_reviews.append(review)
+#         elif results:
+#             user_complitely_test.append(results)
+#         else:
+#             user_not_reviews.append(us.user)
 
 
-    context = {
-        'user_reviews': user_reviews,
-        'user_not_reviews': user_not_reviews,
-        'user_complete_test': user_complitely_test,
-    }
+#     context = {
+#         'user_reviews': user_reviews,
+#         'user_not_reviews': user_not_reviews,
+#         'user_complete_test': user_complitely_test,
+#     }
 
 
-    return render(request, 'tests/test_group_reviews.html', context=context)
+#     return render(request, 'tests/test_group_reviews.html', context=context)
 
 
 def take_test_review(request, user_id, test_id):

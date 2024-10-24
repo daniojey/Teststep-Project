@@ -8,25 +8,25 @@
 
 <h2>Пройшли тест</h2>
 {% for item in user_complete_test %}
-    {% for us in item %}
+
         <div>
-            {{ us.user }}
-            {{ us.score }}%
+            {{ item.user }}
+            {{ item.score }}%
         </div>
-    {% endfor %}
 {% endfor %}
-<h2>На перевірку</h2>
+
+ <h2>На перевірку</h2>
  {% for item in user_reviews %}
-    {% for it in item %}
         <div>
-            {{ it.user }}
-            <a href="{% url "tests:take_test_review" user_id=it.user.id test_id=it.test.id %}">Перевірити</a>
+            {{ item.user }}
+            <a href="{% url "tests:take_test_review" user_id=item.user.id test_id=item.test.id %}">Перевірити</a>
         </div>
-    {% endfor %}
  {% endfor %}
+
 
  <h2>Ще не пройшли тест</h2>
  {% for use in user_not_reviews %}
     <li>{{ use }} </li>
  {% endfor %}
+ 
 {% endblock %}
