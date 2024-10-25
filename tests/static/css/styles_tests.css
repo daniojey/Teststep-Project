@@ -1,15 +1,3 @@
-body {
-    background-color: #f3be4d;
-    background-image: linear-gradient(62deg, #ee813e 0%, #F7CE68 100%);
-    background-repeat: no-repeat;
-    background-size: cover;
-    min-height: 100vh;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 
 .matching-container {
     display: flex;

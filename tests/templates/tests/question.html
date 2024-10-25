@@ -1,25 +1,29 @@
+{% extends "base.html" %}
+{% load custom_tags %}
 {% load static %}
+
+{% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">   
-
-<head align="center">
-    <h1 align="center">
-        {{ test.name }}
-    </h1>
-</head>
-
+<link rel="stylesheet" type="text/css" href="{% static 'css/question.css' %}">   
 
 <body>
-    <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
-    <h2>Категорія питання: {{ current_question_group }}</h2>
-    <div>
-        Час до закінчення тесту: <span id="timer"></span>
-    </div>
-    
-    <form id="test-form" method="POST" action="{% url 'tests:take_test' test.id %}">
-        {% csrf_token %}
-        {% for field in form %}
-            {% if 'audio_answer_' in field.name %}
-                <div>
+    <div class='base-container'>
+        <div class='test-header'>
+            <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
+           
+            <span id="timer"></span>
+        </div>
+
+        <div class='test-category'>
+            <label>Категорія питання ({% if current_question_group %}{{ current_question_group }}{% else %}Усі{% endif %})</label>
+        </div>
+
+        <div class='form-group'>
+            <form id="test-form" method="POST" class='test-form' action="{% url 'tests:take_test' test.id %}">
+                {% csrf_token %}
+                {% for field in form %}
+                {% if 'audio_answer_' in field.name %}
+                <div class='audio-container'>
                     <p>{{ field.label_tag }}</p>
                     <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
                     <div>
@@ -29,7 +33,7 @@
                     <!-- Скрытое поле для сохранения аудиофайла -->
                     {{ field }}
                 </div>
-            {% elif question.question_type == "MTCH" %}
+                {% elif question.question_type == "MTCH" %}
                 <div class="matching-container">
                     <div class="left-column">
                         {% if 'matching_left' in field.name %}
@@ -42,7 +46,7 @@
                         </div>
                         {% endif %}
                     </div>
-            
+                    
                     <div class="right-column">
                         {% if 'matching_right' in field.name %}
                         <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
@@ -51,156 +55,116 @@
                         {% endif %}
                     </div>
                 </div>
-            
-            
-            {% else %}
-                <div class="form-group">
-                    {{ field.label_tag }}
-                    {{ field }}
+                
+                {% elif question.question_type == "SC" %}
+                <div class="form-radio">
+                    <h3>{{ field.label_tag }}</h3>
+
+                 <!-- Радио-кнопки, рендерим через цикл -->
+                <div class="radio-answers">
+                    {% for radio in field %}
+                        <label class="custom-radio" data-value="{{ radio.data.value }}">
+                            <!-- Скрытый input, он будет управляться через JS -->
+                            {{ radio.tag }} 
+                            
+                            <!-- Кастомная визуализация радио-кнопки -->
+                            <span class="custom-radio-circle"></span>
+                            <span class="radio-label">{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
                 </div>
-            {% endif %}
+                </div>
+                {% elif question.question_type == "MC" %}
+                    <div class='form-checkbox'>
+                        <h3>{{ field.label_tag }}</h3>
 
-            
-        {% endfor %}
-        <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
-        <button type="submit">Підтвердити</button>
-    </form>
+                        <div class='checkbox-answers'>
+                            {% for choice in field %}
+                                <label class="custom-checkbox">
+                                    {{ choice.tag }}
+                                    <span class="custom-checkbox-box"></span>
+                                    {{ choice.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% elif question.question_type == "INP" %}
+                    <div class='form-input'>
+                        <h3>{{ field.label_tag }}</h3>
+                        
 
-    <script>
-        // Функция для обработки начала перетаскивания
-        function drag(event) {
-            var data = event.target.getAttribute('data-right-item');
-            if (data) {
-                event.dataTransfer.setData("text", event.target.id);  // Передаём ID элемента
-                console.log("Начато перетаскивание элемента с данными:", data);
-            } else {
-                console.error("Ошибка: атрибут data-right-item пустой!");
-            }
-        }
-
-        // Функция для разрешения сброса элемента
-        function allowDrop(event) {
-            event.preventDefault();  // Останавливаем стандартное поведение браузера
-        }
-
-        // Функция для обработки сброса элемента в dropzone
-        function drop(event) {
-            event.preventDefault();
-
-            // Получаем ID элемента, который был перетащен
-            var draggedElementId = event.dataTransfer.getData("text");
-            var draggedElement = document.getElementById(draggedElementId);
-
-            if (draggedElement) {
-                var dropzone = event.target;
-
-                // Перемещаем перетаскиваемый элемент в новую зону
-                dropzone.appendChild(draggedElement);
-
-                // Получаем значения левого и правого элемента
-                var leftBlockId = dropzone.getAttribute('data-left-item');  // Получаем идентификатор левого элемента
-                var rightBlockValue = draggedElement.getAttribute('data-right-item');  // Получаем значение правого элемента
-
-                console.log("Сопоставлены элементы:", leftBlockId, "с", rightBlockValue);
-
-                // Обновляем скрытое поле с результатом сопоставления
-                var matchingInput = document.getElementById('answer_' + leftBlockId);  // Используем идентификатор левого элемента
-                if (matchingInput) {
-                    matchingInput.value = rightBlockValue;
-                    console.log("Обновлено скрытое поле для POST-запроса:", matchingInput);
-                } else {
-                    console.error("Не удалось найти скрытое поле для:", leftBlockId);
-                }
-            } else {
-                console.error("Перетаскиваемый элемент не найден:", draggedElementId);
-            }
-        }
-
-    </script>
+                        <div class='input-answer'>
+                            {{ field|addattr:"placeholder:input" }}
+                        </div>
+                    </div>
+                {% else %}
+                {% endif %}
+                
+                
+                {% endfor %}
+                <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
+                <button type="submit" class='form-btn'>Далі</button>
+            </form>
+        </div>
+        
+    </div>
     
-    
-</body>
-
-
-
-
-
-  <script>
-    let mediaRecorder;
-    let recordedChunks = [];
-
-    function startRecording(questionId) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = function(event) {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-            mediaRecorder.onstop = function() {
-                let blob = new Blob(recordedChunks, { type: 'audio/webm' });
-                let url = URL.createObjectURL(blob);
-                let audioElement = document.getElementById('audio_playback_' + questionId);
-                audioElement.src = url;
-
-                // Преобразуем в base64 и сохраняем в скрытое поле формы
-                let reader = new FileReader();
-                reader.onloadend = function() {
-                    document.getElementById('id_audio_answer_' + questionId).value = reader.result;  // input id с префиксом 'id_'
-                }
-                reader.readAsDataURL(blob);
-
-                recordedChunks = [];
-            };
-            mediaRecorder.start();
-            document.querySelector('button[onclick="startRecording(' + questionId + ')"]').disabled = true;
-            document.querySelector('button[onclick="stopRecording(' + questionId + ')"]').disabled = false;
-        })
-        .catch(error => {
-            console.error("Error accessing microphone:", error);
+    {% comment %} <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Находим все элементы label, которые обертывают кастомные радио-кнопки
+            const customRadios = document.querySelectorAll('.custom-radio');
+        
+            customRadios.forEach(radio => {
+                radio.addEventListener('click', function() {
+                    // Удаляем класс "active" со всех кастомных радио-кнопок
+                    customRadios.forEach(r => r.classList.remove('active'));
+                    
+                    // Добавляем класс "active" к выбранной радио-кнопке
+                    this.classList.add('active');
+                    
+                    // Находим внутри скрытый input[type="radio"] и "выбираем" его
+                    const input = this.querySelector('input[type="radio"]');
+                    input.checked = true;
+                });
+            });
         });
-    }
-
-    function stopRecording(questionId) {
-        mediaRecorder.stop();
-        document.querySelector('button[onclick="startRecording(' + questionId + ')"]').disabled = false;
-        document.querySelector('button[onclick="stopRecording(' + questionId + ')"]').disabled = true;
-    }
-</script>
-
-
-<script>
-    var countDownDuration = parseInt("{{ remaining_time }}", 10) * 1000;  // Остаток времени в миллисекундах
-
-    if (isNaN(countDownDuration)) {
-        console.error("Invalid duration:", "{{ remaining_time }}");
-    } else {
-        var timer = setInterval(function() {
-            if (countDownDuration <= 0) {
-                clearInterval(timer);
-                document.getElementById("remaining_time").value = 0;
-                document.getElementById("test-form").submit();  // Автоматическая отправка формы
-            }
-
-            // Рассчитываем часы, минуты и секунды
-            var hours = Math.floor((countDownDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            var minutes = Math.floor((countDownDuration % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((countDownDuration % (1000 * 60)) / 1000);
-            
-            var display = (hours > 0 ? hours + "h " : "") + minutes + "m " + seconds + "s ";
-
-            document.getElementById('timer').innerText = display;
-
-            // Уменьшаем время на одну секунду
-            countDownDuration -= 1000;
-
-            // Обновляем скрытое поле для отправки времени на сервер
-            document.getElementById("remaining_time").value = countDownDuration / 1000;
-        }, 1000);
-    }
-</script>
-
+    </script> {% endcomment %}
+    <script src="{% static 'js/radio_select.js' %}"></script>    
+    <script src="{% static 'js/drag_and_drop.js' %}"></script>    
+    <script src="{% static 'js/answer_recorder.js' %}"></script>    
+    <script src="{% static 'js/test_timer.js' %}"></script>    
+    {% comment %} <script>
+        var countDownDuration = parseInt("{{ remaining_time }}", 10) * 1000;  // Остаток времени в миллисекундах
+        
+        if (isNaN(countDownDuration)) {
+            console.error("Invalid duration:", "{{ remaining_time }}");
+        } else {
+            var timer = setInterval(function () {
+                if (countDownDuration <= 0) {
+                    clearInterval(timer);
+                    document.getElementById("remaining_time").value = 0;
+                    document.getElementById("test-form").submit();  // Автоматическая отправка формы
+                }
+                
+                // Рассчитываем часы, минуты и секунды
+                var hours = Math.floor((countDownDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((countDownDuration % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((countDownDuration % (1000 * 60)) / 1000);
+                
+                var display = (hours > 0 ? hours + "h " : "") + minutes + "m " + seconds + "s ";
+                
+                document.getElementById('timer').innerText = display;
+                
+                // Уменьшаем время на одну секунду
+                countDownDuration -= 1000;
+                
+                // Обновляем скрытое поле для отправки времени на сервер
+                document.getElementById("remaining_time").value = countDownDuration / 1000;
+            }, 1000);
+        }
+    </script> {% endcomment %}
+</body>
+{% endblock %}
 
 
 

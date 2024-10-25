@@ -608,6 +608,7 @@ class TakeTestView(FormView):
     def form_valid(self, form):
         answer = form.cleaned_data.get('answer')
 
+
         # Обрабатываем разные типы вопросов
         if self.current_question.question_type == 'AUD':
             audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
@@ -650,6 +651,7 @@ class TakeTestView(FormView):
             "current": question_index + 1,
             "all": len(question_order)
         }
+        context['current_question_group'] = self.current_question.group
         context['remaining_time'] = self.request.session['remaining_time']
         return context
 
@@ -831,6 +833,7 @@ class TestsResultsView(View):
 
 
         for key, value in responses.items():
+            print(key, value)
             if key.startswith('question_'):
                 question_id = int(key.split('_')[1])
                 question = Question.objects.get(id=question_id)
@@ -850,7 +853,10 @@ class TestsResultsView(View):
             if correct_answer and correct_answer.id == int(value):
                 correct_answers += 1.0
         elif question.question_type == 'MC':
-            correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
+            correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+            print(correct_answers_list)
+            
+            # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
             if set(map(int, value)) == set(correct_answers_list):
                 correct_answers += 1.0
         elif question.question_type == 'IMG':
@@ -871,6 +877,7 @@ class TestsResultsView(View):
                 for left, right in value.items():
                     if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
                         correct_answers += points
+
         return correct_answers
     
     def save_test_results(self, request, test, score, test_duration):
