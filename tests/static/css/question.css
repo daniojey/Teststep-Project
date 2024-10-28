@@ -407,6 +407,27 @@
     line-height: 146%; /* 29.2px */
 }
 
+/* Форма вопросов с установлением соотвецтвий */
+.form-matching {
+    display:flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.left-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.right-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: end;
+    align-items: end;
+}
+
 /* Кнопка формы */
 .form-btn {
     width: 283px;

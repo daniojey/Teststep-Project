@@ -34,10 +34,9 @@
                     {{ field }}
                 </div>
                 {% elif question.question_type == "MTCH" %}
-                    <div class='form-matching'>
-                        <div class="matching-container">
+                        {% comment %} <div class='matching-container'>
+                            {% if 'matching_left' in field.name %}
                             <div class="left-column">
-                                {% if 'matching_left' in field.name %}
                                 <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
                                     {{ field.label }}  <!-- Показываем только текст -->
                                 </div>
@@ -48,16 +47,15 @@
                                 {% endif %}
                             </div>
                             
+                            {% if 'matching_right' in field.name %}
                             <div class="right-column">
-                                {% if 'matching_right' in field.name %}
                                 <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
                                     {{ field.label }}  <!-- Показываем только текст -->
                                 </div>
-                                {% endif %}
                             </div>
+                            {% endif %}
                         </div>
-                    </div>
-                
+                 {% endcomment %}
                 {% elif question.question_type == "SC" %}
                 <div class="form-radio">
                     <h3>{{ field.label_tag }}</h3>
@@ -133,13 +131,54 @@
                         </div>
                     </div>
                 {% else %}
-                {% endif %}
-                
-                
+                {% endif %}  
                 {% endfor %}
-                <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
-                <button type="submit" class='form-btn'>{{ test_btn.text_btn }}</button>
-            </form>
+                
+                {% if question.question_type == "MTCH" %}
+                    <div class='form-matching'>
+                        <div class='left-items-container'>
+                            {% for field in form %}
+                            {% if 'matching_left' in field.name %}
+                            <div class="left-column">
+                                <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
+                                    <label>{{ field.label }}</label>  <!-- Показываем только текст -->
+
+                                    <!-- Добавляем dropzone справа от текста, чтобы он не заменял содержимое -->
+                                    <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                        <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                    </div>
+                                    
+                                </div>
+                                {% comment %} <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                    <!-- Скрытое поле для записи ответа -->
+                                    <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                </div> {% endcomment %}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class='right-items-container'>  
+                            {% for field in form %}
+                            {% if 'matching_right' in field.name %}
+                            <div class="right-column" id="right-column-{{ forloop.counter }}">
+                                <div class="right-item" id="drag_{{ field.name }}" 
+                                     data-right-item="{{ field.label }}" 
+                                     data-original-parent="right-column-{{ forloop.counter }}"  
+                                     draggable="true" 
+                                     ondragstart="drag(event)">
+                                    <label>{{ field.label }}</label>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                    
+                    <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
+                    <button type="submit" class='form-btn'>{{ test_btn.text_btn }}</button>
+                </form>
         </div>
         
     </div>
