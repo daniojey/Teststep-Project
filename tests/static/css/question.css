@@ -280,6 +280,133 @@
     line-height: 146%; /* 29.2px */
 }
 
+/* форма для вопроса с картинкой */
+.form-image {
+    margin-top: 20px;
+    width: 100%;
+    justify-content: start;
+}
+
+.question-image-container {
+    display: flex;
+    width: 410px;
+    height: 240px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+}
+
+.question-image-container img {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 0 0;
+    border-radius: 12px;
+}
+
+.input-image-answer input{
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+
+/* Общий контейнер для аудио-вопроса */
+.audio-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #2c2a3b;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    color: #FFFFFF;
+}
+
+.question-audio-container {
+    display: flex;
+    width: 300px;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+/* Секция для аудио-плеера */
+.question-audio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+}
+
+.question-audio img {
+    width: 30px;
+    height: 30px;
+}
+
+.player-section {
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: start;
+    width: 203px;
+    height: 60px;
+}
+
+.section {
+    height: 35px;
+    width: 4px;
+    margin-right: 6px;
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+    justify-content: start;
+    border: #FFFFFF;
+    border-radius: 1.313px;
+}
+
+.duration {
+    color: #B0AFBA;
+    font-size: 14px;
+    transform: translateY(145%);
+}
+
+/* Поле ввода для ответа */
+.question-answer-input input {
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.question-answer-input input::placeholder {
+    color: rgba(255, 255, 255, 0.50);
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
 /* Кнопка формы */
 .form-btn {
     width: 283px;
@@ -309,4 +436,15 @@
     .form-btn {
         width: 100%; /* Кнопка растягивается на всю ширину */
     }
+}
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
 }

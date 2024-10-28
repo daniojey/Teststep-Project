@@ -44,8 +44,6 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         context['user'] = user
         context['active_tab'] = 'rating'
         return context
-
-        return context
     
 
 # def rating(request):
@@ -608,9 +606,8 @@ class TakeTestView(FormView):
     def form_valid(self, form):
         answer = form.cleaned_data.get('answer')
 
-
         # Обрабатываем разные типы вопросов
-        if self.current_question.question_type == 'AUD':
+        if self.current_question.question_type == 'AUI':
             audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
             if audio_answer is not None:
                 self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
@@ -650,6 +647,9 @@ class TakeTestView(FormView):
         context['all_questions'] = {
             "current": question_index + 1,
             "all": len(question_order)
+        }
+        context['test_btn'] = {
+            'text_btn': 'Завершити' if question_index + 1 == len(question_order) else 'Далі',
         }
         context['current_question_group'] = self.current_question.group
         context['remaining_time'] = self.request.session['remaining_time']
@@ -833,7 +833,6 @@ class TestsResultsView(View):
 
 
         for key, value in responses.items():
-            print(key, value)
             if key.startswith('question_'):
                 question_id = int(key.split('_')[1])
                 question = Question.objects.get(id=question_id)
@@ -861,11 +860,11 @@ class TestsResultsView(View):
                 correct_answers += 1.0
         elif question.question_type == 'IMG':
             correct_answer = question.answers.filter(is_correct=True).first()
-            if correct_answer and correct_answer.id == int(value):
+            if str(correct_answer).strip().lower() == str(value).strip().lower():
                 correct_answers += 1.0
         elif question.question_type == 'AUD':
             correct_answer = question.answers.filter(is_correct=True).first()
-            if correct_answer and correct_answer.id == int(value):
+            if str(correct_answer).strip().lower() == str(value).strip().lower():
                 correct_answers += 1.0
         elif question.question_type == "INP":
             correct_answer = question.answers.filter(is_correct=True).first()

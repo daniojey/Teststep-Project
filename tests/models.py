@@ -74,7 +74,7 @@ class Question(models.Model):
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
-    text = models.TextField(verbose_name="Текст вопроса")
+    text = models.TextField(verbose_name="Текст вопроса", blank=True, null=True)
     question_type = models.CharField(max_length=5, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
     audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио")
@@ -86,7 +86,7 @@ class Question(models.Model):
         verbose_name_plural = "Вопросы"
 
     def __str__(self):
-        return self.text
+        return self.text or f"{self.question_type} - {self.id}"
     
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)

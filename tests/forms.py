@@ -192,20 +192,23 @@ class TestTakeForm(forms.Form):
         
         # Выбор изображения (Image Choice)
         elif question.question_type == 'IMG':
-            self.fields[f'answer'] = forms.ChoiceField(
-                choices=choices,
-                widget=forms.RadioSelect,
-                label=question.text
+           self.fields[f'answer'] = forms.CharField(
+                label=f"{question.text}",
+                widget=forms.TextInput
             )
         
         # Аудио-вопросы (Audio Answer)
         elif question.question_type == 'AUD':
-            # Теперь ключ снова будет содержать ID вопроса
-            self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                label=f"{question.text} (Ваша відповідь в аудіо)",
-                widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
-                required=False
+            self.fields[f'answer'] = forms.CharField(
+                label=f"{question.text}",
+                widget=forms.TextInput
             )
+            # # Теперь ключ снова будет содержать ID вопроса
+            # self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+            #     label=f"{question.text} (Ваша відповідь в аудіо)",
+            #     widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
+            #     required=False
+            # )
         
         # Текстовые ответы (Input Answer)
         elif question.question_type == "INP":

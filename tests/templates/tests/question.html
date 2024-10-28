@@ -34,27 +34,29 @@
                     {{ field }}
                 </div>
                 {% elif question.question_type == "MTCH" %}
-                <div class="matching-container">
-                    <div class="left-column">
-                        {% if 'matching_left' in field.name %}
-                        <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
-                            {{ field.label }}  <!-- Показываем только текст -->
+                    <div class='form-matching'>
+                        <div class="matching-container">
+                            <div class="left-column">
+                                {% if 'matching_left' in field.name %}
+                                <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
+                                    {{ field.label }}  <!-- Показываем только текст -->
+                                </div>
+                                <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                    <!-- Скрытое поле для записи ответа -->
+                                    <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="right-column">
+                                {% if 'matching_right' in field.name %}
+                                <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
+                                    {{ field.label }}  <!-- Показываем только текст -->
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
-                            <!-- Скрытое поле для записи ответа -->
-                            <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
-                        </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="right-column">
-                        {% if 'matching_right' in field.name %}
-                        <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
-                            {{ field.label }}  <!-- Показываем только текст -->
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
                 
                 {% elif question.question_type == "SC" %}
                 <div class="form-radio">
@@ -97,72 +99,131 @@
                             {{ field|addattr:"placeholder:input" }}
                         </div>
                     </div>
+                {% elif question.question_type == "IMG" %}
+                    <div class='form-image'>
+                        <div class='question-image-container'>
+                            <img src="{{ question.image.url }}">
+                        </div>
+
+                        <div class='input-image-answer'>
+                            {{ field|addattr:"placeholder:input" }}
+                        </div>
+                    </div>
+                {% elif question.question_type == 'AUD' %}
+                    <div class='audion-form'>
+                        <div class="question-audio-container">
+                            <div class='question-audio' onclick="toggleAudio()">
+                                <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
+                            </div>
+                            <div class='player-section'>
+                                <label class='section'>|</label>
+                            </div>
+                            <!-- Общая длительность аудио -->
+                            <span class="duration" id="audioDuration">0:00</span>
+                        </div>
+
+                        
+
+                        <!-- Элемент аудио -->
+                        <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
+
+                        
+                        <div class='question-answer-input'>
+                            {{ field|addattr:"placeholder:input" }}
+                        </div>
+                    </div>
                 {% else %}
                 {% endif %}
                 
                 
                 {% endfor %}
                 <input type="hidden" id="remaining_time" name="remaining_time" value="{{ remaining_time }}">
-                <button type="submit" class='form-btn'>Далі</button>
+                <button type="submit" class='form-btn'>{{ test_btn.text_btn }}</button>
             </form>
         </div>
         
     </div>
     
-    {% comment %} <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Находим все элементы label, которые обертывают кастомные радио-кнопки
-            const customRadios = document.querySelectorAll('.custom-radio');
-        
-            customRadios.forEach(radio => {
-                radio.addEventListener('click', function() {
-                    // Удаляем класс "active" со всех кастомных радио-кнопок
-                    customRadios.forEach(r => r.classList.remove('active'));
-                    
-                    // Добавляем класс "active" к выбранной радио-кнопке
-                    this.classList.add('active');
-                    
-                    // Находим внутри скрытый input[type="radio"] и "выбираем" его
-                    const input = this.querySelector('input[type="radio"]');
-                    input.checked = true;
-                });
+    <script>
+        // Получаем элементы
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playIcon = document.getElementById('playIcon');
+        const playerSection = document.querySelector('.player-section');
+    
+        // Количество делений
+        const totalSections = 19;
+    
+        // Создаем деления с разной высотой
+        function createSections() {
+            for (let i = 0; i < totalSections; i++) {
+                const section = document.createElement('label');
+                section.classList.add('section');
+                section.style.height = `${Math.random() * 30 + 10}px`; // Рандомная высота от 10px до 40px
+                section.style.backgroundColor = '#4a4956'; // Начальный цвет для незаполненных делений
+                playerSection.appendChild(section);
+            }
+        }
+    
+        // Обновляем прогресс делений
+        function updateProgress() {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * totalSections;
+            const sections = document.querySelectorAll('.section');
+    
+            sections.forEach((section, index) => {
+                if (index < Math.floor(progress)) {
+                    section.style.backgroundColor = '#FFFFFF'; // Заполненные деления белые
+                } else {
+                    section.style.backgroundColor = '#4a4956'; // Незаполненные деления серые
+                }
             });
+    
+            // Обработка последнего деления
+            if (audioPlayer.currentTime >= audioPlayer.duration) {
+                sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые при завершении
+            }
+        }
+    
+        // Воспроизведение и пауза аудио
+        function toggleAudio() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playIcon.src = "{% static 'icons/pause_icon.png' %}";
+            } else {
+                audioPlayer.pause();
+                playIcon.src = "{% static 'icons/play_icon.svg' %}";
+            }
+        }
+    
+        // Отображение продолжительности аудио
+        function displayDuration() {
+            const duration = audioPlayer.duration;
+            document.getElementById('audioDuration').textContent = formatTime(duration);
+        }
+    
+        // Форматирование времени
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${secs}`;
+        }
+    
+        // Создаем деления при загрузке страницы
+        createSections();
+    
+        // Обновление прогресса при проигрывании аудио
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+    
+        // Полное заполнение делений и обновление иконки после завершения воспроизведения
+        audioPlayer.addEventListener('ended', () => {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые
+            playIcon.src = "{% static 'icons/play_icon.svg' %}"; // Возвращаем иконку в состояние "play"
         });
-    </script> {% endcomment %}
+    </script>
     <script src="{% static 'js/radio_select.js' %}"></script>    
     <script src="{% static 'js/drag_and_drop.js' %}"></script>    
     <script src="{% static 'js/answer_recorder.js' %}"></script>    
     <script src="{% static 'js/test_timer.js' %}"></script>    
-    {% comment %} <script>
-        var countDownDuration = parseInt("{{ remaining_time }}", 10) * 1000;  // Остаток времени в миллисекундах
-        
-        if (isNaN(countDownDuration)) {
-            console.error("Invalid duration:", "{{ remaining_time }}");
-        } else {
-            var timer = setInterval(function () {
-                if (countDownDuration <= 0) {
-                    clearInterval(timer);
-                    document.getElementById("remaining_time").value = 0;
-                    document.getElementById("test-form").submit();  // Автоматическая отправка формы
-                }
-                
-                // Рассчитываем часы, минуты и секунды
-                var hours = Math.floor((countDownDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                var minutes = Math.floor((countDownDuration % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((countDownDuration % (1000 * 60)) / 1000);
-                
-                var display = (hours > 0 ? hours + "h " : "") + minutes + "m " + seconds + "s ";
-                
-                document.getElementById('timer').innerText = display;
-                
-                // Уменьшаем время на одну секунду
-                countDownDuration -= 1000;
-                
-                // Обновляем скрытое поле для отправки времени на сервер
-                document.getElementById("remaining_time").value = countDownDuration / 1000;
-            }, 1000);
-        }
-    </script> {% endcomment %}
 </body>
 {% endblock %}
 
