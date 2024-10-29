@@ -126,7 +126,7 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 #     return render(request, 'tests/rating_test.html', context=context)
 
 
-class AllTestsView(TemplateView):
+class AllTestsView(LoginRequiredMixin, TemplateView):
     template_name = "tests/all_tests.html"
 
     def get_context_data(self, **kwargs):

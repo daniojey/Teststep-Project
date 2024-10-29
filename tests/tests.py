@@ -3,8 +3,11 @@ from django.db import DataError, IntegrityError, transaction
 from django.test import TestCase
 from datetime import date, timedelta
 
+from django.urls import reverse
+
 
 from tests.models import Answer, Categories, MatchingPair, Question, QuestionGroup, TestResult, Tests, TestsReviews
+from users.models import UsersGroup, UsersGroupMembership
 
 # Create your tests here.
 
@@ -525,3 +528,243 @@ class TestReviewsModelTest(TestCase):
         if self.test.pk:
             self.test.delete()
         
+
+
+
+class UserRatingViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpassword123')
+        logged_in = self.client.login(username='testuser', password='testpassword123')
+        self.assertTrue(logged_in, "Login failed during setup for IndexViewTest")
+
+        self.category  = Categories.objects.create(name='Cattest', slug='cattest')
+        
+        self.test_uncompleted = Tests.objects.create(
+            user=self.user,
+            name='Three Tets',
+            description='Test description',
+            category=self.category,  # Assuming you have categories, else leave as None
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,  # Assuming you have categories, else leave as None
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+        self.group = UsersGroup.objects.create(name='Test_group')
+        self.group_membeship = UsersGroupMembership(user=self.user,  group=self.group)
+
+        self.completed_test = TestResult.objects.create(
+            user=self.user,
+            test=self.test,
+            score = 0,
+            date_taken=date(year=2024, month=10, day=26),
+        )
+
+    def test_user_rating(self):
+        response = self.client.get(reverse('app:index'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_rating_view_redirect_logout(self):
+        self.client.logout()
+
+        rating_url = reverse('tests:rating')
+        response = self.client.get(rating_url)
+
+        # Ожидаемый URL перенаправления
+        expected_url = f"{reverse('users:login')}?next={rating_url}"
+
+        self.assertRedirects(response, expected_url)
+
+    def test_rating_view_template_name(self):
+        response = self.client.get(reverse('tests:rating'))
+        self.assertTemplateUsed(response, 'tests/rating.html')
+
+    def test_rating_view_context_data(self):
+        response = self.client.get(reverse('tests:rating'))
+        
+        self.assertIn('tests', response.context)
+        self.assertIn('user', response.context)
+        self.assertIn('active_tab', response.context)
+
+        tests = response.context['tests']
+        user = response.context['user']
+
+        self.assertIn(self.test, tests)
+        self.assertEqual(self.user, user)
+
+    def tearDown(self) -> None:
+        if self.test.pk:
+            self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class RatingTestViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpassword123')
+        logged_in = self.client.login(username='testuser', password='testpassword123')
+        self.assertTrue(logged_in, "Login failed during setup for IndexViewTest")
+
+        self.category = Categories.objects.create(name='Cattest', slug='cattest')
+        
+        self.test_uncompleted = Tests.objects.create(
+            user=self.user,
+            name='Three Tets',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+        self.test_id = self.test.id
+
+        self.group = UsersGroup.objects.create(name='Test_group')
+        # Сохраняем членство в группе
+        self.group_membership = UsersGroupMembership.objects.create(user=self.user, group=self.group)
+
+        # Создаем результат теста
+        self.completed_test = TestResult.objects.create(
+            user=self.user,
+            test=self.test,
+            score=0,
+            date_taken=date(year=2024, month=10, day=26),
+            duration=timedelta(seconds=30)
+        )
+    
+    def test_view_status_code(self):
+        response = self.client.get(reverse('tests:rating_test', args=[self.test_id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_rating_test_redirect_loguot(self):
+        self.client.logout()
+
+        rating_url = reverse('tests:rating_test', args=[self.test_id])
+        response = self.client.get(rating_url)
+
+        # Ожидаемый URL перенаправления
+        expected_url = f"{reverse('users:login')}?next={rating_url}"
+
+        self.assertRedirects(response, expected_url)
+
+    def test_rating_test_tesmplate_name(self):
+        response = self.client.get(reverse('tests:rating_test', args=[self.test_id]))
+        self.assertTemplateUsed(response, 'tests/rating_test.html')
+
+    
+    def test_rating_test_view_context(self):
+        response = self.client.get(reverse('tests:rating_test', args=[self.test_id]))
+
+        self.assertIn('test', response.context)
+        self.assertIn('user', response.context)
+        self.assertIn('results', response.context)
+        self.assertIn('active_tab', response.context)
+
+        test = response.context['test']
+        user = response.context['user']
+        results = response.context['results']
+
+        self.assertEqual(self.test, test)
+        self.assertEqual(self.user, user)
+
+        self.assertIn(self.completed_test, results)
+
+    def tearDown(self) -> None:
+        self.completed_test.delete()
+        self.test_uncompleted.delete()
+        self.group_membership.delete()
+        self.group.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class AllTestsViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpassword123')
+        logged_in = self.client.login(username='testuser', password='testpassword123')
+        self.assertTrue(logged_in, "Login failed during setup for IndexViewTest")
+
+        self.category = Categories.objects.create(name='Cattest', slug='cattest')
+        
+        self.test_uncompleted = Tests.objects.create(
+            user=self.user,
+            name='Three Tets',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]}
+        )
+
+
+    def test_status_code_view(self):
+        response = self.client.get(reverse('tests:all_tests'))
+        self.assertEqual(response.status_code, 200)
+
+    
+    def test_all_tests_url(self):
+        self.client.logout()
+
+        all_test_url = reverse('tests:all_tests')
+        response = self.client.get(all_test_url)
+
+        # Ожидаемый URL перенаправления
+        expected_url = f"{reverse('users:login')}?next={all_test_url}"
+
+        self.assertRedirects(response, expected_url) 
+    
+    def test_all_test_tamplate_name(self):
+        response = self.client.get(reverse('tests:all_tests'))
+        self.assertTemplateUsed(response, 'tests/all_tests.html')
+
+    
+    def test_all_test_context(self):
+        response = self.client.get(reverse('tests:all_tests'))
+
+        self.assertIn('tests', response.context)
+        self.assertIn('active_tab', response.context)
+
+        tests = response.context['tests']
+
+        self.assertIn(self.test_uncompleted, tests)
+        self.assertIn(self.test, tests)
+
+    
+    def tearDown(self) -> None:
+        self.test_uncompleted.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
