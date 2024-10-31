@@ -21,6 +21,8 @@ class TestForm(forms.ModelForm):
             'date_out': forms.DateInput(attrs={'type': 'date'}),
         }
 
+        name = forms.CharField(required=True)
+
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

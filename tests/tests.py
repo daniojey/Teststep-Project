@@ -1,9 +1,12 @@
+from ast import arg
+from urllib import response
 from django.contrib.auth import get_user_model
 from django.db import DataError, IntegrityError, transaction
 from django.test import TestCase
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 
 from django.urls import reverse
+from tests.forms import AnswerForm, MatchingPairForm, QuestionGroupForm, TestForm
 
 
 from tests.models import Answer, Categories, MatchingPair, Question, QuestionGroup, TestResult, Tests, TestsReviews
@@ -768,3 +771,656 @@ class AllTestsViewTest(TestCase):
         self.test.delete()
         self.category.delete()
         self.user.delete()
+
+
+class CreateTestViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.group = UsersGroup.objects.create(name='Test_group')
+        # Сохраняем членство в группе
+        self.group_membership = UsersGroupMembership.objects.create(user=self.user, group=self.group)
+
+    def test_view_access(self):
+        response = self.client.get(reverse('tests:create_test'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tests/create_test.html')
+
+    def test_form_submission_success(self):
+        form_data = {
+            'user': self.user.id,
+            'name': "Test Name",
+            'description': "Test Description",
+            'students': [str(self.user.pk),],  # IDs студентов
+            'category': self.category.id,
+            'check_type': 'auto',
+            'duration': "00:00:25",
+            'date_out': date(year=2024, month=9, day=25),
+        }
+
+        response = self.client.post(reverse('tests:create_test'), data=form_data)
+
+        # Проверка на ошибки формы
+        if response.context and 'form' in response.context:
+            form = response.context['form']
+            if not form.is_valid():
+                print("Ошибки формы:", form.errors)  # Вывод всех ошибок формы для диагностики
+
+        # Проверка статуса и редиректа
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Tests.objects.filter(name='Test Name').exists())
+
+        # Проверка данных теста
+        created_test = Tests.objects.get(name="Test Name")
+        self.assertEqual(created_test.user, self.user)
+        
+        # Теперь проверяем, что `students` сохранен как список
+        self.assertEqual(created_test.students['students'], form_data['students'])
+
+        expected_url = reverse('tests:add_questions', kwargs={"test_id": created_test.id})
+        self.assertRedirects(response, expected_url)
+
+    
+    def test_form_invalid_submission(self):
+        # Данные формы
+        form_data = {
+            'user': self.user.id,
+            'description': "Test Description",
+            'students': [str(self.user.pk),],
+            'category': self.category.id,
+            'check_type': 'auto',
+            'duration': "00:00:25",
+            'date_out': date(year=2024, month=9, day=25),
+        }
+
+       # Проверяем валидацию формы напрямую
+        form = TestForm(data=form_data)
+        self.assertFalse(form.is_valid())  # Ожидаем, что форма не валидна
+        self.assertIn('name', form.errors)  # Проверяем, что есть ошибка для 'name'
+
+        # Теперь делаем запрос
+        response = self.client.post(reverse('tests:create_test'), data=form_data)
+
+        # Проверяем, что ответ корректный и шаблон соответствует ожидаемому
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tests/create_test.html')
+
+
+class DeleteTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]},
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+    
+    def test_view_delete_test(self):
+        response = self.client.get(reverse('tests:delete_test', args=[self.test_id]))
+        self.assertFalse(Tests.objects.filter(name='Sample Test').exists())
+
+
+        self.assertEqual(response.status_code, 302)
+        
+        expected_url = reverse('app:index')
+        self.assertRedirects(response, expected_url)
+
+
+class AddQuestionGroupViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            students={'students': [str(self.user.id)]},
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+
+    def test_add_question_group_view(self):
+        response = self.client.get(reverse('tests:add_question_group', args=[self.test_id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tests/adq.html')
+
+    def test_add_question_group_form_valid(self):
+
+        form_data = {
+            'name': "Sample test group",
+            'test': self.test
+        }
+
+        response = self.client.post(reverse('tests:add_question_group', args=[self.test_id]), data=form_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(QuestionGroup.objects.filter(name='Sample test group').exists())
+
+        question_group = QuestionGroup.objects.filter(name='Sample test group').first()
+
+        self.assertEqual(form_data['test'], question_group.test)
+
+        expected_url = reverse('tests:add_questions', kwargs={"test_id": self.test_id})
+        self.assertRedirects(response, expected_url)
+
+    def test_form_ivalid(self):
+
+        form_data = {
+            'test': self.test,
+        }
+
+        # Проверяем валидацию формы напрямую
+        form = QuestionGroupForm(data=form_data)
+        self.assertFalse(form.is_valid())  # Ожидаем, что форма не валидна
+        self.assertIn('name', form.errors)  # Проверяем, что есть ошибка для 'name'
+
+        response = self.client.post(reverse('tests:add_question_group', args=[self.test_id]), data=form_data)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, "tests/adq.html")
+
+
+class AddQuestionViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.group = UsersGroup.objects.create(name='Test_group')
+        # Сохраняем членство в группе
+        self.group_membership = UsersGroupMembership.objects.create(user=self.user, group=self.group)
+
+        self.question_group = QuestionGroup.objects.create(
+            name='Test question group',
+            test=self.test,
+        )
+
+    def test_template_name_and_status_code(self):
+        response = self.client.get(reverse('tests:add_questions', args=[self.test_id]))
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, 'tests/add_questions.html')
+
+    
+    def test_form_submission_valid(self):
+
+        form_data_question_no_group = {
+            'text': "question_text",
+            'question_type': 'SC',
+            'form_type': 'form_question'
+        }
+
+        form_data_question_group = {
+            'text': "question_text_group",
+            'question_type': 'MC',
+            'form_type': 'form_question',
+            'group': self.question_group.pk
+        }
+
+        form_data_students = {
+            'students': [str(self.user.pk)],  # Обязательно как список, даже если один студент
+            'form_type': 'form_student'
+        }
+
+
+        response_question_no_group = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_question_no_group)
+        response_question_group = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_question_group)
+        response_question_students = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_students)
+
+        self.assertEqual(response_question_no_group.status_code, 302)
+        self.assertEqual(response_question_group.status_code, 302)
+        self.assertEqual(response_question_students.status_code, 302)
+
+        self.assertTrue(Question.objects.filter(text='question_text').exists())
+        self.assertTrue(Question.objects.filter(text='question_text_group').exists())
+
+        self.test.refresh_from_db()
+
+        self.assertIn(str(self.user.pk), self.test.students['students'])
+
+        expected_url = reverse('tests:add_questions', args=[self.test_id])
+
+        self.assertRedirects(response_question_no_group, expected_url)
+        self.assertRedirects(response_question_group, expected_url)
+        self.assertRedirects(response_question_students, expected_url)
+
+
+    def test_add_question_context(self):
+        # Создаем неупорядоченный вопрос и вопрос в группе для теста
+        ungrouped_question = Question.objects.create(
+            text="question_text",
+            question_type="SC",
+            test=self.test
+        )
+
+        group_question = Question.objects.create(
+            text="question_text_group",
+            question_type="MC",
+            test=self.test,
+            group=self.question_group
+        )
+
+
+        response = self.client.get(reverse('tests:add_questions', args=[self.test_id]))
+
+        self.assertIn('test', response.context)
+        self.assertIn('question_groups', response.context)
+        self.assertIn('ungrouped_questions', response.context)
+        self.assertIn('questions', response.context)
+        self.assertIn('question_form', response.context)
+        self.assertIn('form_student', response.context)
+
+        ungrouped_question = Question.objects.filter(text="question_text").first()
+        group_question = Question.objects.filter(text="question_text_group").first()
+
+        test = response.context['test']
+        question_groups = response.context['question_groups']
+        ungrouped_questions = response.context['ungrouped_questions']
+        questions = response.context['questions']
+
+        self.assertEqual(self.test, test)
+
+        self.assertIn(self.question_group, question_groups)
+        self.assertIn(ungrouped_question, ungrouped_questions)
+
+        self.assertIn(ungrouped_question, questions)
+        self.assertIn(group_question, questions)
+
+    def tearDown(self) -> None:
+        self.question_group.delete()
+        self.group_membership.delete()
+        self.group.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class DeleteQuestionViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.question = Question.objects.create(
+            test=self.test,
+            text='Question text',
+            question_type='MC',
+        )
+
+    def test_delete_question_view(self):
+        response = self.client.get(reverse('tests:delete_question', args=[self.question.pk]))
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertFalse(Question.objects.filter(id=self.question.id))
+
+        expected_url = reverse('tests:add_questions', args=[self.test_id])
+        self.assertRedirects(response, expected_url)
+
+    def tearDown(self) -> None:
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class AddAnswerViewTest(TestCase):
+    
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.question = Question.objects.create(
+            test=self.test,
+            text='Question text',
+            question_type='MC',
+        )
+    
+
+    def test_add_answer_to_question(self):
+        form_data = {
+            'text': '1 answer',
+            'is_correct': False,
+        }
+
+        response = self.client.post(reverse('tests:add_answers', args=[self.question.pk]), data=form_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(Answer.objects.filter(text='1 answer').first())
+
+        answer = Answer.objects.filter(text='1 answer').first()
+
+        self.assertEqual(self.question.id, answer.question.id)
+
+        expected_url = reverse('tests:add_answers', args=[self.question.pk])
+        self.assertRedirects(response, expected_url)
+
+
+    def test_add_answer_context(self):
+        response = self.client.get(reverse('tests:add_answers', args=[self.question.id]))
+
+        self.assertEqual(response.status_code, 200)
+
+        template_name = 'tests/add_answer.html'
+        self.assertTemplateUsed(response, template_name)
+
+        self.assertIn('test', response.context)
+        self.assertIn('question', response.context)
+        self.assertIn('questions',response.context)
+        self.assertIn('form_type', response.context)
+        self.assertIn('action_url', response.context)
+
+        self.assertEqual(self.test, response.context['test'])
+        self.assertEqual(self.question, response.context['question'])
+        self.assertEqual('Ответ', response.context['form_type'])
+        self.assertEqual('tests:add_answers', response.context['action_url'])
+
+        self.assertIn(self.question, response.context['questions'])
+
+
+    def test_add_answer_logout(self):
+        self.client.logout()
+
+        add_answer_url = reverse('tests:add_answers', args=[self.question.pk])
+        response = self.client.get(add_answer_url)
+
+        # Ожидаемый URL перенаправления
+        expected_url = f"{reverse('users:login')}?next={add_answer_url}"
+
+        self.assertRedirects(response, expected_url) 
+
+
+    def test_add_answer_form_invalid(self):
+        form_data = {
+            'is_correct': True,
+        }
+
+        response = self.client.post(reverse('tests:add_answers', args=[self.question.pk]), data=form_data)
+
+        self.assertEqual(response.status_code, 200)
+
+         
+        form = AnswerForm(data=form_data)
+        self.assertFalse(form.is_valid())  # Ожидаем, что форма не валидна
+        self.assertIn('text', form.errors)
+
+
+    def tearDown(self) -> None:
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class DeleteAnswerViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.question = Question.objects.create(
+            test=self.test,
+            text='Question text',
+            question_type='MC',
+        )
+
+        self.answer = Answer.objects.create(
+            question=self.question,
+            text='Sample',
+            is_correct=True,
+        )
+
+    def test_delete_anwer(self):
+        response = self.client.get(reverse('tests:delete_answer', args=[self.answer.pk]))
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertFalse(Answer.objects.filter(text='Sample'))
+
+        expected_url = reverse('tests:add_answers', args=[self.question.pk])
+        self.assertRedirects(response, expected_url)
+
+    def tearDown(self) -> None:
+        self.answer.delete()
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class MatchingPairViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.question = Question.objects.create(
+            test=self.test,
+            text='Question text',
+            question_type='MC',
+        )
+
+    def test_matching_form_valid(self):
+        form_data = {
+            'left_item': 'left_test_item',
+            'right_item': 'right_test_item',
+        }
+
+        response = self.client.post(reverse('tests:add_matching_pair', args=[self.question.pk]), data=form_data)
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(MatchingPair.objects.filter(left_item='left_test_item').exists())
+
+        matching_pair = MatchingPair.objects.filter(left_item='left_test_item').first()
+        self.assertEqual(self.question.pk, matching_pair.question.pk)
+
+        expected_url = reverse('tests:add_matching_pair', args=[self.question.pk])
+        self.assertRedirects(response, expected_url)
+
+    def test_matching_pair_template(self):
+        response = self.client.get(reverse('tests:add_matching_pair', args=[self.question.pk]))
+        
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, 'tests/add_answer.html')
+
+    def test_matching_form_invalid(self):
+        form_data = {
+            'right_item':'lob',
+        }
+
+        response = self.client.post(reverse('tests:add_matching_pair', args=[self.question.pk]), data=form_data)
+
+        form = MatchingPairForm(data=form_data)
+        self.assertFalse(form.is_valid())  # Ожидаем, что форма не валидна
+        self.assertIn('left_item', form.errors)
+
+    def test_matching_pair_context(self):
+        response = self.client.get(reverse('tests:add_matching_pair', args=[self.question.pk]))
+
+        self.assertIn('test', response.context)
+        self.assertIn('question', response.context)
+        self.assertIn('questions', response.context)
+        self.assertIn('form_type', response.context)
+        self.assertIn('action_url', response.context)
+
+        self.assertEqual(self.test, response.context['test'])
+        self.assertEqual(self.question, response.context['question'])
+        self.assertEqual('Соотвецтвие', response.context['form_type'])
+        self.assertEqual('tests:add_matching_pair', response.context['action_url'])
+
+        self.assertIn(self.question, response.context['questions'])
+
+    def tearDown(self) -> None:
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+
+class TestPreviewViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.test_review_default = TestsReviews.objects.create(
+            test=self.test,
+            user=self.user,
+            duration=timedelta(seconds=30),
+            group='test_group',
+            score=50,
+            answers={'question_1':'1'}
+        )
+
+        # Создаем результат теста
+        self.completed_test = TestResult.objects.create(
+            user=self.user,
+            test=self.test,
+            score=0,
+            date_taken=date(year=2024, month=10, day=26),
+            duration=timedelta(seconds=30)
+        )
+
+    
+    def test_preview_context(self):
+        response = self.client.get(reverse('tests:test_preview', args=[self.test_id]))
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, 'tests/test_preview.html')
+
+        self.assertIn('test', response.context)
+        self.assertIn('test_results',  response.context)
+        self.assertIn('required_attemps', response.context)
+        self.assertIn('test_review', response.context)
+
+
+        self.assertEqual(self.test, response.context['test'])
+        self.assertEqual(True, response.context['required_attemps'])
+        self.assertEqual(self.completed_test, response.context['test_results'])
+
+        self.assertIn(self.test_review_default, response.context['test_review'])
+
+    def tearDown(self) -> None:
+        self.test_review_default.delete()
+        self.completed_test.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+

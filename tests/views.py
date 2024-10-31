@@ -176,6 +176,11 @@ class CreateTestView(LoginRequiredMixin, FormView):
 
         return redirect('tests:add_questions', test_id=test.id)
     
+    def form_invalid(self, form):
+        # Здесь возвращаем форму, если валидация не прошла
+        return self.render_to_response({'form': form})
+    
+        
     def get_success_url(self) -> str:
         return reverse('tests:add_questions', kwargs={'test_id': self.object.id})
 
