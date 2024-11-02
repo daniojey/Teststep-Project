@@ -2,19 +2,42 @@
 {% load static %}
 
 {% block content %}
-<div align='left'>
+<link rel="stylesheet" type="text/css" href="{% static 'css/tr.css' %}">  
+{% comment %} <div align='left'>
     <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
+</div> {% endcomment %}
+
+<body>
+    
+
+<div class='tests-container'>
+    <div class='tests-group-header'>
+        <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
+            <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
+        </a>
+        <h2>Тести на перевірку</h2>
+    </div>
+
+    <div class="tests-container-items">
+        {% for test in test_result %}
+        <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">
+            <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+                <div class="test-overlay-header">
+                    {{ test.name }}
+                </div>
+                <!-- Нижняя полоса с датами -->
+                <div class="test-overlay-footer">
+                    <div class="date-icon">
+                        <img src="{% static "media/calendar.svg" %}" alt="calendar">
+                        <span>{{ test.date_taken|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </a>    
+        {% endfor %}
+    </div>
 </div>
 
-<div class="test-container">
-    {% for test in test_result %}
-    <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">
-        <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
-            <div class="test-overlay">
-                <h2>{{ test.name }}</h2>
-            </div>
-        </div>
-    </a>    
-{% endfor %}
-</div>
+
+</body>
 {% endblock %}

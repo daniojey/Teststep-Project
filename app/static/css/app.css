@@ -31,22 +31,16 @@ header {
     list-style: none;
     display: flex;
     justify-content: space-between;
+    white-space: nowrap; /* Отключает перенос строк */
 }
 
-.nav-panel h3 {
-    margin: 0;
-    padding: 0;
-    line-height: normal;  /* Нормализуем line-height */
-    display: flex;  /* Делаем flex-контейнером для выравнивания */
-    align-items: center;  /* Центрируем содержимое по вертикали */
-}
-
-/* .nav-panel a {
-    height: 100%; 
+.nav-panel li {
     display: flex;
-    align-items: center;  
-    padding: 0 10px;  
-} */
+    align-items: center;
+    padding: 0 10px; /* Дополнительные отступы для удобства */
+}
+
+
 
 .burger{
     display: none;
@@ -133,13 +127,19 @@ header {
     border: none;
     background-color: transparent;
     margin: 0;
-    padding-right: 60vw;
+    padding-right: 47vw;
     padding-left: 75px;
+}
+
+@media (max-width: 1900px) {
+    .name-site {
+        padding-right: 30vw;
+    }
 }
 
 @media (max-width: 1550px) {
     .name-site {
-        padding-right: 40vw;
+        padding-right: 20vw;
     }
 }
 
@@ -441,4 +441,31 @@ button:active {
     background-color: #42b142;
     height: 30px; /* Исправил на корректные единицы измерения */
     width: 40px;
+}
+
+.create-test-button {
+    max-height: 35px;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    color: #7260F5; /* Синий текст */
+    background-color: rgba(255, 255, 255, 0.05); /* Темный фон */
+    border: 1.5px solid #7260F5; /* Синяя обводка */
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+    white-space: nowrap; /* Предотвращает перенос текста */
+}
+
+.create-test-button .icon{
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    font-size: 24px; /* Иконка чуть больше текста */
 }
