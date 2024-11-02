@@ -90,7 +90,7 @@
         {% endfor %}
     </ul>
 
-    <h2>Додати відповідь к питанню: {{ question.text }}</h2>
+    <h2>Додати відповідь к питанню: {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}{{ question }}{% else %}{{ question.text }}{% endif %}</h2>
     <form method="post" action="{% url action_url question.id %}">
         {% csrf_token %}
         <div class="row">

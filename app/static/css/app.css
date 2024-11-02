@@ -192,9 +192,9 @@ a {
     font-weight: 400;
 }
 
-a:hover {
-    color: #e0b3fd;
-}
+/* a:hover {
+    color: #7260F5;
+} */
 
 /* Стили для кнопок */
 button {
@@ -221,13 +221,13 @@ button:active {
 }
 
 .custom-link:hover {
-    color: #c994fc;
+    color: #7260F5;
     text-decoration: none;
 }
 
 /* Стили для активной вкладки */
 .active {
-    color: #e0b3fd; /* Например, сделаем цвет активной ссылки светло-фиолетовым */
+    color: #7260F5; /* Например, сделаем цвет активной ссылки светло-фиолетовым */
     /* border-bottom: 2px solid #e0b3fd; */
 }
 

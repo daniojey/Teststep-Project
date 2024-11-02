@@ -9,7 +9,7 @@
 <body>
     <div class='base-container'>
         <div class='test-header'>
-            <h2>{{ all_questions.current }}\{{ all_questions.all }}</h2>
+            <h2>{{ all_questions.current }}/{{ all_questions.all }}</h2>
            
             <span id="timer"></span>
         </div>
@@ -24,7 +24,28 @@
                 {% for field in form %}
                 {% if 'audio_answer_' in field.name %}
                 <div class='audio-container'>
-                    <p>{{ field.label_tag }}</p>
+                    {% if question.image %}
+                        <div class='question-image-container'>
+                            <img src="{{ question.image.url }}">
+                        </div>
+                    {% endif %}
+
+                    {% if question.audio %}
+                        <div class="question-audio-container">
+                            <div class='question-audio' onclick="toggleAudio()">
+                                <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
+                            </div>
+                            <div class='player-section'>
+                                <label class='section'>|</label>
+                            </div>
+                            <!-- Общая длительность аудио -->
+                            <span class="duration" id="audioDuration">0:00</span>
+
+                             <!-- Элемент аудио --> 
+                            </div>
+                            <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
+                    {% endif %}
+
                     <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
                     <div>
                         <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Почати запис</button>
@@ -33,30 +54,96 @@
                     <!-- Скрытое поле для сохранения аудиофайла -->
                     {{ field }}
                 </div>
-                {% elif question.question_type == "MTCH" %}
-                        {% comment %} <div class='matching-container'>
-                            {% if 'matching_left' in field.name %}
-                            <div class="left-column">
-                                <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
-                                    {{ field.label }}  <!-- Показываем только текст -->
+                {% elif question.question_type == 'TXT' %}
+                    <div class='form-txt-and-img'>
+                        {% if question.text %}
+                            <h3>{{ field.label_tag }}</h3>
+                        {% endif %}
+
+                        {% if question.image %}
+                                <div class='question-image-container'>
+                                    <img src="{{ question.image.url }}">
                                 </div>
-                                <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
-                                    <!-- Скрытое поле для записи ответа -->
-                                    <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
-                                </div>
-                                {% endif %}
+                        {% endif %}
+
+                        {% if question.answer_type == 'SC' %}
+                            <!-- Радио-кнопки, рендерим через цикл -->
+                            <div class="radio-answers">
+                                {% for radio in field %}
+                                    <label class="custom-radio" data-value="{{ radio.data.value }}">
+                                        <!-- Скрытый input, он будет управляться через JS -->
+                                        {{ radio.tag }} 
+                                        
+                                        <!-- Кастомная визуализация радио-кнопки -->
+                                        <span class="custom-radio-circle"></span>
+                                        <span class="radio-label">{{ radio.choice_label }}</span>
+                                    </label>
+                                {% endfor %}
                             </div>
-                            
-                            {% if 'matching_right' in field.name %}
-                            <div class="right-column">
-                                <div class="right-item" id="drag_{{ field.name }}" data-right-item="{{ field.label }}" draggable="true" ondragstart="drag(event)">
-                                    {{ field.label }}  <!-- Показываем только текст -->
-                                </div>
+
+                        {% elif question.answer_type == 'MC' %}
+                            <div class='checkbox-answers'>
+                                {% for choice in field %}
+                                    <label class="custom-checkbox">
+                                        {{ choice.tag }}
+                                        <span class="custom-checkbox-box"></span>
+                                        {{ choice.choice_label }}
+                                    </label>
+                                {% endfor %}
                             </div>
-                            {% endif %}
+
+                        {% elif question.answer_type == 'INP' %}
+                            <div class='input-answer'>
+                                {{ field|addattr:"placeholder:input" }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                {% elif question.question_type == 'IMG' %}
+                <div class='form-txt-and-img'>
+                    {% if question.text %}
+                        <h3>{{ field.label_tag }}</h3>
+                    {% endif %}
+
+                    {% if question.image %}
+                            <div class='question-image-container'>
+                                <img src="{{ question.image.url }}">
+                            </div>
+                    {% endif %}
+
+                    {% if question.answer_type == 'SC' %}
+                        <!-- Радио-кнопки, рендерим через цикл -->
+                        <div class="radio-answers">
+                            {% for radio in field %}
+                                <label class="custom-radio" data-value="{{ radio.data.value }}">
+                                    <!-- Скрытый input, он будет управляться через JS -->
+                                    {{ radio.tag }} 
+                                    
+                                    <!-- Кастомная визуализация радио-кнопки -->
+                                    <span class="custom-radio-circle"></span>
+                                    <span class="radio-label">{{ radio.choice_label }}</span>
+                                </label>
+                            {% endfor %}
                         </div>
-                 {% endcomment %}
-                {% elif question.question_type == "SC" %}
+
+                    {% elif question.answer_type == 'MC' %}
+                        <div class='checkbox-answers'>
+                            {% for choice in field %}
+                                <label class="custom-checkbox">
+                                    {{ choice.tag }}
+                                    <span class="custom-checkbox-box"></span>
+                                    {{ choice.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                    {% elif question.answer_type == 'INP' %}
+                        <div class='input-answer'>
+                            {{ field|addattr:"placeholder:input" }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% comment %} {% elif question.question_type == "SC" %}
                 <div class="form-radio">
                     <h3>{{ field.label_tag }}</h3>
 
@@ -106,7 +193,7 @@
                         <div class='input-image-answer'>
                             {{ field|addattr:"placeholder:input" }}
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 {% elif question.question_type == 'AUD' %}
                     <div class='audion-form'>
                         <div class="question-audio-container">
@@ -126,10 +213,39 @@
                         <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
 
                         
-                        <div class='question-answer-input'>
-                            {{ field|addattr:"placeholder:input" }}
+                        {% if question.answer_type == 'SC' %}
+                        <!-- Радио-кнопки, рендерим через цикл -->
+                        <div class="radio-answers">
+                            {% for radio in field %}
+                                <label class="custom-radio" data-value="{{ radio.data.value }}">
+                                    <!-- Скрытый input, он будет управляться через JS -->
+                                    {{ radio.tag }} 
+                                    
+                                    <!-- Кастомная визуализация радио-кнопки -->
+                                    <span class="custom-radio-circle"></span>
+                                    <span class="radio-label">{{ radio.choice_label }}</span>
+                                </label>
+                            {% endfor %}
                         </div>
-                    </div>
+
+                        {% elif question.answer_type == 'MC' %}
+                            <div class='checkbox-answers'>
+                                {% for choice in field %}
+                                    <label class="custom-checkbox">
+                                        {{ choice.tag }}
+                                        <span class="custom-checkbox-box"></span>
+                                        {{ choice.choice_label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                        {% elif question.answer_type == 'INP' %}
+                            <div class='input-answer'>
+                                {{ field|addattr:"placeholder:input" }}
+                            </div>
+                        {% endif %}
+                        </div>
+                        </div>
                 {% else %}
                 {% endif %}  
                 {% endfor %}
@@ -226,7 +342,7 @@
         function toggleAudio() {
             if (audioPlayer.paused) {
                 audioPlayer.play();
-                playIcon.src = "{% static 'icons/pause_icon.png' %}";
+                playIcon.src = "{% static 'icons/pause_icon.svg' %}";
             } else {
                 audioPlayer.pause();
                 playIcon.src = "{% static 'icons/play_icon.svg' %}";

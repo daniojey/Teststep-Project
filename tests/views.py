@@ -605,6 +605,11 @@ class TakeTestView(FormView):
         question_index = self.request.session['question_index']
         current_question_id = question_order[question_index]
         self.current_question = get_object_or_404(Question, id=current_question_id)
+        print(self.current_question.test)
+        print(self.current_question.question_type)
+        print(self.current_question.answer_type)
+        print(self.current_question)
+
         kwargs['question'] = self.current_question
         return kwargs
 
@@ -612,10 +617,15 @@ class TakeTestView(FormView):
         answer = form.cleaned_data.get('answer')
 
         # Обрабатываем разные типы вопросов
-        if self.current_question.question_type == 'AUI':
-            audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
-            if audio_answer is not None:
-                self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
+        if self.current_question.question_type == 'AUD' or self.current_question.question_type == 'IMG' or self.current_question.question_type == 'TXT':
+            if self.current_question.answer_type == 'AUD':
+                audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
+                if audio_answer is not None:
+                    self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
+            else:
+                if answer:
+                    self.request.session['test_responses'][f"question_{self.current_question.id}"] = answer
+
         elif self.current_question.question_type == 'MTCH':
             responses = self.request.POST
             dict_items = {}
@@ -625,6 +635,8 @@ class TakeTestView(FormView):
                     dict_items[left_item] = right
             self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
         else:
+
+            # На данный момент резервный путь для того чтобы тесты точно попадали в обработку
             if answer:
                 self.request.session['test_responses'][f"question_{self.current_question.id}"] = answer
 
@@ -828,7 +840,9 @@ class TestsResultsView(View):
                 file_url = default_storage.url(saved_file)
                 audio_answers[question_id] = file_url
 
+                responses[f'audio_answer_{question_id}'] = 'Перенесён'
         request.session['audio_answers'] = audio_answers   
+
 
     
     def calculate_results(self, test, responses, test_time):
@@ -852,29 +866,78 @@ class TestsResultsView(View):
     def evaluate_question(self, question, value):
         """Оценка вопроса на основе типа"""
         correct_answers = 0.0
-        if question.question_type == 'SC':
-            correct_answer = question.answers.filter(is_correct=True).first()
-            if correct_answer and correct_answer.id == int(value):
-                correct_answers += 1.0
-        elif question.question_type == 'MC':
-            correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-            print(correct_answers_list)
+
+        if question.question_type == 'TXT':
+            if question.answer_type == 'SC':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'MC':
+                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+                print(correct_answers_list)
             
-            # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
-            if set(map(int, value)) == set(correct_answers_list):
-                correct_answers += 1.0
+                # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
+                if set(map(int, value)) == set(correct_answers_list):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'INP':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if str(correct_answer).strip().lower() == str(value).strip().lower():
+                    correct_answers += 1.0
+
+        # if question.question_type == 'SC':
+        #     correct_answer = question.answers.filter(is_correct=True).first()
+        #     if correct_answer and correct_answer.id == int(value):
+        #         correct_answers += 1.0
+        # elif question.question_type == 'MC':
+        #     correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+        #     print(correct_answers_list)
+            
+        #     # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
+        #     if set(map(int, value)) == set(correct_answers_list):
+        #         correct_answers += 1.0
         elif question.question_type == 'IMG':
-            correct_answer = question.answers.filter(is_correct=True).first()
-            if str(correct_answer).strip().lower() == str(value).strip().lower():
-                correct_answers += 1.0
+            if question.answer_type == 'SC':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'MC':
+                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+                print(correct_answers_list)
+            
+                # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
+                if set(map(int, value)) == set(correct_answers_list):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'INP':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if str(correct_answer).strip().lower() == str(value).strip().lower():
+                    correct_answers += 1.0
+
         elif question.question_type == 'AUD':
-            correct_answer = question.answers.filter(is_correct=True).first()
-            if str(correct_answer).strip().lower() == str(value).strip().lower():
-                correct_answers += 1.0
-        elif question.question_type == "INP":
-            correct_answer = question.answers.filter(is_correct=True).first()
-            if str(correct_answer).strip().lower() == str(value).strip().lower():
-                correct_answers += 1.0
+            if question.answer_type == 'SC':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'MC':
+                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+                print(correct_answers_list)
+            
+                # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
+                if set(map(int, value)) == set(correct_answers_list):
+                    correct_answers += 1.0
+
+            elif question.answer_type == 'INP':
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if str(correct_answer).strip().lower() == str(value).strip().lower():
+                    correct_answers += 1.0
+        # elif question.question_type == "INP":
+        #     correct_answer = question.answers.filter(is_correct=True).first()
+        #     if str(correct_answer).strip().lower() == str(value).strip().lower():
+        #         correct_answers += 1.0
         elif question.question_type == 'MTCH':
                 questions_count = MatchingPair.objects.filter(question=question).count()
                 points = 1 / questions_count

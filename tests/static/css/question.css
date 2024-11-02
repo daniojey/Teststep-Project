@@ -428,6 +428,32 @@
     align-items: end;
 }
 
+/* тестовая форма для вопросов типа txt и img*/
+.form-txt-and-img {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.form-txt-and-img h3{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.form-txt-and-img h3 label{
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
 /* Кнопка формы */
 .form-btn {
     width: 283px;

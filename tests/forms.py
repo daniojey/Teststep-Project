@@ -84,18 +84,42 @@ class QuestionForm(forms.ModelForm):
         test = kwargs.pop('test', None)  # Забираем тест из kwargs
         super().__init__(*args, **kwargs)
 
+         # Логика, скрывающая `answer_type` для вопросов, где оно не нужно
+        # if self.instance.question_type in [Question.SINGLE_CHOICE, Question.MULTIPLE_CHOICE, Question.MATCHING]:
+        #     self.fields.pop('answer_type', None)
+
         if test:
             self.fields['group'].queryset = QuestionGroup.objects.filter(test=test)
+
+            # Если тип проверки auto, убираем голосовую опцию для answer_type
+            if test.check_type == 'auto':
+                self.fields['answer_type'].choices = [
+                    (choice, label) for choice, label in Question.ANSWER_TYPES if choice != Question.ANSWER_AUDIO
+                ]
+            else:
+                self.fields['answer_type'].choices = [
+                    (choice, label) for choice, label in Question.ANSWER_TYPES
+                ]
         else:
             self.fields['group'].queryset = QuestionGroup.objects.none()
 
+        # Убираем пустой вариант и устанавливаем значение по умолчанию
+        self.fields['question_type'].choices = [
+            (choice, label) for choice, label in Question.QUESTION_TYPES if choice
+        ]
+        self.fields['question_type'].initial = Question.SINGLE_CHOICE
+
+        
+
+
     class Meta:
         model = Question
-        fields = ['text', 'question_type', 'image', 'audio', 'group']
+        fields = ['text', 'question_type','answer_type','image', 'audio', 'group']
         widgets = {
             'text': forms.Textarea(attrs={'rows': 3}),
-            'question_type': forms.RadioSelect(choices=Question.QUESTION_TYPES),
+            'question_type': forms.RadioSelect(),
             'group': forms.Select(attrs={'class': 'form-control'}),
+            'answer_type': forms.RadioSelect()
         }
 
 class QuestionStudentsForm(forms.ModelForm):
@@ -177,47 +201,96 @@ class TestTakeForm(forms.Form):
         random.shuffle(choices)  # Перемешиваем варианты ответа
 
         # Одиночный выбор (Single Choice)
-        if question.question_type == 'SC':
-            self.fields[f'answer'] = forms.ChoiceField(
+        if question.question_type == 'TXT':
+            if question.answer_type == 'SC':
+                self.fields[f'answer'] = forms.ChoiceField(
                 choices=choices,
                 widget=forms.RadioSelect,
                 label=question.text
             )
-        
-        # Множественный выбор (Multiple Choice)
-        elif question.question_type == 'MC':
-            self.fields[f'answer'] = forms.MultipleChoiceField(
+                
+            elif question.answer_type == 'MC':
+                self.fields[f'answer'] = forms.MultipleChoiceField(
                 choices=choices,
                 widget=forms.CheckboxSelectMultiple,
                 label=question.text
             )
+                
+            elif question.answer_type == 'INP':
+                self.fields[f'answer'] = forms.CharField(
+                    label=f"{question.text}",
+                    widget=forms.TextInput
+                )
+
+            elif question.answer_type == 'AUD':
+                # Теперь ключ снова будет содержать ID вопроса
+                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+                    label=f"{question.text} (Ваша відповідь в аудіо)",
+                    widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
+                    required=False
+                )
+
         
         # Выбор изображения (Image Choice)
         elif question.question_type == 'IMG':
-           self.fields[f'answer'] = forms.CharField(
-                label=f"{question.text}",
-                widget=forms.TextInput
+            if question.answer_type == 'SC':
+                self.fields[f'answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
             )
+                
+            elif question.answer_type == 'MC':
+                self.fields[f'answer'] = forms.MultipleChoiceField(
+                choices=choices,
+                widget=forms.CheckboxSelectMultiple,
+                label=question.text
+            )
+                
+            elif question.answer_type == 'INP':
+                self.fields[f'answer'] = forms.CharField(
+                    label=f"{question.text}",
+                    widget=forms.TextInput
+                )
+
+            elif question.answer_type == 'AUD':
+                # Теперь ключ снова будет содержать ID вопроса
+                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+                    label=f"{question.text} (Ваша відповідь в аудіо)",
+                    widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
+                    required=False
+                )
         
         # Аудио-вопросы (Audio Answer)
         elif question.question_type == 'AUD':
-            self.fields[f'answer'] = forms.CharField(
-                label=f"{question.text}",
-                widget=forms.TextInput
+            if question.answer_type == 'SC':
+                self.fields[f'answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
             )
-            # # Теперь ключ снова будет содержать ID вопроса
-            # self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-            #     label=f"{question.text} (Ваша відповідь в аудіо)",
-            #     widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
-            #     required=False
-            # )
+                
+            elif question.answer_type == 'MC':
+                self.fields[f'answer'] = forms.MultipleChoiceField(
+                choices=choices,
+                widget=forms.CheckboxSelectMultiple,
+                label=question.text
+            )
+                
+            elif question.answer_type == 'INP':
+                self.fields[f'answer'] = forms.CharField(
+                    label=f"{question.text}",
+                    widget=forms.TextInput
+                )
+
+            elif question.answer_type == 'AUD':
+                # Теперь ключ снова будет содержать ID вопроса
+                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+                    label=f"{question.text} (Ваша відповідь в аудіо)",
+                    widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
+                    required=False
+                )
         
-        # Текстовые ответы (Input Answer)
-        elif question.question_type == "INP":
-            self.fields[f'answer'] = forms.CharField(
-                label=f"{question.text}",
-                widget=forms.TextInput
-            )
         
          # Матчинг (Matching)
         elif question.question_type == 'MTCH':
@@ -242,8 +315,29 @@ class TestTakeForm(forms.Form):
                     required=False,
                     widget=forms.HiddenInput()  # Прячем поле для выбора
                 )
+                
+        # elif question.question_type == 'SC':
+        #     self.fields[f'answer'] = forms.ChoiceField(
+        #         choices=choices,
+        #         widget=forms.RadioSelect,
+        #         label=question.text
+        #     )
+        
+        # Множественный выбор (Multiple Choice)
+        # elif question.question_type == 'MC':
+        #     self.fields[f'answer'] = forms.MultipleChoiceField(
+        #         choices=choices,
+        #         widget=forms.CheckboxSelectMultiple,
+        #         label=question.text
+        #     )
 
 
+        # Текстовые ответы (Input Answer)
+        # elif question.question_type == "INP":
+        #     self.fields[f'answer'] = forms.CharField(
+        #         label=f"{question.text}",
+        #         widget=forms.TextInput
+        #     )
 
     # def clean(self):
     #     cleaned_data = super().clean()

@@ -6,6 +6,7 @@
     <title>{% block title %}TestStep{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/scrollbar.css' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
     {% block extra_head %}{% endblock %}
     
@@ -14,7 +15,7 @@
   <div class="nav-links">
       <div class="name-site">
           <img src="{% static "media/icon_page.svg" %}" alt="logo" >
-          <h3><a class="custom-link" href="{% url "app:index" %}">TestStep</a></h3>
+          <h3><a class="out" href="{% url "app:index" %}">TestStep</a></h3>
       </div>
 
       <div class='nav-panel'>

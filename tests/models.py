@@ -56,26 +56,36 @@ class QuestionGroup(models.Model):
     
 
 class Question(models.Model):
-    SINGLE_CHOICE = 'SC'                                                                                                                                                                                                
-    MULTIPLE_CHOICE = 'MC'
+    TEXT = 'TXT'                                                                                                                                                                                                   
     IMAGE = 'IMG'
     AUDIO = 'AUD'
     MATCHING = 'MTCH'
-    INPUT = 'INP'
 
     QUESTION_TYPES = [
-        (SINGLE_CHOICE, 'Single Choice'),
-        (MULTIPLE_CHOICE, 'Multiple Choice'),
-        (IMAGE, 'Image'),
-        (AUDIO, 'Audio'),
-        (MATCHING, 'Matching'),
-        (INPUT, 'input')
+        (TEXT, 'Тест з текстом'),
+        (IMAGE, 'Тест з фотографіею'),
+        (AUDIO, 'Тест з голосовим питанням'),
+        (MATCHING, 'Тест з встановленням відповідності'),
+        
     ]
+
+    SINGLE_CHOICE = 'SC'
+    MULTIPLE_CHOICE = 'MC'
+    ANSWER_INPUT = 'INP'
+    ANSWER_AUDIO = 'AUD'
+
+    ANSWER_TYPES = [
+        (MULTIPLE_CHOICE, 'Множинний вибір'),
+        (SINGLE_CHOICE, 'Одиночний вибір'),
+        (ANSWER_INPUT, 'Текстова відповідь'),
+        (ANSWER_AUDIO, 'Голосова відповідь'),
+    ] 
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
     text = models.TextField(verbose_name="Текст вопроса", blank=True, null=True)
-    question_type = models.CharField(max_length=5, choices=QUESTION_TYPES, verbose_name="Тип вопроса")
+    question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
+    answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
     audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио")
 

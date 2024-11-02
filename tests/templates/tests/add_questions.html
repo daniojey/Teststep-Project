@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
+
+{% block content %}
 <head>
     <title>Додати питання до тесту: {{ test.name }}</title>
 </head>
 
-{% block content %}
-
 {% comment %} <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}"> {% endcomment %}
 <link rel="stylesheet" type="text/css" href="{% static "css/delete_confirm.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/add_question.css" %}">
 
 <body>
     <h1>Додати питання для тесту: {{ test.name }}</h1>
@@ -62,7 +63,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {% if question.question_type == 'IMG' %}
+                                    {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
                                     {{ question }}
                                     {% else %}
                                     {{ question.text }}
@@ -90,7 +91,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {% if question.question_type == 'IMG' %}
+                                    {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
                                     {{ question }}
                                     {% else %}
                                     {{ question.text }}
@@ -132,7 +133,7 @@
                             </div>
                         </div>
                     </div>
-                        {% if question.question_type == 'IMG' %}
+                        {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
                         {{ question }}
                         {% else %}
                         {{ question.text }}
@@ -158,7 +159,7 @@
                             </div>
                         </div>
                     </div>
-                        {% if question.question_type == 'IMG' %}
+                        {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
                         {{ question }}
                         {% else %}
                         {{ question.text }}
