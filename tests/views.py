@@ -1149,6 +1149,7 @@ class TestsForReviewView(TemplateView):
         tests_results = [t for t in tests_reviews if t]
 
         context['test_result'] = tests_results
+        context['active_tab'] = 'my_tests'
 
         return context
 

@@ -2,34 +2,50 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/all_tests.css' %}">  
+<body>
+    
+    {% comment %} <div align='center'>
+        <div align='center'>
+            {% if user.is_admin or user.is_superuser or user.is_staff %}
+            <h3><a class="custom-link" href="{% url "tests:tests_for_review" %}">Тести на перевірку</a></h3>
+            {% endif %}
+        </div>
+        
+        <div align='center'>    
+            {% if user.is_authenticated %}
+            <h3><a class="custom-link" href="{% url "tests:create_test" %}">Створити тест</a></h3>
+            {% endif %}
+        </div>
+    </div> {% endcomment %}
+    
+    
+    <div class='my-test-container'>
+        <div class='my-test-container-header'>
+            <label>Створенні тести</label>
+            <a class='test-check' href="{% url "tests:tests_for_review" %}">Тести на перевірку</a>
+        </div>
 
-
-<div align='center'>
-    <div align='center'>
-        {% if user.is_admin or user.is_superuser or user.is_staff %}
-        <h3><a class="custom-link" href="{% url "tests:tests_for_review" %}">Тести на перевірку</a></h3>
-        {% endif %}
+        <div class="tests-sorted-container">
+            {% for test in tests %}
+            <a href="{% url "tests:add_questions" test_id=test.id %}" class="test-item-link">
+                <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+                    <div class="test-overlay-header">
+                        {{ test.name }}
+                    </div>
+                    <!-- Нижняя полоса с датами -->
+                    <div class="test-overlay-footer">
+                        <div class="date-icon">
+                            <img src="{% static "media/calendar.svg" %}" alt="calendar">
+                            <span>{{ test.date_taken|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>    
+            {% endfor %}
+        </div>
     </div>
-
-    <div align='center'>    
-        {% if user.is_authenticated %}
-        <h3><a class="custom-link" href="{% url "tests:create_test" %}">Створити тест</a></h3>
-        {% endif %}
-    </div>
-</div>
-
-
-<h1 align='center'>Мої тести</h1>
-<div class="nav-links">
-    {% for test in tests %}
-       
-            <div>
-                <h1>{{ test.name }}</h1>
-                <a href="{% url "tests:add_questions" test_id=test.id %}">Редагувати тест</a>
-            </div>
-
-    {% endfor %}
-</div>
+</body>
 {% endblock content %}
 
 

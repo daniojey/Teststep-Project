@@ -22,7 +22,6 @@
 
 /* Поддержка в Firefox */
 * {
-    border-radius: 12px;
     scrollbar-width: thin; /* узкий скроллбар */
     scrollbar-color: #7260F5 #2B2738; /* ползунок и трек */
 }
