@@ -1268,117 +1268,214 @@ class TestGroupReviewsView(TemplateView):
 
 
 #     return render(request, 'tests/test_group_reviews.html', context=context)
+    
 
 class TakeTestReviewView(FormView):
     template_name = 'tests/take_test_review.html'
     form_class = TestReviewForm
 
+    def dispatch(self, request, *args, **kwargs):
+        self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
+        self.user = get_object_or_404(User, id=self.kwargs['user_id'])
+
+        self.test_student_responses = TestsReviews.objects.filter(user=self.user, test=self.test).first()
+
+        
+        if 'test_review_session' not in request.session:
+            self.initialize_session_test()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def initialize_session_test(self):
+        questions = Question.objects.filter(test=self.test)
+
+        self.request.session['test_review_session'] = [q.id for q in questions]
+        self.request.session['question_index'] = 0
+        self.request.session['teacher_responses'] = {}
+        self.request.session['correct_answers'] = 0.0
+        
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        user_id = self.kwargs.get('user_id')
-        test_id = self.kwargs.get('test_id')
+        question_order = self.request.session['test_review_session']
+        question = self.request.session['question_index']
+        current_question_id = question_order[question]
+        self.current_question = get_object_or_404(Question, id=current_question_id)
 
-        user = get_object_or_404(User, id=user_id)
-        test = get_object_or_404(Tests, id=test_id)
-        review = get_object_or_404(TestsReviews, user=user, test=test)
+    # Проверка на существование и инициализация атрибутов, если они равны None
+        # if not hasattr(self.test_student_responses, 'answers') or self.test_student_responses.answers is None:
+        #     self.test_student_responses.answers = {}
+        # if not hasattr(self.test_student_responses, 'audio_answers') or self.test_student_responses.audio_answers is None:
+        #     self.test_student_responses.audio_answers = {}
 
+        print(current_question_id)
+        print(self.test_student_responses.answers)
+        # Получение ответа на основе типа вопроса
+        if self.current_question.answer_type == 'AUD':
+            self.current_students_question = self.test_student_responses.audio_answers.get(f'audio_answer_{current_question_id}', [])
+        else:
+            self.current_students_question = self.test_student_responses.answers.get(f'question_{current_question_id}', [])
 
-        kwargs.update({
-            'test': test,
-            'answers': review.answers,
-            'audio_answers': review.audio_answers or {}
-        })
+        print(self.current_students_question)
 
-        self.review = review
-        self.test = test
-
+        kwargs['audio_answers'] = self.test_student_responses.audio_answers
+        kwargs['question'] = self.current_question
+        kwargs['student_question'] = self.current_students_question
         return kwargs
-    
+
     def form_valid(self, form):
-        """
-        Логика обработки POST запроса, аналогична тому, что у тебя в POST методе в функциональном представлении.
-        """
-        correct_answers = 0.0
-        total_questions = len(self.test.questions.all())
+        self.correct_answers = 0
 
-        for question in self.test.questions.all():
-            if question.question_type == 'MC':
-                # Получаем правильные ответы
-                correct_answer = question.answers.filter(is_correct=True)
-                corrects = [i for i in correct_answer]
 
-                selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
-                selected_unpack = [int(i) for i in selected_answer]
+        if self.request.method == 'POST':
+            action = self.request.POST.get('action')
+            if action == 'correct':
+                self.correct_answers += 1
 
-                if len(corrects) > 1:
-                    points = 1 / len(corrects)
-                    for i in corrects:
-                        item = Answer.objects.filter(id=i.id).first()
-                        if item.id in selected_unpack:
-                            correct_answers += points
+            elif action == 'incorrect':
+                # Ответ неверный поэтому ничего не добавляем
+                print('incorrect')
 
-                elif len(corrects) == 1:
-                    for i in corrects:
-                        item = Answer.objects.filter(id=i.id).first()
-                        if item.id in selected_unpack:
-                            correct_answers += 1
+            elif action == 'partial':
+                print('partial')
+        
+        self.request.session['question_index'] += 1
 
-            elif question.question_type == "SC":
-                correct_answer = question.answers.filter(is_correct=True).first()
+        question_index = self.request.session['question_index']
+        all_questions = self.request.session['test_review_session']
+        if question_index > len(all_questions):
+            return redirect('tests:test')
+        
+        return redirect('tests:take_test_review', test_id=self.kwargs['test_id'],  user_id=self.kwargs['user_id'])
 
-                try:
-                    selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
-                except (IndexError, TypeError):
-                    selected_answer = None
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        test_review_session = self.request.session['test_review_session']
+        question_index = self.request.session['question_index']
+        context['test'] = self.test
+        context['question'] = self.current_question
+        context['all_questions'] = {
+            "current": question_index + 1,
+            "all": len(test_review_session)
+        }
 
-                if correct_answer and correct_answer.id == selected_answer:
-                    correct_answers += 1
+        context['current_question_group'] = self.current_question.group
+        return context
 
-            elif question.question_type == 'AUD':
-                audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
+    
+        
+    
 
-                if audio_response == True:
-                    correct_answers += 1
+# class TakeTestReviewView(FormView):
+#     template_name = 'tests/take_test_review.html'
+#     form_class = TestReviewForm
 
-            elif question.question_type == 'INP':
-                selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
-                if selected_answer == True:
-                    correct_answers += 1
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         user_id = self.kwargs.get('user_id')
+#         test_id = self.kwargs.get('test_id')
 
-            elif question.question_type == 'MTCH':
-                user_answers = form.cleaned_data.get(f"question_{question.id}_mtch")
-                correct_pair = MatchingPair.objects.filter(question=question).count()
-                scores = 1 / correct_pair
-                correct_answers += scores * len(user_answers)
+#         user = get_object_or_404(User, id=user_id)
+#         test = get_object_or_404(Tests, id=test_id)
+#         review = get_object_or_404(TestsReviews, user=user, test=test)
 
-        # Сохраняем изменения в аудио ответах
-        self.review.audio_answers = form.cleaned_data.get('audio_answers', self.review.audio_answers)
-        self.review.save()
 
-        # Считаем итоговый балл
-        score = correct_answers / total_questions * 100
-        print(f"Балл по тесту: {int(score)}%")
+#         kwargs.update({
+#             'test': test,
+#             'answers': review.answers,
+#             'audio_answers': review.audio_answers or {}
+#         })
 
-        # Сохраняем результат
-        TestResult.objects.create(
-            user=self.review.user,
-            test=self.review.test,
-            score=score,
-            attempts=2,
-            duration=self.review.duration
-        )
+#         self.review = review
+#         self.test = test
 
-        # Удаляем review, так как тест завершен
-        self.review.delete()
+#         return kwargs
+    
+#     def form_valid(self, form):
+#         """
+#         Логика обработки POST запроса, аналогична тому, что у тебя в POST методе в функциональном представлении.
+#         """
+#         correct_answers = 0.0
+#         total_questions = len(self.test.questions.all())
 
-        # Перенаправляем пользователя после завершения теста
-        return redirect('users:profile')
+#         for question in self.test.questions.all():
+#             if question.question_type == 'MC':
+#                 # Получаем правильные ответы
+#                 correct_answer = question.answers.filter(is_correct=True)
+#                 corrects = [i for i in correct_answer]
 
-    def get_success_url(self):
-        """
-        Указываем URL, на который будет происходить перенаправление
-        """
-        return reverse_lazy('users:profile')
+#                 selected_answer = form.cleaned_data.get(f'question_{question.id}_approve')
+#                 selected_unpack = [int(i) for i in selected_answer]
+
+#                 if len(corrects) > 1:
+#                     points = 1 / len(corrects)
+#                     for i in corrects:
+#                         item = Answer.objects.filter(id=i.id).first()
+#                         if item.id in selected_unpack:
+#                             correct_answers += points
+
+#                 elif len(corrects) == 1:
+#                     for i in corrects:
+#                         item = Answer.objects.filter(id=i.id).first()
+#                         if item.id in selected_unpack:
+#                             correct_answers += 1
+
+#             elif question.question_type == "SC":
+#                 correct_answer = question.answers.filter(is_correct=True).first()
+
+#                 try:
+#                     selected_answer = int(form.cleaned_data.get(f'question_{question.id}_approve')[0])
+#                 except (IndexError, TypeError):
+#                     selected_answer = None
+
+#                 if correct_answer and correct_answer.id == selected_answer:
+#                     correct_answers += 1
+
+#             elif question.question_type == 'AUD':
+#                 audio_response = form.cleaned_data.get(f'audio_answer_{question.id}_correct')
+
+#                 if audio_response == True:
+#                     correct_answers += 1
+
+#             elif question.question_type == 'INP':
+#                 selected_answer = form.cleaned_data.get(f'question_{question.id}_correct')
+#                 if selected_answer == True:
+#                     correct_answers += 1
+
+#             elif question.question_type == 'MTCH':
+#                 user_answers = form.cleaned_data.get(f"question_{question.id}_mtch")
+#                 correct_pair = MatchingPair.objects.filter(question=question).count()
+#                 scores = 1 / correct_pair
+#                 correct_answers += scores * len(user_answers)
+
+#         # Сохраняем изменения в аудио ответах
+#         self.review.audio_answers = form.cleaned_data.get('audio_answers', self.review.audio_answers)
+#         self.review.save()
+
+#         # Считаем итоговый балл
+#         score = correct_answers / total_questions * 100
+#         print(f"Балл по тесту: {int(score)}%")
+
+#         # Сохраняем результат
+#         TestResult.objects.create(
+#             user=self.review.user,
+#             test=self.review.test,
+#             score=score,
+#             attempts=2,
+#             duration=self.review.duration
+#         )
+
+#         # Удаляем review, так как тест завершен
+#         self.review.delete()
+
+#         # Перенаправляем пользователя после завершения теста
+#         return redirect('users:profile')
+
+#     def get_success_url(self):
+#         """
+#         Указываем URL, на который будет происходить перенаправление
+#         """
+#         return reverse_lazy('users:profile')
     
 
 # def take_test_review(request, user_id, test_id):

@@ -210,7 +210,9 @@
                         
 
                         <!-- Элемент аудио -->
-                        <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
+                        {% if question.audio %}
+                            <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
+                        {% endif %}
 
                         
                         {% if question.answer_type == 'SC' %}
@@ -244,7 +246,6 @@
                                 {{ field|addattr:"placeholder:input" }}
                             </div>
                         {% endif %}
-                        </div>
                         </div>
                 {% else %}
                 {% endif %}  

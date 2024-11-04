@@ -362,103 +362,183 @@ class TestTakeForm(forms.Form):
  
 class TestReviewForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        test = kwargs.pop('test')
-        answers = kwargs.pop('answers')
+        question = kwargs.pop('question', {})
+        student_answer = kwargs.pop('student_question', None)
+        print(student_answer)
+
+        question_choises = [(a.text ,a.id ) for a in question.answers.all()]
+
+        if len(student_answer) == 1:
+            answer =  Answer.objects.filter(id=int(student_answer[0])).first().text
+        else:
+            st_answers = Answer.objects.filter(id__in=student_answer)  # Получаем все ответы за один запрос
+            answer= [a.text for a in st_answers]
+
+        print(question_choises)
+        print(answer)
+
+        # test = kwargs.pop('test')
+        # answers = kwargs.pop('answers')
         audio_answers = kwargs.pop('audio_answers', {})
         super().__init__(*args, **kwargs)
 
-        questions = test.questions.all()
+        # Проверяем, что вопрос существует
+        if question is not None:
+            # Текст вопроса (просто для отображения, не редактируемое поле)
+            # self.fields['question_text'] = forms.CharField(
+            #     label="Текст вопроса",
+            #     initial=question.text,
+            #     widget=forms.Textarea(attrs={'readonly': 'readonly'}),
+            #     required=False,
+            # )
 
+            # Обработка различных типов ответов на основе типа ответа в вопросе
+            if question.answer_type == Question.SINGLE_CHOICE:
+                # Одиночный выбор (показ ответа студента)
+                self.fields[f'answer'] = forms.ChoiceField(
+                    choices=question_choises,
+                    widget=forms.RadioSelect,
+                    initial=answer
 
-        for question in questions:
-
-            # Извлекаем ответы пользователя из JSON
-            user_answer_ids = answers.get(f'question_{question.id}', [])
-
-
-            # Получаем правильные ответы
-            item = question.answers.filter(is_correct=True)
-            ans = [i for i in item]
-            result = [i.text for i in ans]
-            question_correct = ', '.join(result)
-
-            # Получаем список  по ответам
-            try:
-                user_answers =[
-                    (answer.id, answer.text) for answer in question.answers.filter(id__in=user_answer_ids)
-                ]
-            except ValueError:
-                ...
-
-            # Если одиночный ответ добавляем его вручную в список
-            if user_answers == [] and question.question_type == "SC":
-                answer = question.answers.filter(id=user_answer_ids)[0]
-                user_answers.append((answer.id, answer.text))
-
-
-            if question.question_type == 'MC':
-                self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
-                    label=f"{question.text}: Правильні відвопіді {question_correct}",
-                    choices=user_answers,
-                    widget=forms.CheckboxSelectMultiple,
-                    required=False,
-                    
+            )
+            elif question.answer_type == Question.MULTIPLE_CHOICE:
+                # Множественный выбор (выводим варианты через запятую)
+                self.fields[f'answer'] = forms.MultipleChoiceField(
+                choices=question_choises,
+                widget=forms.CheckboxSelectMultiple,
+                label=question.text,
+                initial=answer,
                 )
-
-            elif question.question_type == 'AUD':  # Для вопросов с аудио
-                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                    label=f"Текст питання  {question.text}",
-                    widget=forms.HiddenInput(),
-                    required=False,
-                    initial=audio_answers.get(str(question.id))
-                )
-
-                self.fields[f"audio_answer_{question.id}_correct"] = forms.BooleanField(
-                    label=f"Відповідь вірна ?",
-                    required=False,
-                )
-
-            elif question.question_type == 'INP':
-                ans_resp = answers.get(f"question_{question.id}", None)
-                item = item[0]
-                self.fields[f'question_{question.id}_user_answer'] = forms.CharField(
-                    label=f"{question.text}:\nВірна відповідь ? - {item.text}",
+            elif question.answer_type == Question.ANSWER_INPUT:
+                # Текстовый ответ
+                self.fields['student_answer'] = forms.CharField(
+                    label="Ответ студента",
+                    initial=student_answer,
                     widget=forms.Textarea(attrs={'readonly': 'readonly'}),
-                    initial=f"Відповідь студента - {ans_resp}",
                     required=False,
                 )
+            elif question.answer_type == Question.ANSWER_AUDIO:
+                # Аудио ответ (ссылка на аудиофайл)
+                if student_answer:
+                    self.fields['student_audio_answer'] = forms.CharField(
+                        label="Аудио ответ студента",
+                        initial=student_answer.url,
+                        widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+                        required=False,
+                    )
+                else:
+                    self.fields['student_audio_answer'] = forms.CharField(
+                        label="Аудио ответ студента",
+                        initial="Нет ответа",
+                        widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+                        required=False,
+                    )
 
-                self.fields[f"question_{question.id}_correct"] = forms.BooleanField(
-                    label="Відповідь вірна ?",
-                    required=False,
-                )
-            elif question.question_type == 'MTCH':
-                answers_mtch = [f"{item.left_item}-{item.right_item}|" for item in MatchingPair.objects.filter(question=question)]
-                user_answers = answers.get(f"question_{question.id}_type_matching", None)
-                answer_choise = [(i, f"{key}-{value}") for i, (key, value) in enumerate(user_answers.items())]
-                answers_mtch = " ".join(answers_mtch)
-
-                self.fields[f'question_{question.id}_MT'] = forms.CharField(
-                    label=f"{question.text}:\nВірна відповідь ? ",
+            # Если в вопросе есть изображение, добавляем его в форму для просмотра
+            if question.question_type == Question.IMAGE and question.image:
+                self.fields['question_image'] = forms.CharField(
+                    label="Изображение вопроса",
+                    initial=question.image.url,
                     widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                    initial=answers_mtch,
                     required=False,
                 )
 
-                self.fields[f"question_{question.id}_mtch"] = forms.MultipleChoiceField(
-                    label='Відповіді студента',
-                    choices=answer_choise,
-                    widget=forms.CheckboxSelectMultiple,
-                    required=False
-                )
-
-            else:
-                self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
-                    label=f"{question.text}: Правильна відповідь {question_correct}",
-                    choices=user_answers,
-                    widget=forms.CheckboxSelectMultiple,
+            # Если в вопросе есть аудио, добавляем его в форму для просмотра
+            if question.question_type == Question.AUDIO and question.audio:
+                self.fields['question_audio'] = forms.CharField(
+                    label="Аудио вопроса",
+                    initial=question.audio.url,
+                    widget=forms.TextInput(attrs={'readonly': 'readonly'}),
                     required=False,
                 )
+
+        # # Извлекаем ответы пользователя из JSON
+        # user_answer_ids = answers.get(f'question_{question.id}', [])
+
+
+        # # Получаем правильные ответы
+        # item = question.answers.filter(is_correct=True)
+        # ans = [i for i in item]
+        # result = [i.text for i in ans]
+        # question_correct = ', '.join(result)
+
+        # # Получаем список  по ответам
+        # try:
+        #     user_answers =[
+        #         (answer.id, answer.text) for answer in question.answers.filter(id__in=user_answer_ids)
+        #     ]
+        # except ValueError:
+        #     ...
+
+        # # Если одиночный ответ добавляем его вручную в список
+        # if user_answers == [] and question.question_type == "SC":
+        #     answer = question.answers.filter(id=user_answer_ids)[0]
+        #     user_answers.append((answer.id, answer.text))
+
+
+        # if question.question_type == 'MC':
+        #     self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
+        #         label=f"{question.text}: Правильні відвопіді {question_correct}",
+        #         choices=user_answers,
+        #         widget=forms.CheckboxSelectMultiple,
+        #         required=False,
+                    
+        #     )
+
+        # elif question.question_type == 'AUD':  # Для вопросов с аудио
+        #     self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+        #         label=f"Текст питання  {question.text}",
+        #         widget=forms.HiddenInput(),
+        #         required=False,
+        #         initial=audio_answers.get(str(question.id))
+        #     )
+
+        #     self.fields[f"audio_answer_{question.id}_correct"] = forms.BooleanField(
+        #         label=f"Відповідь вірна ?",
+        #         required=False,
+        #     )
+
+        # elif question.question_type == 'INP':
+        #     ans_resp = answers.get(f"question_{question.id}", None)
+        #     item = item[0]
+        #     self.fields[f'question_{question.id}_user_answer'] = forms.CharField(
+        #         label=f"{question.text}:\nВірна відповідь ? - {item.text}",
+        #         widget=forms.Textarea(attrs={'readonly': 'readonly'}),
+        #         initial=f"Відповідь студента - {ans_resp}",
+        #         required=False,
+        #         )
+
+        #     self.fields[f"question_{question.id}_correct"] = forms.BooleanField(
+        #         label="Відповідь вірна ?",
+        #         required=False,
+        #         )
+        # elif question.question_type == 'MTCH':
+        #     answers_mtch = [f"{item.left_item}-{item.right_item}|" for item in MatchingPair.objects.filter(question=question)]
+        #     user_answers = answers.get(f"question_{question.id}_type_matching", None)
+        #     answer_choise = [(i, f"{key}-{value}") for i, (key, value) in enumerate(user_answers.items())]
+        #     answers_mtch = " ".join(answers_mtch)
+
+        #     self.fields[f'question_{question.id}_MT'] = forms.CharField(
+        #         label=f"{question.text}:\nВірна відповідь ? ",
+        #         widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+        #         initial=answers_mtch,
+        #         required=False,
+        #     )
+
+        #     self.fields[f"question_{question.id}_mtch"] = forms.MultipleChoiceField(
+        #         label='Відповіді студента',
+        #         choices=answer_choise,
+        #         widget=forms.CheckboxSelectMultiple,
+        #         required=False
+        #     )
+
+        # else:
+        #     self.fields[f'question_{question.id}_approve'] = forms.MultipleChoiceField(
+        #         label=f"{question.text}: Правильна відповідь {question_correct}",
+        #         choices=user_answers,
+        #         widget=forms.CheckboxSelectMultiple,
+        #         required=False,
+        #     )
             
            
 
