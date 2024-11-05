@@ -1212,7 +1212,7 @@ class TestGroupReviewsView(TemplateView):
             else:
                 user_not_reviews.append(us.user)
 
-        
+        context['test'] = test
         context['user_reviews'] = user_reviews
         context['user_not_reviews'] = user_not_reviews
         context['user_complete_test'] = user_completely_test

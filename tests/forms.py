@@ -419,11 +419,10 @@ class TestReviewForm(forms.Form):
                 )
             elif question.answer_type == Question.ANSWER_INPUT:
                 # Текстовый ответ
-                self.fields['student_answer'] = forms.CharField(
-                    label="Ответ студента",
-                    initial=answer,
-                    widget=forms.Textarea(attrs={'readonly': 'readonly'}),
-                    required=False,
+                self.fields[f'answer'] = forms.CharField(
+                    label=f"{question.text}",
+                    widget=forms.TextInput,
+                    initial=answer
                 )
             elif question.answer_type == Question.ANSWER_AUDIO:
                 self.fields[f'audio_answer_{question.id}'] = forms.CharField(

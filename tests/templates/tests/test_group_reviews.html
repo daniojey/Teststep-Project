@@ -2,31 +2,63 @@
 {% load static %}
 
 {% block content %}
-<div align='left'>
-    <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
-</div>
+<link rel="stylesheet" href="{% static "css/test_group_reviews.css" %}">
+<body>
+    <div class='base-group-container'>
+        <div class='tests-group-header'>
+            <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
+                <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
+            </a>
+            <h2>{{ test.name }}</h2>
+        </div>
 
-<h2>Пройшли тест</h2>
-{% for item in user_complete_test %}
+        <div class="tests-container-items">
+            {% for item in user_reviews %}
+            <a href="{% url "tests:take_test_review" user_id=item.user.id test_id=test.id %}" class="user-link">
+                <div class="overlay-container" >
+                    <div class="user-overlay-header">
+                        {{ item.user.first_name }}
+                        {{ item.user.last_name }}
+                    </div>
+                    <!-- Нижняя полоса с датами -->
+                    <div class="user-overlay-footer">
+                        <div class="date-icon">
+                            <img src="{% static "media/calendar.svg" %}" alt="calendar">
+                            <span>{{ test.date_taken|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>    
+            {% endfor %}
+        </div>
 
+        {% comment %} <div align='left'>
+            <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
+        </div> {% endcomment %}
+        
+        {% comment %} <h2>Пройшли тест</h2>
+        {% for item in user_complete_test %}
+        
         <div>
             {{ item.user }}
             {{ item.score }}%
         </div>
-{% endfor %}
-
- <h2>На перевірку</h2>
- {% for item in user_reviews %}
+        {% endfor %}
+        
+        <h2>На перевірку</h2>
+        {% for item in user_reviews %}
         <div>
             {{ item.user }}
             <a href="{% url "tests:take_test_review" user_id=item.user.id test_id=item.test.id %}">Перевірити</a>
         </div>
- {% endfor %}
-
-
- <h2>Ще не пройшли тест</h2>
- {% for use in user_not_reviews %}
-    <li>{{ use }} </li>
- {% endfor %}
- 
+        {% endfor %}
+        
+        
+        <h2>Ще не пройшли тест</h2>
+        {% for use in user_not_reviews %}
+        <li>{{ use }} </li>
+        {% endfor %}
+        
+        </div> {% endcomment %}
+</body>
 {% endblock %}
