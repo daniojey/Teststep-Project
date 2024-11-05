@@ -1280,6 +1280,8 @@ class TakeTestReviewView(FormView):
 
         self.test_student_responses = TestsReviews.objects.filter(user=self.user, test=self.test).first()
 
+        if 'teacher_answers' not in request.session:
+            request.session['teacher_answers'] = 0
         
         if 'test_review_session' not in request.session:
             self.initialize_session_test()
@@ -1289,7 +1291,13 @@ class TakeTestReviewView(FormView):
     def initialize_session_test(self):
         questions = Question.objects.filter(test=self.test)
 
-        self.request.session['test_review_session'] = [q.id for q in questions]
+        if not questions.exists():
+            # Вариант: перенаправление или сообщение об ошибке
+            self.request.session['test_review_session'] = []
+        else:
+            self.request.session['test_review_session'] = [q.id for q in questions]
+
+
         self.request.session['question_index'] = 0
         self.request.session['teacher_responses'] = {}
         self.request.session['correct_answers'] = 0.0
@@ -1299,6 +1307,13 @@ class TakeTestReviewView(FormView):
         kwargs = super().get_form_kwargs()
         question_order = self.request.session['test_review_session']
         question = self.request.session['question_index']
+
+        # Проверка индекса перед использованием
+        if question >= len(question_order):
+        # Если индекс вне диапазона, сброс или редирект
+            print('redirect 3')
+            return redirect('app:index')
+        
         current_question_id = question_order[question]
         self.current_question = get_object_or_404(Question, id=current_question_id)
 
@@ -1308,15 +1323,15 @@ class TakeTestReviewView(FormView):
         # if not hasattr(self.test_student_responses, 'audio_answers') or self.test_student_responses.audio_answers is None:
         #     self.test_student_responses.audio_answers = {}
 
-        print(current_question_id)
-        print(self.test_student_responses.answers)
+        # print(current_question_id)
+        # print(self.test_student_responses.answers)
         # Получение ответа на основе типа вопроса
         if self.current_question.answer_type == 'AUD':
             self.current_students_question = self.test_student_responses.audio_answers.get(f'audio_answer_{current_question_id}', [])
         else:
             self.current_students_question = self.test_student_responses.answers.get(f'question_{current_question_id}', [])
 
-        print(self.current_students_question)
+        # print(self.current_students_question)
 
         kwargs['audio_answers'] = self.test_student_responses.audio_answers
         kwargs['question'] = self.current_question
@@ -1324,13 +1339,14 @@ class TakeTestReviewView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        self.correct_answers = 0
+        print("ball",self.request.session['teacher_answers'])
 
 
         if self.request.method == 'POST':
             action = self.request.POST.get('action')
             if action == 'correct':
-                self.correct_answers += 1
+                self.request.session['teacher_answers'] += 1
+                print("ball",self.request.session['teacher_answers'])
 
             elif action == 'incorrect':
                 # Ответ неверный поэтому ничего не добавляем
@@ -1339,12 +1355,18 @@ class TakeTestReviewView(FormView):
             elif action == 'partial':
                 print('partial')
         
-        self.request.session['question_index'] += 1
+         # Увеличиваем индекс вопроса только если он не выходит за пределы
+        if self.request.session['question_index'] + 1 < len(self.request.session['test_review_session']):
+            self.request.session['question_index'] += 1
+        else:
+            print('redirect 1')
+            return redirect('app:index')
 
-        question_index = self.request.session['question_index']
-        all_questions = self.request.session['test_review_session']
-        if question_index > len(all_questions):
-            return redirect('tests:test')
+        # question_index = self.request.session['question_index']
+        # all_questions = self.request.session['test_review_session']
+        # if question_index > len(all_questions):
+        #     print('redirect 2')
+        #     return redirect('app:index')
         
         return redirect('tests:take_test_review', test_id=self.kwargs['test_id'],  user_id=self.kwargs['user_id'])
 
@@ -1353,6 +1375,7 @@ class TakeTestReviewView(FormView):
         test_review_session = self.request.session['test_review_session']
         question_index = self.request.session['question_index']
         context['test'] = self.test
+        context['user'] = self.user
         context['question'] = self.current_question
         context['all_questions'] = {
             "current": question_index + 1,
@@ -1363,7 +1386,8 @@ class TakeTestReviewView(FormView):
         return context
 
     
-        
+
+
     
 
 # class TakeTestReviewView(FormView):

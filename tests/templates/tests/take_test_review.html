@@ -1,35 +1,89 @@
 {% extends "base.html" %}
+{% load custom_tags %}
 {% load static %}
 
 {% block content %}
-<h2>{{ test.name }}</h2>
+<link rel="stylesheet" type="text/css" href="{% static 'css/take_test_review.css' %}">   
 
-<form method="post">
-    {% csrf_token %}
-    {{ question.text }}
-    
-    {% for field in form %}
-        <div class="form-group">
-            
-            {% if 'audio_answer_' in field.name and '_correct' not in field.name %}
-                {% if field.value %}
-                    <audio controls>
-                        <source src="{{ field.value }}" type="audio/webm">
-                        <source src="{{ field.value }}" type="audio/mpeg">
-                        Ваш браузер не підтримує аудіо плеер.
-                    </audio>
-                {% endif %}
-            {% elif '_correct' in field.name %}
-                {{ field }}
-            {% else %}
-                {{ field }}
-            {% endif %}
-    {% endfor %}
-    
-    <div>
-        <button type='submit'>Правильно</button>
-        <button type='submit'>Частково правильно</button>
-        <button type="submit">Неправильно</button>
+<body>
+<div class='main-test-container'>
+    <div class='test-header'>
+        <h2>{{ all_questions.current }}/{{ all_questions.all }}</h2>
+
+        <label>{{ user.first_name }} {{ user.last_name }}</label>
     </div>
-</form>
+
+    <div class='test-category'>
+        <label>Категорія питання ({% if current_question_group %}{{ current_question_group }}{% else %}Усі{% endif %})</label>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+
+        {% if question.image %}
+        <div class='question-image-container'>
+            <img src="{{ question.image.url }}">
+        </div>
+        {% endif %}
+        
+        {% for field in form %}
+            {% if question.text %}
+                    <div class='text-question'>    
+                        <h3>{{ field.label_tag }}</h3>
+                    </div>
+            {% endif %}
+
+        <div class="form-group">
+            {% if 'audio_answer_' in field.name and '_correct' not in field.name %}
+            {% if field.value %}
+            <audio controls>
+                <source src="{{ field.value }}" type="audio/webm">
+                <source src="{{ field.value }}" type="audio/mpeg">
+                Ваш браузер не підтримує аудіо плеер.
+            </audio>
+            {% endif %}
+            {% elif question.answer_type == 'SC' %}
+                            <!-- Радио-кнопки, рендерим через цикл -->
+                            <div class="radio-answers">
+                                {% for radio in field %}
+                                <label class="custom-radio {% if radio.tag.value == field.value %}active{% endif %}" data-value="{{ radio.data.value }}">
+                                        <!-- Скрытый input, он будет управляться через JS -->
+                                        {{ radio.tag }} 
+                                        
+                                        <!-- Кастомная визуализация радио-кнопки -->
+                                        <span class="custom-radio-circle"></span>
+                                        <span class="radio-label">{{ radio.choice_label }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                        {% elif question.answer_type == 'MC' %}
+                            <div class='checkbox-answers'>
+                                {% for choice in field %}
+                                    <label class="custom-checkbox">
+                                        {{ choice.tag }}
+                                        <span class="custom-checkbox-box"></span>
+                                        {{ choice.choice_label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                        {% elif question.answer_type == 'INP' %}
+                            <div class='input-answer'>
+                                {{ field|addattr:"placeholder:input" }}
+                            </div>
+                        {% endif %}
+                    </div>
+            {% endfor %}
+            
+            <div class='button-container'>
+                <button type="submit" name="action" value="correct" class='submit-btn'>Правильно</button>
+                <button type="submit" name="action" value="partial" class='submit-btn'>Частково правильно</button>
+                <button type="submit" name="action" value="incorrect" class='submit-btn'>Неправильно</button>
+            </div>
+        </form>
+
+    </div>
+    <script src="{% static 'js/radio_select_initialize.js' %}"></script>    
+</body>
 {% endblock %}

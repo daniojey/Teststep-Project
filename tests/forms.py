@@ -365,17 +365,25 @@ class TestReviewForm(forms.Form):
         question = kwargs.pop('question', {})
         student_answer = kwargs.pop('student_question', None)
         print(student_answer)
+        print(question.answer_type)
+        print(question)
+        print(question.question_type)
 
-        question_choises = [(a.text ,a.id ) for a in question.answers.all()]
+        question_choises = [(a.id, a.text) for a in question.answers.all()]
 
-        if len(student_answer) == 1:
-            answer =  Answer.objects.filter(id=int(student_answer[0])).first().text
+        if question.answer_type == 'INP':
+            answer = student_answer
+            print('answer 2',answer)
+        elif question.answer_type ==  Question.SINGLE_CHOICE:
+            answer =  [Answer.objects.filter(id=int(student_answer)).first().id]
+            print('answer',answer)
         else:
             st_answers = Answer.objects.filter(id__in=student_answer)  # Получаем все ответы за один запрос
-            answer= [a.text for a in st_answers]
+            answer= [a.id for a in st_answers]
+            print('answer_1',answer)
 
         print(question_choises)
-        print(answer)
+        print('1-ans',answer)
 
         # test = kwargs.pop('test')
         # answers = kwargs.pop('answers')
@@ -413,44 +421,35 @@ class TestReviewForm(forms.Form):
                 # Текстовый ответ
                 self.fields['student_answer'] = forms.CharField(
                     label="Ответ студента",
-                    initial=student_answer,
+                    initial=answer,
                     widget=forms.Textarea(attrs={'readonly': 'readonly'}),
                     required=False,
                 )
             elif question.answer_type == Question.ANSWER_AUDIO:
-                # Аудио ответ (ссылка на аудиофайл)
-                if student_answer:
-                    self.fields['student_audio_answer'] = forms.CharField(
-                        label="Аудио ответ студента",
-                        initial=student_answer.url,
-                        widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                        required=False,
-                    )
-                else:
-                    self.fields['student_audio_answer'] = forms.CharField(
-                        label="Аудио ответ студента",
-                        initial="Нет ответа",
-                        widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                        required=False,
-                    )
+                self.fields[f'audio_answer_{question.id}'] = forms.CharField(
+                label=f"Текст питання  {question.text}",
+                widget=forms.HiddenInput(),
+                required=False,
+                initial=audio_answers.get(str(question.id))
+            )
 
-            # Если в вопросе есть изображение, добавляем его в форму для просмотра
-            if question.question_type == Question.IMAGE and question.image:
-                self.fields['question_image'] = forms.CharField(
-                    label="Изображение вопроса",
-                    initial=question.image.url,
-                    widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                    required=False,
-                )
+            # # Если в вопросе есть изображение, добавляем его в форму для просмотра
+            # if question.question_type == Question.IMAGE and question.image:
+            #     self.fields['question_image'] = forms.CharField(
+            #         label="Изображение вопроса",
+            #         initial=question.image.url,
+            #         widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+            #         required=False,
+            #     )
 
             # Если в вопросе есть аудио, добавляем его в форму для просмотра
-            if question.question_type == Question.AUDIO and question.audio:
-                self.fields['question_audio'] = forms.CharField(
-                    label="Аудио вопроса",
-                    initial=question.audio.url,
-                    widget=forms.TextInput(attrs={'readonly': 'readonly'}),
-                    required=False,
-                )
+            # if question.question_type == Question.AUDIO:
+            #     self.fields['question_audio'] = forms.CharField(
+            #         label="Аудио вопроса",
+            #         initial=question.audio.url,
+            #         widget=forms.TextInput(attrs={'readonly': 'readonly'}),
+            #         required=False,
+            #     )
 
         # # Извлекаем ответы пользователя из JSON
         # user_answer_ids = answers.get(f'question_{question.id}', [])
