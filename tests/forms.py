@@ -377,6 +377,8 @@ class TestReviewForm(forms.Form):
         elif question.answer_type ==  Question.SINGLE_CHOICE:
             answer =  [Answer.objects.filter(id=int(student_answer)).first().id]
             print('answer',answer)
+        elif question.question_type == "MTCH":
+            answer = dict(student_answer)
         else:
             st_answers = Answer.objects.filter(id__in=student_answer)  # Получаем все ответы за один запрос
             answer= [a.id for a in st_answers]
@@ -425,12 +427,32 @@ class TestReviewForm(forms.Form):
                     initial=answer
                 )
             elif question.answer_type == Question.ANSWER_AUDIO:
+                if question.text:
+                    answer_text = question.text
+                else:
+                    answer_text = ''
+
                 self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                label=f"Текст питання  {question.text}",
+                label=answer_text,
                 widget=forms.HiddenInput(),
                 required=False,
                 initial=audio_answers.get(str(question.id))
             )
+            elif question.question_type == Question.MATCHING:
+                for i , (left_item, right_item) in enumerate(answer.items()):
+                    # Левый элемент просто выводится как текст
+                    self.fields[f'matching_left_{i}'] = forms.CharField(
+                        label=left_item,
+                        required=False,
+                        widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
+                    )
+
+                    # Правый элемент также выводится как текст
+                    self.fields[f'matching_right_{i}'] = forms.CharField(
+                        label=right_item,
+                        required=False,
+                        widget=forms.HiddenInput()  # Прячем поле для выбора
+                    )
 
             # # Если в вопросе есть изображение, добавляем его в форму для просмотра
             # if question.question_type == Question.IMAGE and question.image:

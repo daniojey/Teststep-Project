@@ -3,6 +3,7 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">  
 <link rel="stylesheet" type="text/css" href="{% static 'css/take_test_review.css' %}">   
 
 <body>
@@ -27,7 +28,7 @@
         {% endif %}
         
         {% for field in form %}
-            {% if question.text %}
+            {% if question.text and question.question_type != 'MTCH' %}
                     <div class='text-question'>    
                         <h3>{{ field.label_tag }}</h3>
                     </div>
@@ -35,13 +36,26 @@
 
         <div class="form-group">
             {% if 'audio_answer_' in field.name and '_correct' not in field.name %}
-            {% if field.value %}
-            <audio controls>
+                <div class="question-audio-container">
+                    <div class='question-audio' onclick="toggleAudio()">
+                        <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
+                    </div>
+                    <div class='player-section'>
+                        <label class='section'>|</label>
+                    </div>
+                    <!-- Общая длительность аудио -->
+                    <span class="duration" id="audioDuration">0:00</span>
+                </div>
+            {% comment %} <audio controls>
                 <source src="{{ field.value }}" type="audio/webm">
                 <source src="{{ field.value }}" type="audio/mpeg">
                 Ваш браузер не підтримує аудіо плеер.
-            </audio>
-            {% endif %}
+            </audio> {% endcomment %}
+
+                <!-- Элемент аудио -->
+                {% if field.value %}
+                    <audio id="audioPlayer" src="{{ field.value }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
+                {% endif %}
             {% elif question.answer_type == 'SC' %}
                             <!-- Радио-кнопки, рендерим через цикл -->
                             <div class="radio-answers">
@@ -76,6 +90,43 @@
                     </div>
             {% endfor %}
             
+            <!-- Добавляем matching после цикла дабы избежать дополнительных конфликтов -->
+            {% if question.question_type == "MTCH" %}
+                <div class='form-matching'>
+                    <div class='left-items-container'>
+                        {% for field in form %}
+                        {% if 'matching_left' in field.name %}
+                        <div class="left-column">
+                            <div class="left-item" id="{{ field.name }}" data-left-item="{{ field.label }}">
+                                <label>{{ field.label }}</label>
+                                <!-- Обновленный id для dropzone, соответствующий forms.py -->
+                                <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                    <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <div class='right-items-container'>  
+                        {% for field in form %}
+                        {% if 'matching_right' in field.name %}
+                        <div class="right-column" id="right-column-{{ forloop.counter }}">
+                            <div class="right-item" id="drag_{{ field.name }}" 
+                                data-right-item="{{ field.label }}" 
+                                data-original-parent="right-column-{{ forloop.counter }}"  
+                                draggable="true" 
+                                ondragstart="drag(event)">
+                                <label>{{ field.label }}</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            
             <div class='button-container'>
                 <button type="submit" name="action" value="correct" class='submit-btn'>Правильно</button>
                 <button type="submit" name="action" value="partial" class='submit-btn'>Частково правильно</button>
@@ -84,6 +135,144 @@
         </form>
 
     </div>
+    <script>
+        // Получаем элементы
+        const durationLabel = document.getElementById("audioDuration");
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playIcon = document.getElementById('playIcon');
+        const playerSection = document.querySelector('.player-section');
+    
+        // Количество делений
+        const totalSections = 19;
+    
+        // Создаем деления с разной высотой
+        function createSections() {
+            for (let i = 0; i < totalSections; i++) {
+                const section = document.createElement('label');
+                section.classList.add('section');
+                section.style.height = `${Math.random() * 30 + 10}px`; // Рандомная высота от 10px до 40px
+                section.style.backgroundColor = '#4a4956'; // Начальный цвет для незаполненных делений
+                playerSection.appendChild(section);
+            }
+        }
+    
+        // Обновляем прогресс делений
+        function updateProgress() {
+            if (audioPlayer.duration) { // Проверка, что длительность загружена
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * totalSections;
+                const sections = document.querySelectorAll('.section');
+    
+                sections.forEach((section, index) => {
+                    if (index < Math.floor(progress)) {
+                        section.style.backgroundColor = '#FFFFFF'; // Заполненные деления белые
+                    } else {
+                        section.style.backgroundColor = '#4a4956'; // Незаполненные деления серые
+                    }
+                });
+    
+                // Обработка последнего деления
+                if (audioPlayer.currentTime >= audioPlayer.duration) {
+                    sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые при завершении
+                }
+            }
+        }
+    
+        // Воспроизведение и пауза аудио
+        function toggleAudio() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playIcon.src = "{% static 'icons/pause_icon.svg' %}";
+            } else {
+                audioPlayer.pause();
+                playIcon.src = "{% static 'icons/play_icon.svg' %}";
+            }
+        }
+    
+        // Отображение продолжительности аудио
+        function displayDuration() {
+            const duration = audioPlayer.duration;
+            if (isFinite(duration) && duration > 0) { // Проверка, что длительность корректна
+                durationLabel.textContent = formatTime(duration);
+            } else {
+                durationLabel.textContent = "0:00";
+            }
+        }
+    
+        // Форматирование времени
+        function formatTime(seconds) {
+            if (!isFinite(seconds)) return "0:00"; // Проверка на корректное значение
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${secs}`;
+        }
+    
+        // Создаем деления при загрузке страницы
+        createSections();
+    
+        // Обновление прогресса при проигрывании аудио
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+    
+        // Полное заполнение делений и обновление иконки после завершения воспроизведения
+        audioPlayer.addEventListener('ended', () => {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые
+            playIcon.src = "{% static 'icons/play_icon.svg' %}"; // Возвращаем иконку в состояние "play"
+        });
+    
+        // Установка длительности после загрузки метаданных аудио
+        audioPlayer.addEventListener('loadedmetadata', displayDuration);
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Находим все left-items и right-items
+            const leftItems = document.querySelectorAll(".left-item");
+            const rightItems = document.querySelectorAll(".right-item");
+        
+            leftItems.forEach(leftItem => {
+                // Извлекаем суффикс из id left-item
+                const leftIdSuffix = leftItem.id.split('_').pop();
+                
+                // Находим соответствующий dropzone для данного left-item
+                const dropzone = document.getElementById(`dropzone_${leftItem.id}`);
+        
+                if (dropzone) {
+                    // Проверяем, что dropzone пустая
+                    const existingElement = dropzone.querySelector(".right-item");
+                    if (!existingElement) {
+                        // Ищем соответствующий right-item с таким же суффиксом
+                        let matched = false;  // Флаг для отслеживания соответствий
+                        rightItems.forEach(rightItem => {
+                            const rightIdSuffix = rightItem.id.split('_').pop();
+        
+                            // Если суффиксы совпадают, предзаполняем dropzone этим right-item
+                            if (leftIdSuffix === rightIdSuffix) {
+                                dropzone.appendChild(rightItem);
+                                matched = true;
+        
+                                // Устанавливаем значение в скрытое поле
+                                const matchingInput = document.getElementById(`answer_${leftItem.id}`);
+                                if (matchingInput) {
+                                    matchingInput.value = rightItem.getAttribute('data-right-item');
+                                    console.log(`Предзаполнено: ${leftItem.id} -> ${rightItem.id}`);
+                                } else {
+                                    console.error(`Скрытое поле answer_${leftItem.id} не найдено`);
+                                }
+                            }
+                        });
+        
+                        if (!matched) {
+                            console.warn(`Для left-item с id ${leftItem.id} не найдено совпадений.`);
+                        }
+                    } else {
+                        console.log(`dropzone для ${leftItem.id} уже содержит элемент.`);
+                    }
+                } else {
+                    console.error(`Не найден dropzone с id dropzone_${leftItem.id}`);
+                }
+            });
+        });
+    </script>
+    <script src="{% static 'js/drag_and_drop_initialize.js' %}"></script> 
     <script src="{% static 'js/radio_select_initialize.js' %}"></script>    
 </body>
 {% endblock %}

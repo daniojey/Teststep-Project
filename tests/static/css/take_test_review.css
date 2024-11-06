@@ -204,6 +204,106 @@ h3 {
     transition: background-color 0.8s ease, transform 0.8s ease;
 }
 
+/* поле input  */
+.input-answer input{
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+
+/* Стили для placeholder */
+.input-answer input::placeholder {
+    color: rgba(255, 255, 255, 0.50);
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
+/* Аудио ответ */
+.question-audio-container {
+    display: flex;
+    width: 400px;
+    height: 60px;
+    align-items: center;
+    justify-content: start;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+/* Секция для аудио-плеера */
+.question-audio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+}
+
+.question-audio img {
+    width: 30px;
+    height: 30px;
+}
+
+.player-section {
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: start;
+    width: 203px;
+    height: 60px;
+}
+
+.section {
+    height: 35px;
+    width: 4px;
+    margin-right: 6px;
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+    justify-content: start;
+    border: #FFFFFF;
+    border-radius: 1.313px;
+}
+
+.duration {
+    color: #B0AFBA;
+    font-size: 14px;
+    transform: translateY(145%);
+}
+
+/* Форма вопросов с установлением соотвецтвий */
+.form-matching {
+    display:flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.left-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.right-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: end;
+    align-items: end;
+}
+
 .button-container {
     width: 100%;
     display: flex;

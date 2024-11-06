@@ -1281,7 +1281,7 @@ class TakeTestReviewView(FormView):
         self.test_student_responses = TestsReviews.objects.filter(user=self.user, test=self.test).first()
 
         if 'teacher_answers' not in request.session:
-            request.session['teacher_answers'] = 0
+            request.session['teacher_answers'] = 0.0
         
         if 'test_review_session' not in request.session:
             self.initialize_session_test()
@@ -1300,7 +1300,8 @@ class TakeTestReviewView(FormView):
 
         self.request.session['question_index'] = 0
         self.request.session['teacher_responses'] = {}
-        self.request.session['correct_answers'] = 0.0
+        # self.request.session['correct_answers'] = 0.0
+        self.request.session['test_student_responses_id'] = self.test_student_responses.id
         
 
     def get_form_kwargs(self):
@@ -1328,6 +1329,8 @@ class TakeTestReviewView(FormView):
         # Получение ответа на основе типа вопроса
         if self.current_question.answer_type == 'AUD':
             self.current_students_question = self.test_student_responses.audio_answers.get(f'audio_answer_{current_question_id}', [])
+        elif self.current_question.question_type == 'MTCH':
+            self.current_students_question = self.test_student_responses.answers.get(f'question_{current_question_id}_type_matching', [])
         else:
             self.current_students_question = self.test_student_responses.answers.get(f'question_{current_question_id}', [])
 
@@ -1339,13 +1342,13 @@ class TakeTestReviewView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        print("ball",self.request.session['teacher_answers'])
 
 
         if self.request.method == 'POST':
+            print(self.request.POST)
             action = self.request.POST.get('action')
             if action == 'correct':
-                self.request.session['teacher_answers'] += 1
+                self.request.session['teacher_answers'] += 1.0
                 print("ball",self.request.session['teacher_answers'])
 
             elif action == 'incorrect':
@@ -1360,7 +1363,7 @@ class TakeTestReviewView(FormView):
             self.request.session['question_index'] += 1
         else:
             print('redirect 1')
-            return redirect('app:index')
+            return redirect('tests:test_review_results')
 
         # question_index = self.request.session['question_index']
         # all_questions = self.request.session['test_review_session']
@@ -1602,3 +1605,57 @@ class TakeTestReviewView(FormView):
 #         form = TestReviewForm(test=test, answers=answers, audio_answers=audio_answers)
 
 #     return render(request, 'tests/take_test_review.html', {'form': form, 'review': review, 'test': test, 'audio_answers': audio_answers})
+    
+class TestReviewResults(View):
+    template_name = 'tests/test_review_results.html'
+
+    def get(self, request, *args, **kwargs):
+
+        correct_answers = self.request.session['teacher_answers']
+        test_review_id = self.request.session['test_student_responses_id']
+        if test_review_id:
+            test_review = TestsReviews.objects.filter(id=test_review_id).first()
+        else:
+            test_review = None
+
+        if test_review:
+            test_id = test_review.test.id
+            user = test_review.user
+            test = test_review.test
+            duration = test_review.duration
+            questions = test.questions.count()
+            print(test)
+            print(questions)
+            print(correct_answers)
+            print(test_review)
+        
+
+            score = round((correct_answers / questions) * 100) if questions > 0 else 0
+            print(score)
+            test_result = TestResult.objects.create(
+                user=user,
+                test=test,
+                duration=duration,
+                score=score,
+                attempts=2
+            )
+            # test_review.delete()
+            print(test_result)
+
+        self.clear_test_session(request)
+
+
+        return redirect('tests:tests_for_review')
+    
+    def clear_test_session(self, request):
+        """Очищаем данные теста из сессии"""
+        session_keys = ['test_student_responses_id','teacher_answers','question_index','test_review_session', 'teacher_responses']
+        for key in session_keys:
+            if key in session_keys:
+                del request.session[key]
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+    
