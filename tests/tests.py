@@ -171,7 +171,7 @@ class QuestionModelTest(TestCase):
         self.assertEqual(str(self.question_in_group), 'Text question in group')
 
     def test_question_type_variants(self):
-        question_type = [Question.SINGLE_CHOICE, Question.MULTIPLE_CHOICE, Question.INPUT, Question.MATCHING, Question.AUDIO]
+        question_type = [Question.TEXT, Question.IMAGE, Question.AUDIO, Question.MATCHING, Question.SINGLE_CHOICE, Question.MULTIPLE_CHOICE, Question.ANSWER_INPUT, Question.ANSWER_AUDIO]
         for q_type in question_type:
             question = Question.objects.create(
                 test=self.test,
@@ -989,13 +989,13 @@ class AddQuestionViewTest(TestCase):
 
         form_data_question_no_group = {
             'text': "question_text",
-            'question_type': 'SC',
+            'question_type': 'TXT',
             'form_type': 'form_question'
         }
 
         form_data_question_group = {
             'text': "question_text_group",
-            'question_type': 'MC',
+            'question_type': 'AUD',
             'form_type': 'form_question',
             'group': self.question_group.pk
         }
@@ -1424,3 +1424,152 @@ class TestPreviewViewTest(TestCase):
         self.user.delete()
 
 
+
+
+class TakeTestViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = Tests.objects.create(
+            user=self.user,
+            name='Sample Test',
+            description='Test description',
+            category=self.category,
+            check_type='auto',
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(seconds=35)
+        )
+
+        self.test_id = self.test.pk
+
+        self.question_group = QuestionGroup.objects.create(name='Sample group', test=self.test)
+
+        self.question = Question.objects.create(
+            test=self.test,
+            group=self.question_group,
+            text='Question text',
+            question_type='TXT',
+            answer_type='SC'
+        )
+
+        self.question_2 = Question.objects.create(
+            test=self.test,
+            text='Question text two',
+            question_type='TXT',
+            answer_type='INP'
+
+        )
+
+        self.url = reverse('tests:take_test', kwargs={'test_id': self.test_id})
+
+    def test_initialize_test_session(self):
+        response = self.client.get(self.url)
+        session = self.client.session
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('test_id', session)
+        self.assertEqual(session['test_id'], self.test.id)
+        self.assertIn('question_order', session)
+        self.assertIn(self.question.id, session['question_order'])
+        self.assertIn(self.question_2.id, session['question_order'])
+
+    def test_display_question(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Question text')
+
+    def test_submit_answer_and_move_to_next_question(self):
+        self.choice_1 = Answer.objects.create(
+            question=self.question,
+            text='Choice 1',
+            is_correct=True,
+        )
+        # Здесь предположим, что текущий вопрос — это Single Choice (SC)
+        self.question.answer_type = 'SC'
+        self.question.save()
+
+        # Теперь тестируем отправку данных
+        response = self.client.post(self.url, {
+            'answer': self.choice_1.id,  # передаем правильный выбор в Single Choice
+            'remaining_time': 1000,  # время
+        })
+
+        # Проверяем, что ответ на вопрос был сохранен
+        session = self.client.session
+        question_id_key = f'question_{self.question.id}'
+        self.assertIn(question_id_key, session['test_responses'])
+
+    def test_submit_multiple_choice_answer(self):
+        self.choice_1 = Answer.objects.create(
+            question=self.question,
+            text='Choice 1',
+            is_correct=True,
+        )
+
+        self.choice_2 = Answer.objects.create(
+            question=self.question,
+            text='Choice 2',
+        )
+
+        self.question.answer_type = 'MC'
+        self.question.save()
+        response = self.client.post(self.url, {
+            'answer': [self.choice_1.id, self.choice_2.id],  # Несколько ответов для MC
+            'remaining_time': 1000,
+        })
+        session = self.client.session
+        question_id_key = f'question_{self.question.id}'
+        self.assertIn(question_id_key, session['test_responses'])
+
+    def test_submit_text_answer(self):
+        self.question.answer_type = 'INP'
+        self.question.save()
+        response = self.client.post(self.url, {
+            'answer': 'Sample text answer',
+            'remaining_time': 1000,
+        })
+        session = self.client.session
+        question_id_key = f'question_{self.question.id}'
+        self.assertIn(question_id_key, session['test_responses'])
+
+    def test_submit_matching_answer(self):
+        self.question.question_type = 'MTCH'
+        self.question.save()
+        response = self.client.post(self.url, {
+            'answer': {
+                'matching_left_1': 'matching_right_1', 
+                'matching_left_2': 'matching_right_2'
+            },
+            'remaining_time': 1000,
+        })
+        session = self.client.session
+        question_id_key = f'question_{self.question.id}_type_matching'
+        self.assertIn(question_id_key, session['test_responses'])
+
+    def test_complete_test(self):
+        self.choice_1 = Answer.objects.create(
+            question=self.question,
+            text='Choice 1',
+            is_correct=True,
+        )
+        
+        # Проверяем по конфигу тестов, то есть 1-й TXT|SC 2-й TXT|INP
+        self.client.get(self.url)
+
+         # Отвечаем на первый вопрос
+        self.client.post(self.url, {
+            'answer': self.choice_1.id,
+            'remaining_time': 1800,
+        })
+        
+        # Отвечаем на второй вопрос (последний)
+        response = self.client.post(self.url, {
+            'answer': 'Answer for question 2',
+            'remaining_time': 1700,
+        })
+
+        self.assertRedirects(response, reverse('tests:test_results', kwargs={'test_id': self.test.id}))
