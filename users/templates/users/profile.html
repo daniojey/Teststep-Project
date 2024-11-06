@@ -67,7 +67,7 @@
                                     <div class="alert alert-danger alert-dismissible fade show">{{ form.email.errors }}</div>
                                     {% endif %}
                                 </div>
-
+{% comment %} 
                                 <label for="id_password" class="form-label">Пароль</label>
                                 <div class="form-group">
                                     <input type="password" class="form-control" id="id_password"
@@ -77,9 +77,18 @@
                                     {% if form.password.errors %}
                                     <div class="alert alert-danger alert-dismissible fade show">{{ form.password.errors }}</div>
                                     {% endif %}
-                                </div>
+                                </div> {% endcomment %}
 
-                                <button id="logout-button">Вийти з аккаунту</button>
+
+                                {% comment %} <button class='password-button'>Змінити парроль</button>
+
+                                <button id="logout-button" class='logout-button'>Вийти з аккаунту</button> {% endcomment %}
+
+                                <div class='button-container'>
+                                    <button class='password-button'>Змінити парроль</button>
+
+                                    <button id="logout-button" class='logout-button'>Вийти з аккаунту</button>
+                                </div>
                             </div>
                             {% comment %} <button type="submit" class="btn btn-dark">Сохранить</button> {% endcomment %}
                         </form>

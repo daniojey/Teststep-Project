@@ -137,7 +137,14 @@
     padding-left: 10px;
 }
 
-.custom-form button{
+.button-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    gap: 32px;
+}
+
+.logout-button{
     width: 210px;
     height: 61px;
     background-color: #BF4949;
@@ -150,4 +157,30 @@
     font-style: normal;
     font-weight: 500;
     line-height: normal;
+    transition: background-color 0.8s ease, border-color 0.3s ease;
+}
+
+.password-button {
+    width: 210px;
+    color: #FFF;
+    background-color: #7260F5;
+    height: 61px;
+    border-radius: 12px;
+    margin: 0 auto;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    transition: background-color 0.8s ease, border-color 0.3s ease;
+}
+
+.logout-button:hover{
+    color: red;
+    background-color: #ffffff;
+}
+
+.password-button:hover{
+    color: #7260F5;
+    background-color: #ffffff;
 }
