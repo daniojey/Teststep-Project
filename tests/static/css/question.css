@@ -454,6 +454,35 @@
     margin-bottom: 40px;
 }
 
+.audio-base-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 64px;
+    background-color: #FFFFFF;
+    margin: 0 auto;
+}
+
+.audio-container h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.audio-container h2 label {
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
 /* Кнопка формы */
 .form-btn {
     width: 283px;

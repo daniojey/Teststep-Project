@@ -24,6 +24,10 @@
                 {% for field in form %}
                 {% if 'audio_answer_' in field.name %}
                 <div class='audio-container'>
+                    {% if question.text %}
+                        <h2>{{ field.label_tag }}</h2>
+                    {% endif %}
+
                     {% if question.image %}
                         <div class='question-image-container'>
                             <img src="{{ question.image.url }}">
@@ -46,12 +50,23 @@
                             <audio id="audioPlayer" src="{{ question.audio.url }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
                     {% endif %}
 
-                    <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio>
-                    <div>
+                    < <div class='audio-base-container'>
+                        <img src="{% static "icons/microphone-audio-answer.svg" %}" 
+                             alt="Record" 
+                             id="microphoneIcon" 
+                             onclick="toggleRecording('{{ field.name|cut:'audio_answer_' }}')">
+                    </div>
+
+                    {% comment %} <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio> {% endcomment %}
+                    {% comment %} <div>
                         <button type="button" onclick="startRecording({{ field.name|cut:'audio_answer_' }})">Почати запис</button>
                         <button type="button" onclick="stopRecording({{ field.name|cut:'audio_answer_' }})" disabled>Зупинити запис</button>
-                    </div>
+                    </div> {% endcomment %}
                     <!-- Скрытое поле для сохранения аудиофайла -->
+
+                    {% comment %} <audio controls id="audio_playback_{{ field.name|cut:'audio_answer_' }}"></audio> {% endcomment %}
+
+
                     {{ field }}
                 </div>
                 {% elif question.question_type == 'TXT' %}

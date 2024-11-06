@@ -225,7 +225,7 @@ class TestTakeForm(forms.Form):
             elif question.answer_type == 'AUD':
                 # Теперь ключ снова будет содержать ID вопроса
                 self.fields[f'audio_answer_{question.id}'] = forms.CharField(
-                    label=f"{question.text} (Ваша відповідь в аудіо)",
+                    label=f"{question.text}",
                     widget=forms.HiddenInput(),  # Здесь будет сохраняться URL аудиофайла
                     required=False
                 )
