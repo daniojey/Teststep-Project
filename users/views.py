@@ -96,6 +96,11 @@ class UserRegistrationView(CreateView):
     def form_valid(self, form):
         user = form.save(commit=False)  # Сохраняем форму без коммита, чтобы задать username вручную
 
+        email = form.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            form.add_error('email', 'Этот email уже зарегистрирован. Пожалуйста, используйте другой.')
+            return self.form_invalid(form)
+
         # Генерация уникального имени пользователя
         base_name = f"{form.cleaned_data['first_name'][0]}{form.cleaned_data['last_name']}".lower()
         username = base_name
