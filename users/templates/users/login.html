@@ -12,6 +12,14 @@
 
 
 <body>
+    {% comment %} {% if form.errors %}
+        <div class="error-notification">
+            {% for field, errors in form.errors.items %}
+                <p>Невірна пошта або пароль</p>
+            {% endfor %}
+        </div>
+    {% endif %} {% endcomment %}
+
     <div class="main-container">
 
             <!-- Левая часть: форма -->
@@ -28,18 +36,13 @@
                         <input type="email" class="form-control" name="email"  value="{% if form.email.value %}{{ form.email.value }}{% endif %}" 
                         id="email" placeholder="Електронна пошта" required>
                     </div>
-
-                    {% comment %} <div class="form-group">
-                        <input type="text" class="form-control" name="username"  value="{% if form.username.value %}{{ form.username.value }}{% endif %}" 
-                        id="username" placeholder="Введите ваше имя пользователя">
-                    </div> {% endcomment %}
-
+                    
+                    
                     <div class="form-group">
                         <input type="password" class="form-control" name="password" id="id_password1" placeholder="Введить свій пароль" required >
                         <img src="{% static 'icons/mdi_eye.svg' %}" class="toggle-password" id="eyeicon" 
-                             data-eye-open="{% static 'icons/mdi_eye.svg' %}" 
-                             data-eye-closed="{% static 'icons/mdi_eye-off.svg' %}">
-                        {% comment %} <img src="{% static "media/pass-icon.png" %}" onclick="pass()" class='pass-icon'> {% endcomment %}
+                        data-eye-open="{% static 'icons/mdi_eye.svg' %}" 
+                        data-eye-closed="{% static 'icons/mdi_eye-off.svg' %}">
                     </div>
 
                     <a href="" class="password-link">Забули пароль ?</a>
@@ -55,15 +58,99 @@
                     <img src="{% static "media/registration.svg" %}" alt="Placeholder Image">
                 </div>        
     </div>
+    {% comment %} <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const errorNotification = document.querySelector('.error-notification');
+            const errorInputs = document.querySelectorAll('.form-control');
+            
+            if (errorNotification) {
+                // Добавляем класс `show` для показа уведомления
+                errorNotification.classList.add('show');
+                // Применяем стили ко всем полям с ошибками
+                errorInputs.forEach(input => {
+                    input.style.border = 'solid';
+                    input.style.borderColor = 'red';
+                });
 
+        
+                // Задержка для скрытия уведомления (5 секунд)
+                setTimeout(function () {
+                    errorNotification.classList.add('hide');
+                     // Убираем стили для всех полей
+                    errorInputs.forEach(input => {
+                        input.style.border = 'none';
+                        input.style.borderColor = '';
+                    });
+                }, 5000);
+        
+                // Удаляем уведомление из DOM через 5.5 секунд (после завершения анимации)
+                setTimeout(function () {
+                    errorNotification.remove();
+                }, 5500);
+            }
+        });
+    </script> {% endcomment %}
+    {% comment %} <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const loginForm = document.querySelector(".custom-form");
+        
+            loginForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+        
+                const formData = new FormData(loginForm);
+        
+                fetch(loginForm.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const notification = document.createElement("div");
+                    notification.className = "error-notification";
+                    const formFields = document.querySelectorAll(".form-control");
+        
+                    if (data.status === "success") {
+                        notification.textContent = data.message;
+                        notification.classList.add("success");
+                        setTimeout(() => window.location.href = "/", 1000);
+                    } else {
+                        notification.textContent = data.message;
+                        notification.classList.add("error");
+        
+                        // Добавляем красную границу и мягкую тень ко всем полям
+                        formFields.forEach(input => {
+                            input.style.border = "1px solid #f44336";
+                            input.style.boxShadow = "0 0 5px rgba(244, 67, 54, 0.5)";
+                            input.style.transition = "border-color 0.3s ease, box-shadow 0.3s ease";
+                        });
+                    }
+        
+                    document.body.appendChild(notification);
+        
+                    setTimeout(() => {
+                        notification.classList.add("hide");
+        
+                        // Убираем красную границу и тень со всех полей
+                        formFields.forEach(input => {
+                            input.style.border = "none";
+                            input.style.boxShadow = "none";
+                        });
+                    }, 4000);
+        
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 4500);
+                })
+                .catch(error => console.error("Ошибка:", error));
+            });
+        });
+    </script> {% endcomment %}
+    <script src="{% static 'js/ajax_login.js' %}"></script>
     <script src="{% static 'js/togglePassword.js' %}"></script>
 </body>            
-                
-            {% comment %} </div>
-        </div>
-    </div>
-</div> {% endcomment %}
-
 
 {% endblock %}
 

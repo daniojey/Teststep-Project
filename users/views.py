@@ -32,6 +32,11 @@ class UserLoginView(FormView):
             self.object = user
             login(self.request, user)
 
+            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"status": "success", "message": "Вход выполнен успешно."})
+            else:
+                return super().form_valid(form)
+
             # Если есть параметр next в post запросе
             next_url = self.request.POST.get('next', None)
             if next_url:
@@ -44,7 +49,10 @@ class UserLoginView(FormView):
         
     def form_invalid(self, form):
         response = super().form_invalid(form)
-        
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"status": "error", "message": "Невірна пошта або пароль"})
+        else:
+            return response
     
 
     def get_context_data(self, **kwargs):
