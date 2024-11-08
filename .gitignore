@@ -1,13 +1,25 @@
-# python ignore
+# Игнорировать виртуальную среду
 venv/
-.pylintrc
+env/
+
+# Игнорировать скомпилированные Python файлы
 __pycache__/
+*.pyc
+*.pyo
 
+# Игнорировать файлы конфигурации среды
+*.env
+.env
 
-#ide staff 
-.vscode
-.idea
+# Игнорировать миграции базы данных
+**/migrations/*
 
-#django stuff
+# Игнорировать файлы IDE
+.vscode/
+.idea/
+
+# Игнорировать файлы базы данных
 db.sqlite3
-media/
+*.sqlite3
+
+main/tests/__pycache__/
