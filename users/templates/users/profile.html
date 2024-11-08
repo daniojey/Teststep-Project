@@ -27,12 +27,12 @@
                                     {% if user.image %}
                                     <img id="profile-image" src="{{ user.image.url }}" alt="Аватар пользователя" class="profile-avatar">
                                     {% else %}
-                                    <img id="profile-image" src="{% static 'user_image/default.jpg' %}" alt="Аватар пользователя" class="profile-avatar">
+                                    <img id="profile-image" src="{% static 'default_image/Vector.png' %}" alt="Аватар пользователя" class="profile-avatar">
                                     {% endif %}
                                 
                                     <!-- Иконка для загрузки фото -->
                                     <label for="id_image" class="upload-icon">
-                                        <img src="{% static 'media/camera-icon.svg' %}" alt="Upload">
+                                        <img src="{% static 'icons/camera_icon.svg' %}" alt="Upload">
                                     </label>
                                     
                                     <!-- Поле загрузки файла -->

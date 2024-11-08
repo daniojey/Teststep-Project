@@ -1,10 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
-from django.db.models import QuerySet
 from django.db.models.base import Model as Model
-from django.forms import BaseModelForm
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
@@ -13,7 +10,7 @@ from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import User, UsersGroup, UsersGroupMembership
+from .models import User, UsersGroupMembership
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 
@@ -23,7 +20,7 @@ class UserLoginView(FormView):
     form_class = UserLoginForm
     success_url = reverse_lazy("app:index")
 
-    def form_valid(self, form):
+    def form_valid(self, form):        
         email = form.cleaned_data.get('email')
         password = form.cleaned_data.get('password')
         user = authenticate(self.request, email=email, password=password)
@@ -49,6 +46,10 @@ class UserLoginView(FormView):
         
     def form_invalid(self, form):
         response = super().form_invalid(form)
+
+        if form.cleaned_data.get('multiple_users_error'):
+            return JsonResponse({"status": "error", "message": "Помилка L1. Зверніться до служби підтримки для вирішення проблемми"})
+        
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({"status": "error", "message": "Невірна пошта або пароль"})
         else:

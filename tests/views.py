@@ -1,15 +1,10 @@
 # tests/views.py
 import random
-from django.contrib.auth.decorators import login_required
-from django.forms.forms import BaseForm
-from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from httpx import request
 
-from tests.strategy import MultypleChoiceStrategy
 from users.models import User, UsersGroupMembership
 from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm

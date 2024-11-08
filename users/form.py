@@ -17,6 +17,9 @@ class UserLoginForm(forms.Form):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise forms.ValidationError('Користувача з такою електронною поштою не існує.')
+        except User.MultipleObjectsReturned:
+            self.cleaned_data['multiple_users_error'] = True
+            raise forms.ValidationError('Виникла помилка, зверніться до служби підтримки')
 
         # Проверим пароль
         if not user.check_password(password):

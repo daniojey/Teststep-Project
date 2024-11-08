@@ -12,13 +12,13 @@
 
 
 <body>
-    {% comment %} {% if form.errors %}
+    {% if form.errors %}
         <div class="error-notification">
             {% for field, errors in form.errors.items %}
-                <p>Невірна пошта або пароль</p>
+                {{ errors }}
             {% endfor %}
         </div>
-    {% endif %} {% endcomment %}
+    {% endif %}
 
     <div class="main-container">
 
@@ -55,7 +55,7 @@
 
                 <div class="image-section">
                     <!-- Место для изображения, его можно будет заменить -->
-                    <img src="{% static "media/registration.svg" %}" alt="Placeholder Image">
+                    <img src="{% static "icons/registration.svg" %}" alt="Placeholder Image">
                 </div>        
     </div>
     {% comment %} <script>
