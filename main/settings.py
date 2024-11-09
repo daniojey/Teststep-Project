@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 
+import dj_database_url
 from django.conf.global_settings import AUTH_USER_MODEL
 from decouple import config
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,17 +86,20 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Tests',
-        'USER': 'test',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=f'postgres://test:root@{os.getenv("DATABASE_HOST", "localhost")}:5432/Tests'
+        # default='postgres://test:root@localhost:5432/Tests'
+    )
 }
 
 
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'Tests',
+    #     'USER': 'test',
+    #     'PASSWORD': 'root',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -129,14 +134,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    BASE_DIR / "app/static",
-    BASE_DIR / "tests/static",
+# Дополнительные настройки для WhiteNoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# STATIC_URL = 'static/'
+
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static",
+#     BASE_DIR / "app/static",
+#     BASE_DIR / "tests/static",
     
-]
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -179,3 +190,12 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)  # Используется �
 
 # Указываем «с обратным адресом» для всех писем
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default-secret-key')
+
+ALLOWED_HOSTS  = ['teststep.herokuapp.com']
+
+# SSL (для безопасности данных)
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

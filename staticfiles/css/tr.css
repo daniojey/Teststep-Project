@@ -1,0 +1,43 @@
+.tests-container {
+    overflow: auto;
+    margin: 0 auto;
+    margin-top: 60px;
+    max-width: 1290px;
+    background-color: #363242;
+    border-radius: 12px;
+    padding: 24px;
+    background: #363242;
+}
+
+.tests-container-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Колонки адаптируются к ширине контейнера */
+    gap: 40px 5px; /* Минимальный gap между элементами */
+    justify-content: space-between; /* Равномерное распределение */
+    margin-bottom: 40px;
+    align-items: center;
+}
+
+.tests-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin-bottom: 60px;
+}
+
+.tests-group-header img{
+    width: 22px;
+    height: 24px;
+}
+
+.tests-group-header h2{
+    position: absolute; /* Абсолютное позиционирование относительно контейнера */
+    left: 50%; /* Сдвигаем влево на 50% ширины контейнера */
+    transform: translateX(-50%); /* Центрируем текст по оси X */
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
