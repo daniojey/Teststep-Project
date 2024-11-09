@@ -85,7 +85,7 @@
                                 <button id="logout-button" class='logout-button'>Вийти з аккаунту</button> {% endcomment %}
 
                                 <div class='button-container'>
-                                    <button class='password-button'>Змінити парроль</button>
+                                    <button id='reset-password-button'class='password-button'>Змінити парроль</button>
 
                                     <button id="logout-button" class='logout-button'>Вийти з аккаунту</button>
                                 </div>
@@ -128,7 +128,14 @@
                             window.location.href = "{% url 'users:logout' %}";
                         });
                     </script>
-                    </body>
+
+                    <script>
+                        document.getElementById('reset-password-button').addEventListener('click', function(event) {
+                            event.preventDefault();  // предотвратить стандартное поведение
+                            window.location.href = "{% url 'users:reset_password' %}";
+                        });
+                    </script>
+                </body>
                     {% endblock content %}
                     
                     

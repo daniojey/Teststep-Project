@@ -30,7 +30,7 @@ class UserLoginView(FormView):
             login(self.request, user)
 
             if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({"status": "success", "message": "Вход выполнен успешно."})
+                return JsonResponse({"status": "success", "message": f"З поверненням {user.first_name.capitalize()}!"})
             else:
                 return super().form_valid(form)
 

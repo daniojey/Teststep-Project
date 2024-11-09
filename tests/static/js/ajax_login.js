@@ -51,6 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 notification.remove();
             }, 4500);
         })
-        .catch(error => console.error("Ошибка:", error));
+        .catch(error => console.error("Помилка:", error));
     });
 });

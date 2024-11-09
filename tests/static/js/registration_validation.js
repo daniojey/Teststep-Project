@@ -44,21 +44,21 @@ document.addEventListener("DOMContentLoaded", function () {
         let isValid = true;
 
         if (!validateEmail(emailInput.value) && emailInput.value !== "") {
-            showError("Введите корректный email", emailInput);
+            showError("Введіть коректний email", emailInput);
             isValid = false;
         } else {
             clearError(emailInput);
         }
         
         if (password1Input.value.length > 0 && password1Input.value.length < 8) {
-            showError("Пароль должен быть не менее 8 символов", password1Input);
+            showError("Пароль повинен бути не менш ніж 8 символів", password1Input);
             isValid = false;
         } else {
             clearError(password1Input);
         }
 
         if (password1Input.value !== password2Input.value && password2Input.value !== "") {
-            showError("Пароли не совпадают", password2Input);
+            showError("Пароли не співпадають", password2Input);
             isValid = false;
         } else {
             clearError(password2Input);
@@ -80,21 +80,21 @@ document.addEventListener("DOMContentLoaded", function () {
     password1Input.addEventListener("focus", function () {
         handleFocus(password1Input);
         if (password1Input.value.length < 8 && password1Input.value !== "") {
-            showError("Пароль должен быть не менее 8 символов", password1Input);
+            showError("Пароль повинен бути не менш ніж 8 символів", password1Input);
         }
     });
 
     emailInput.addEventListener("focus", function () {
         handleFocus(emailInput);
         if (!validateEmail(emailInput.value) && emailInput.value !== "") {
-            showError("Введите корректный email", emailInput);
+            showError("Введіть коректний email", emailInput);
         }
     });
 
     password2Input.addEventListener("focus", function () {
         handleFocus(password2Input);
         if (password1Input.value !== password2Input.value && password2Input.value !== "") {
-            showError("Пароли не совпадают", password2Input);
+            showError("Пароли не співпадають", password2Input);
         }
     });
 

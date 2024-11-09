@@ -38,6 +38,7 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         
         context['user'] = user
         context['active_tab'] = 'rating'
+        context['group'] = membership.group
         return context
     
 
