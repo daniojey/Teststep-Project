@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f'postgres://test:root@{os.getenv("DATABASE_HOST", "localhost")}:5432/Tests'
+        default=f'postgres://test:admin@{os.getenv("DATABASE_HOST", "localhost")}:5432/Tests'
         # default='postgres://test:root@localhost:5432/Tests'
     )
 }
@@ -193,6 +193,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default-secret-key')
 
+# Если запускается на локальном сервере просто закоментировать
 ALLOWED_HOSTS  = ['teststep.herokuapp.com']
 
 # SSL (для безопасности данных)

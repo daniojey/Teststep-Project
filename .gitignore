@@ -13,8 +13,8 @@ __pycache__
 .env
 
 # Игнорировать миграции базы данных
-**/migrations/*
-*/migrations/*
+# **/migrations/*
+
 
 
 # Игнорировать файлы IDE
