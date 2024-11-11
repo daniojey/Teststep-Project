@@ -1,0 +1,40 @@
+name: Django CI my project
+
+on:
+  push:
+    branches:
+      - main
+  
+  pull_request:
+    branches:
+      - main
+
+
+
+job:
+  test:
+    runs-on: ubuntu-latest
+
+
+  steps:
+    - name: Checkout repository
+      uses: action/checkout@v3
+
+    
+    - name: Set up Python
+      uses: action/setup-python@v4
+      with:
+          python-version: '3.11'
+
+    - name: install depenses
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: apply migrate
+      run: |
+        python manage.py migrate
+
+    - name: run tests
+      run: |
+        python manage.py test
