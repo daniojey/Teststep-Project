@@ -29,6 +29,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt  # Установка зависимостей из requirements.txt
 
+    - name: Set up PostgreSQL
+      uses: peter-evans/postgresql-action@v2
+      with:
+        postgresql_version: '16'  # Укажите версию PostgreSQL
+        postgresql_db: 'Tests'  # Имя вашей тестовой базы данных
+        postgresql_user: 'test'  # Имя пользователя базы данных
+        postgresql_password: 'admin'  # Пароль для базы данных
+
     - name: Set environment variables
       run: |
         echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> $GITHUB_ENV
@@ -38,6 +46,9 @@ jobs:
         echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> $GITHUB_ENV
         echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> $GITHUB_ENV
         echo "DEFAULT_SECRET_KEY=${{ secrets.DEFAULT_SECRET_KEY }}" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgres://test:admin@127.0.0.1:5432/Tests" >> $GITHUB_ENV
+        echo "DATABASE_HOST=127.0.0.1" >> $GITHUB_ENV
+        echo "DATABASE_PORT=5432" >> $GITHUB_ENV
 
     - name: Run migrations
       run: |
