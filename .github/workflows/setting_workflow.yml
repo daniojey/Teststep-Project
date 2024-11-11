@@ -22,7 +22,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'  # Укажите версию Python, нужную для проекта
+        python-version: '3.11'  # Укажите версию Python, нужную для проекта
 
     - name: Install dependencies
       run: |
