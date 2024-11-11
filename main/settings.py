@@ -25,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d)#zzsxo=6n$ycar1tha=w&_f1h(%0o%%*&0*9fzdiw74+r$n8'
+
+# недействительный ключ
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -191,7 +191,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)  # Используется �
 # Указываем «с обратным адресом» для всех писем
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default-secret-key')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'DEFAULT_SECRET_KEY')
 
 # Если запускается на локальном сервере просто закоментировать
 ALLOWED_HOSTS  = ['teststep.herokuapp.com']

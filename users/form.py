@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordResetForm, SetPasswordForm
 
 from users.models import User
 
@@ -85,3 +85,27 @@ class ProfileForm(UserChangeForm):
     username = forms.CharField()
     email = forms.CharField()
     password = forms.CharField()
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(
+        label='',
+        max_length=254,
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
+    )
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Переопределяем help_text как HTML-код, чтобы изменить структуру, например, заменить `ul` на `div`
+        self.fields['new_password1'].label = 'Новий пароль'
+        self.fields['new_password1'].help_text = """
+        <div class="password-rules">
+            <p>- Пароль не повинен бути схожим на вашу особисту інформацію(наприклад рік/місяць/день народження).</p>
+            <p>- Ваш пароль повинент бути не коротше 8 символів.</p>
+            <p>- Пароль не повинен бути простим або розповсюдженним.</p>
+            <p>- В вашому паролі не можуть використовуватися лише цифри.</p>
+        </div>
+        """
+        self.fields['new_password2'].label = 'Повторіть пароль'
