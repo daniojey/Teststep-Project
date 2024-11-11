@@ -11,7 +11,7 @@ on:
 
 
 
-job:
+jobs:
   test:
     runs-on: ubuntu-latest
 
