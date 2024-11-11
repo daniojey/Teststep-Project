@@ -31,13 +31,13 @@ jobs:
 
     - name: Set environment variables
       run: |
-        echo EMAIL_HOST=${{ secrets.EMAIL_HOST }} >> $GITHUB_ENV
-        echo EMAIL_PORT=${{ secrets.EMAIL_PORT }} >> $GITHUB_ENV
-        echo EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }} >> $GITHUB_ENV
-        echo EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }} >> $GITHUB_ENV
-        echo EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }} >> $GITHUB_ENV
-        echo DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} >> $GITHUB_ENV
-        echo DEFAULT_SECRET_KEY=${{ secrets.DEFAULT_SECRET_KEY }} >> $GITHUB_ENV
+        echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> $GITHUB_ENV
+        echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> $GITHUB_ENV
+        echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> $GITHUB_ENV
+        echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> $GITHUB_ENV
+        echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> $GITHUB_ENV
+        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> $GITHUB_ENV
+        echo "DEFAULT_SECRET_KEY=${{ secrets.DEFAULT_SECRET_KEY }}" >> $GITHUB_ENV
 
     - name: Run migrations
       run: |
