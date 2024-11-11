@@ -1,0 +1,14 @@
+name: Demo workflow
+
+on: workflow_dispatch
+
+jobs:
+  run:
+    runs-on: ubuntu-latest  # Контейнер с Ubuntu для запуска job
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3  # Проверка кода из репозитория
+
+    - name: print console
+      run: echo Hellow world 
