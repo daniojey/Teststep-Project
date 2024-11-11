@@ -564,7 +564,7 @@ class UserRatingViewTest(TestCase):
         )
 
         self.group = UsersGroup.objects.create(name='Test_group')
-        self.group_membeship = UsersGroupMembership(user=self.user,  group=self.group)
+        self.group_membeship = UsersGroupMembership.objects.create(user=self.user,  group=self.group)
 
         self.completed_test = TestResult.objects.create(
             user=self.user,

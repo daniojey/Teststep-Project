@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 import dj_database_url
 from django.conf.global_settings import AUTH_USER_MODEL
@@ -137,9 +138,15 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
-# Дополнительные настройки для WhiteNoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Дополнительные настройки для WhiteNoise
+if 'test' in sys.argv:
+    # Используем стандартное хранилище для тестов, чтобы избежать ошибок с манифестом
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+    
 # STATIC_URL = 'static/'
 
 # STATICFILES_DIRS = [
