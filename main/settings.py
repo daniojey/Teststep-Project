@@ -146,7 +146,7 @@ if 'test' in sys.argv:
 else:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-    
+
 # STATIC_URL = 'static/'
 
 # STATICFILES_DIRS = [
@@ -201,7 +201,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'DEFAULT_SECRET_KEY')
 
 # Если запускается на локальном сервере просто закоментировать
-ALLOWED_HOSTS  = ['teststep.herokuapp.com']
+# ALLOWED_HOSTS  = ['teststep.herokuapp.com']
 
 # SSL (для безопасности данных)
 SECURE_SSL_REDIRECT = False
