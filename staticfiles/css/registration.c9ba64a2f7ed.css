@@ -1,0 +1,281 @@
+/* Основные стили для body */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #1E1F29;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Основной контейнер с фиксированным размером */
+.main-container {
+    display: flex;
+    width: 1440px; 
+    height: 915px; 
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+/* Левая часть: форма */
+.form-section {
+    width: 51%; /* Чуть меньше половины экрана для формы */
+    background-color: #1E1F29;
+    padding: 85px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Правая часть: картинка */
+.image-section {
+    width: 49%; /* Половина экрана под картинку */
+    background-color: #1E1F29; /* Цвет фона для картинки */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+    padding-left: 70px;
+    box-sizing: border-box;
+}
+
+.image-section img {
+    width: 100%;    /* Картинка занимает всю ширину контейнера */
+    height: 100%;   /* Картинка занимает всю высоту контейнера */
+    object-fit: cover; /* Заполняет контейнер, обрезаясь при необходимости */
+    border-radius: 10px;
+}
+
+/* Медиазапрос для ширины экрана до 800px */
+@media (max-width: 800px) {
+    .image-section {
+        display: none;  /* Скрываем картинку */
+    }
+
+    /* Делаем форму на всю ширину */
+    .form-section {
+        width: 100%;
+    }
+}
+
+
+/* Стили для формы */
+.custom-form .form-row {
+    display: flex;
+    gap: 20px; /* Отступы между полями */
+    margin-bottom: 32px;
+}
+
+/* Удалите appearance: none для чекбокса */
+.custom-form input[type="checkbox"] {
+    appearance: checkbox; /* Включаем стандартный вид чекбокса */
+    width: 24px; /* Возвращаем стандартный размер чекбокса */
+    height: 24px; /* Возвращаем стандартный размер чекбокса */
+    margin-right: 16px; /* Добавляем отступ справа от чекбокса */
+    color: #000000;
+    background-color: #FFFFFF;
+    accent-color: #ffffff;
+}
+
+.custom-form label{
+    display: flex;
+    align-items: center;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.custom-form label a{
+    padding-left: 5px;
+    color: #7260F5;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-decoration-line: underline;
+}
+
+.toggle-password {
+    position: absolute; /* Абсолютное позиционирование иконки */
+    right: 20px; /* Располагаем иконку справа */
+    cursor: pointer; /* Указатель мыши меняется на указатель */
+    width: 24px; /* Задаем ширину иконки */
+    height: 24px; /* Задаем высоту иконки */
+}
+
+.custom-form h1 {
+    color:#FFFFFF;
+    font-size: 36px;
+}
+
+
+/* Поля формы */
+.custom-form input {
+    padding: 20px 24px;
+    background-color: #2E303E;
+    border: none;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 18px;
+    width: 100%;
+    height: 55px;
+}
+
+/* Первые два поля в строку, уменьшены по ширине */
+.custom-form .form-row input {
+    width: 50%; /* Два поля по 50% ширины */
+}
+
+/* Стили для placeholder в input */
+.custom-form input::placeholder {
+    color: #b0b0b09d; 
+    opacity: 1; 
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* Обычные поля формы */
+.custom-form .form-group {
+    margin-bottom: 32px;
+}
+
+.form-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.custom-form .submit-btn {
+    width: 100%;
+    padding: 17px;
+    background-color: #3d3d3d; /* Цвет для неактивной кнопки */
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 32px;
+    transition: background-color 0.3s ease; /* Плавный переход фона */
+}
+
+.custom-form .submit-btn.active {
+    background-color: #8265F5; /* Цвет для активной кнопки */
+}
+
+.custom-form .submit-btn:active {
+    background-color: #6953D9; /* Цвет при нажатии */
+}
+
+.custom-form .submit-btn:hover {
+    background-color: #504e54; /* Цвет при наведении на неактивную кнопку */
+}
+
+.custom-form .submit-btn.active:hover {
+    background-color: #6953D9; /* Цвет при наведении на активную кнопку */
+}
+
+/* Стили для текста под кнопкой */
+.custom-form .login-prompt {
+    text-align: left;
+    margin-top: 15px;  /* Отступ сверху */
+    padding:5px;
+    color: #b0b0b09d; 
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+/* Стили для ссылки */
+.custom-form .login-link {
+    color: #8265F5;  /* Цвет ссылки */
+    text-decoration: none;  /* Убираем подчеркивание */
+    font-weight: bold;
+    padding: 5px;
+}
+
+.custom-form .login-link:hover {
+    color: #6953D9;  /* Изменяем цвет при наведении */
+}
+
+
+/* Отключаем встроенные стили для текстовых полей, но не для чекбоксов */
+.custom-form input[type="text"],
+.custom-form input[type="email"],
+.custom-form input[type="password"] {
+    appearance: none;
+    font-size: 18px;
+    color: #ffffff;
+    background-color: #3A3646;
+    border-radius: 12px;
+    padding: 20px 24px;
+    width: 100%;
+    height: 55px;
+    border: none;
+    -webkit-box-shadow: inset 0 0 0 1000px #3A3646;
+}
+
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
+
+/* Базовый стиль для всех input полей */
+input {
+    appearance: none;
+    font-size: 18px; /* Устанавливаем единый размер шрифта */
+    color: #ffffff; /* Цвет текста */
+}
+
+ /* Контейнер для уведомлений */
+ .error-messages-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+}
+
+/* Стиль уведомлений об ошибках */
+.error-message {
+    background-color: #f44336;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+/* Ошибочные поля с бортиками */
+.input-error {
+    border: 1px solid #f44336;
+    outline: none;
+}
+
+
+.error {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}

@@ -1,0 +1,527 @@
+.base-container {
+    display: flex;
+    width: 90%;  /* Делаем ширину адаптивной, например, 90% от ширины экрана */
+    max-width: 1068px;  /* Максимальная ширина */
+    border-radius: 12px;
+    padding: 24px 24px 40px 24px;
+    background: #363242;
+    flex-direction: column;
+    margin: 0 auto;
+    margin-top: 60px;
+}
+
+/* Количество вопрсов| время | категория теста */
+
+.test-header {
+    gap: auto;
+    color: #ffff;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.test-header h2 {
+    color: #ffffff;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.test-header span{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.test-category {
+    display: flex;
+    justify-content: start;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 20px;
+}
+
+/* Разметка для формы */
+
+.form-group {
+    display: flex;
+    width: 100%;
+}
+
+.test-form {
+    width: 100%;
+    justify-content: start;
+}
+
+/* Форма одиночных ответов */
+
+.form-radio {
+    width: 100%;
+    justify-content: start;
+}
+
+.form-radio h3 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+    justify-content: start;
+}
+
+.form-radio h3 label {
+    color: #FFF;
+    display: flex;
+    justify-content: start;
+    margin-bottom: 40px;
+}
+
+/* Стиль для контейнера ответов */
+.radio-answers {
+    display: flex;
+    flex-direction: column; /* Расположим ответы в столбик */
+    padding: 0px 10px 10px 10px;
+}
+
+/* Стиль для каждого лейбла ответа */
+.radio-answers label {
+    margin-bottom: 20px; /* Отступ между вариантами ответа */
+    display: flex;
+    align-items: center;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+/* Стилизация радиокнопок */
+/* Скрываем стандартные радио-кнопки */
+.radio-answers input[type="radio"] {
+    display: none;  /* Скрываем input, он остаётся в DOM и отправляется при отправке формы */
+}
+
+/* Контейнер для кастомной радио-кнопки */
+.custom-radio {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+/* Внешний круг радио-кнопки */
+.custom-radio-circle {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #fdfdfd;
+    border-radius: 50%;
+    background-color: transparent;
+    position: relative;  /* Создаём контекст для центрирования внутреннего круга */
+    margin-right: 10px;
+    transition: background-color 0.8s ease, border-color 0.8s ease;
+}
+
+/* Внутренний круг при выборе (позиционирование по центру) */
+.custom-radio.active .custom-radio-circle::before {
+    content: "";
+    width: 14px;  /* Размер внутреннего кружка с отступом */
+    height: 14px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);  /* Центрирование */
+    transition: background-color 0.8s ease, transform 0.8s ease;
+}
+
+/* Форма с чекбоксами */
+.form-checkbox {
+    width: 100%;
+    justify-content: start;
+}
+
+.form-checkbox h3 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.form-checkbox h3 label {
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
+.checkbox-answers {
+    display: flex;
+    flex-direction: column; /* Расположим ответы в столбик */
+    padding: 0px 10px 10px 10px;
+}
+
+.checkbox-answers label{
+    margin-bottom: 20px; /* Отступ между вариантами ответа */
+    display: flex;
+    align-items: center;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+/* Скрываем стандартные чекбоксы */
+.checkbox-answers input[type="checkbox"] {
+    display: none; /* Полностью скрываем стандартный input */
+}
+
+/* Контейнер для каждого чекбокса */
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    font-family: Roboto;
+    font-size: 20px;
+    font-weight: 500;
+    color: #FFF;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+/* Настраиваем внешний вид кастомного чекбокса */
+.custom-checkbox-box {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+    border: 3px solid #ffffff; /* Белая рамка */
+    background-color: #363242; /* Черный фон */
+    display: inline-block;
+    border-radius: 4px;
+    position: relative;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Внутренний белый квадрат при выборе */
+.custom-checkbox input[type="checkbox"]:checked + .custom-checkbox-box::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background-color: #ffffff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 2px; /* Сделаем внутренний квадрат немного округлым */
+}
+
+
+/* Форма с текстовым либо числовым ответом*/
+.form-input {
+    width: 100%;
+    justify-content: start;
+}
+
+
+.form-input h3 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+
+.form-input h3 label {
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
+.input-answer input{
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+
+/* Стили для placeholder */
+.input-answer input::placeholder {
+    color: rgba(255, 255, 255, 0.50);
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
+/* форма для вопроса с картинкой */
+.form-image {
+    margin-top: 20px;
+    width: 100%;
+    justify-content: start;
+}
+
+.question-image-container {
+    display: flex;
+    width: 410px;
+    height: 240px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+}
+
+.question-image-container img {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 0 0;
+    border-radius: 12px;
+}
+
+.input-image-answer input{
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+
+/* Общий контейнер для аудио-вопроса */
+.audio-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #2c2a3b;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    color: #FFFFFF;
+}
+
+.question-audio-container {
+    display: flex;
+    width: 300px;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+/* Секция для аудио-плеера */
+.question-audio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+}
+
+.question-audio img {
+    width: 30px;
+    height: 30px;
+}
+
+.player-section {
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: start;
+    width: 203px;
+    height: 60px;
+}
+
+.section {
+    height: 35px;
+    width: 4px;
+    margin-right: 6px;
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+    justify-content: start;
+    border: #FFFFFF;
+    border-radius: 1.313px;
+}
+
+.duration {
+    color: #B0AFBA;
+    font-size: 14px;
+    transform: translateY(145%);
+}
+
+/* Поле ввода для ответа */
+.question-answer-input input {
+    height: 58px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.50);
+    width: 100%;
+    background-color: #363242;
+    color: #FFF;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.question-answer-input input::placeholder {
+    color: rgba(255, 255, 255, 0.50);
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
+/* Форма вопросов с установлением соотвецтвий */
+.form-matching {
+    display:flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.left-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.right-items-container {
+    display:flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: end;
+    align-items: end;
+}
+
+/* тестовая форма для вопросов типа txt и img*/
+.form-txt-and-img {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.form-txt-and-img h3{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.form-txt-and-img h3 label{
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
+.audio-base-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 64px;
+    background-color: #FFFFFF;
+    margin: 0 auto;
+}
+
+.audio-container h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.audio-container h2 label {
+    color: #FFF;
+    display: flex;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+    margin-bottom: 40px;
+}
+
+/* Кнопка формы */
+.form-btn {
+    width: 283px;
+    height: 55px;
+    border-radius: 12px;
+    background: #7260F5;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    margin: 0 auto;
+    margin-top: 40px;
+}
+
+/* Media query для маленьких экранов */
+@media (max-width: 800px) {
+    .base-container {
+        padding: 16px;
+        width: 95%;  /* Ширина для меньших экранов */
+    }
+
+    .test-header h2, .test-header span, .test-category {
+        font-size: 18px; /* Уменьшаем размер текста для маленьких экранов */
+    }
+
+    .form-btn {
+        width: 100%; /* Кнопка растягивается на всю ширину */
+    }
+}
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
