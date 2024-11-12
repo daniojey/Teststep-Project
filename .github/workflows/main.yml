@@ -1,14 +1,48 @@
-name: Demo workflow
+name: Django CI
 
 on: workflow_dispatch
 
 jobs:
-  run:
-    runs-on: ubuntu-latest  # Контейнер с Ubuntu для запуска job
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: Tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DJANGO_SECRET_KEY: )gj57xcbt14e0&ccb4)+358om63jxfjp))$-!wnp_8^58l@8-n
+      DATABASE_URL: postgres://test:admin@localhost:5432/Tests
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3  # Проверка кода из репозитория
+    - name: Check out the repository
+      uses: actions/checkout@v2
 
-    - name: print console
-      run: echo Hellow world 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run migrations
+      run: |
+        python manage.py migrate
+
+    - name: Run tests
+      run: |
+        python manage.py test
