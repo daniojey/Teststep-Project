@@ -1,2 +1,2 @@
 web: gunicorn main.wsgi --log-file -
-heroku addons:create heroku-postgresql:hobby-dev
+heroku addons:create heroku-postgresql -a teststep
