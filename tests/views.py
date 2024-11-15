@@ -36,8 +36,8 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
             # Пользователь - студент, выводим его результаты
             test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
             context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
-        
-        if membership.group:
+            
+        if membership and membership.group:
             context['group'] = membership.group
 
         
