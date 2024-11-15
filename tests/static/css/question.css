@@ -289,8 +289,8 @@
 
 .question-image-container {
     display: flex;
-    width: 410px;
-    height: 240px;
+    max-width: 410px;
+    max-height: 240px;
     border-radius: 12px;
     margin-bottom: 40px;
 }

@@ -1,6 +1,6 @@
 .main-container {
     display: flex;
-    width: 630px;
+    max-width: 630px;
     border-radius: 12px;
     padding: 24px 24px 40px 24px;
     background: #363242;
@@ -38,8 +38,8 @@
 /* Картинка */
 .test-preview-image {
     display: flex;
-    width: 410px;
-    height: 240px;
+    max-width: 410px;
+    max-height: 240px;
     margin: 0 auto;
 }
 
@@ -140,4 +140,10 @@
 
 .score-and-time {
     padding: 0px 24px 0px 24px;
+}
+
+@media (max-width: 400px) {
+    .leaderboard-header h2 {
+        font-size: 17px;
+    }
 }
