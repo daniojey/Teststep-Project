@@ -4,7 +4,7 @@
     background-color: #363242;
     border-radius: 12px;
     padding: 24px;
-    width: 630px;
+    max-width: 630px;
     margin: 0 auto;
     margin-top: 60px;
 }
@@ -45,6 +45,12 @@
     padding: 20px 24px 20px 24px;
     color: white;
     justify-content: space-between;
+}
+
+@media (max-width: 440px) {
+    .leaderboard-item {
+        padding: 20px 0px 20px 0px;
+    }
 }
 
 .leader-item-header {

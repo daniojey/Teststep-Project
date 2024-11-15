@@ -66,8 +66,8 @@ h3 {
 
 .question-image-container {
     display: flex;
-    width: 410px;
-    height: 240px;
+    max-width: 410px;
+    max-height: 240px;
     border-radius: 12px;
     margin-bottom: 40px;
 }
@@ -332,4 +332,14 @@ h3 {
 .submit-btn:hover {
     background-color: #FFF;
     color: #363242;
+}
+
+@media (max-width: 700px) {
+    .button-container {
+        flex-direction: column;
+    }
+
+    .submit-btn {
+        width: 100%;
+    }
 }

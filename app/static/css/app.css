@@ -474,8 +474,9 @@ button:active {
 }
 
 .create-test-button .icon{
-    width: 24px;
-    height: 24px;
+    align-items: center;
+    width: 26px;
+    height: 26px;
     margin-right: 8px;
     font-size: 24px; /* Иконка чуть больше текста */
 }
