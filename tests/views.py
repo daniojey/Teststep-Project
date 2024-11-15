@@ -1309,7 +1309,6 @@ class TakeTestReviewView(FormView):
         questions = Question.objects.filter(test=self.test)
 
         if len(questions) == 0:
-            print('not questions')
             # Вариант: перенаправление или сообщение об ошибке
             self.request.session['test_review_session'] = []
         else:
@@ -1326,12 +1325,6 @@ class TakeTestReviewView(FormView):
         kwargs = super().get_form_kwargs()
         question_order = self.request.session['test_review_session']
         question = self.request.session['question_index']
-
-        # Проверка индекса перед использованием
-        if question >= len(question_order):
-        # Если индекс вне диапазона, сброс или редирект
-            print('redirect 3')
-            return redirect('app:index')
         
         current_question_id = question_order[question]
         self.current_question = get_object_or_404(Question, id=current_question_id)
@@ -1361,7 +1354,6 @@ class TakeTestReviewView(FormView):
 
     def form_valid(self, form):
 
-
         if self.request.method == 'POST':
             print(self.request.POST)
             action = self.request.POST.get('action')
@@ -1373,9 +1365,59 @@ class TakeTestReviewView(FormView):
                 # Ответ неверный поэтому ничего не добавляем
                 print('incorrect')
 
+            # добавляем автоматическую обработку для каждого пита ответа если 
             elif action == 'partial':
-                print('partial')
-        
+                if self.current_question.question_type == 'MTCH':
+                    matching_pairs = list(self.current_question.matching_pairs.all())
+
+                    left_items = [pair.left_item for pair in matching_pairs]
+                    point = 1 / len(left_items) if len(left_items) > 0 else 0
+
+                    for left_item in left_items:
+                        student_answer = self.request.POST.get(f'answer_{left_item}')
+                        if any(pair.left_item == left_item and pair.right_item == student_answer for pair in matching_pairs):
+                                print('+1')
+                                self.request.session['teacher_answers'] += point
+
+
+                elif self.current_question.answer_type == 'SC':
+                    answer = list(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
+                    
+                    student_answer = int(self.request.POST.get('answer'))
+
+                    if student_answer in answer:
+                        self.request.session['teacher_answers'] += 1.0
+
+
+                elif self.current_question.answer_type == 'MC':
+                    answers_test = list(Answer.objects.filter(question=self.current_question, is_correct=True).values_list('id', flat=True))
+
+                    answers = self.current_question.answers.filter(is_correct=True).values_list('id', flat=True)
+                    point = 1 / len(answers) if len(answers) > 0 else 0
+                    
+                    students_answers = form.cleaned_data.get('answer')
+
+                    for answer in students_answers:
+                        if int(answer) in answers_test:
+                            self.request.session['teacher_answers'] += point
+
+
+                elif self.current_question.answer_type == 'INP':
+                    answers = self.current_question.answers.filter(is_correct=True).values_list('text', flat=True)
+                    answers = [answer.lower() for answer in answers]
+
+                    student_answer = form.cleaned_data.get('answer')
+
+                    if student_answer.lower() in answers:
+                        self.request.session['teacher_answers'] += 1.0
+                    else:
+                        self.request.session['teacher_answers'] += 0.5
+                                       
+                                       
+                elif self.current_question.answer_type == 'AUD':
+                    self.request.session['teacher_answers'] += 0.5
+
+
          # Увеличиваем индекс вопроса только если он не выходит за пределы
         if self.request.session['question_index'] + 1 < len(self.request.session['test_review_session']):
             self.request.session['question_index'] += 1
@@ -1658,8 +1700,9 @@ class TestReviewResults(View):
                 attempts=2
             )
             # test_review.delete()
-            print(test_result)
+            # print(test_result)
 
+        test_review.delete()
         self.clear_test_session(request)
 
 

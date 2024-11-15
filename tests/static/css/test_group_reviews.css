@@ -1,7 +1,7 @@
 .base-group-container {
-    background-color: #363242;;
-    width: 90vw;
+    background-color: #363242;
     overflow: auto;
+    max-width: 1290px;
     margin: 0 auto;
     margin-top: 60px;
     border-radius: 12px;
@@ -149,4 +149,15 @@
 .user-link:hover .overlay-container {
     transform: scale(1.05);
     transition: transform 0.3s ease;
+}
+
+
+@media (max-width: 500px) {
+    .base-group-container {
+        margin: 60px 5px;
+    }
+
+    .tests-container-items {
+        justify-content: center;
+    }
 }

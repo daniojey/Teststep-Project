@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from versatileimagefield.fields import VersatileImageField
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -26,7 +27,7 @@ class Tests(models.Model):
     students = models.JSONField(verbose_name='Юзеры', default=list)
     name = models.CharField(verbose_name="Название",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
-    image = models.ImageField(verbose_name="Превью",null=True, blank=True)
+    image = VersatileImageField(verbose_name="Превью",null=True, blank=True)
     duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
     date_taken = models.DateTimeField(auto_now_add=True)
     date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')
@@ -86,7 +87,7 @@ class Question(models.Model):
     text = models.TextField(verbose_name="Текст вопроса", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
-    image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
+    image = VersatileImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
     audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио")
 
 

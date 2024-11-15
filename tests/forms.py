@@ -362,28 +362,21 @@ class TestReviewForm(forms.Form):
     def __init__(self, *args, **kwargs):
         question = kwargs.pop('question', {})
         student_answer = kwargs.pop('student_question', None)
-        print(student_answer)
-        print(question.answer_type)
         print(question)
-        print(question.question_type)
+        print(student_answer)
 
         question_choises = [(a.id, a.text) for a in question.answers.all()]
 
         if question.answer_type == 'INP':
             answer = student_answer
-            print('answer 2',answer)
         elif question.answer_type ==  Question.SINGLE_CHOICE:
             answer =  [Answer.objects.filter(id=int(student_answer)).first().id]
-            print('answer',answer)
         elif question.question_type == "MTCH":
             answer = dict(student_answer)
         else:
             st_answers = Answer.objects.filter(id__in=student_answer)  # Получаем все ответы за один запрос
             answer= [a.id for a in st_answers]
-            print('answer_1',answer)
 
-        print(question_choises)
-        print('1-ans',answer)
 
         # test = kwargs.pop('test')
         # answers = kwargs.pop('answers')

@@ -18,6 +18,7 @@
     align-items: center;
 }
 
+
 .tests-group-header {
     display: flex;
     align-items: center;
@@ -40,4 +41,20 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+}
+
+
+@media (max-width: 500px) {
+
+    .tests-container {
+        margin: 60px 5px;
+    }
+    
+    .tests-container-items {
+        justify-content: center;
+    }
+
+    .tests-group-header h2 {
+        font-size: 18px;
+    }
 }
