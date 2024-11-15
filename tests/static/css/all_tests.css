@@ -3,16 +3,17 @@
     margin: 0 auto;
     margin-top: 60px;
     padding: 24px;
-    max-width: 1290px;
+    max-width: calc(100% - 120px);
     background-color: #363242;
     border-radius: 12px;
     background: #363242;
 }
 
+
 .tests-sorted-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Колонки адаптируются к ширине контейнера */
-    gap: 40px 5px; /* Минимальный gap между элементами */
+    gap: 40px 15px; /* Минимальный gap между элементами */
     justify-content: space-between; /* Равномерное распределение */
     margin-bottom: 40px;
     align-items: center;
@@ -54,3 +55,21 @@
     color: #FFF;
 }
 
+
+@media (max-width: 500px) {
+    .my-test-container {
+        max-width: calc(100% - 30px);
+        margin-bottom: 20px;
+    }
+
+    .my-test-container-header {
+        flex-direction: column;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+    
+    .tests-sorted-container {
+        justify-content: center;
+        
+    }
+}

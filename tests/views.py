@@ -1,5 +1,6 @@
 # tests/views.py
 import random
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 from django.urls import reverse, reverse_lazy
@@ -568,7 +569,9 @@ class TakeTestView(FormView):
 
         # Инициализация сессии для теста
         if 'question_order' not in request.session:
-            self.initialize_test_session()
+            response = self.initialize_test_session()
+            if isinstance(response, HttpResponse):
+                return response
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -592,10 +595,25 @@ class TakeTestView(FormView):
         random.shuffle(questions_not_group)
         all_questions.extend(questions_not_group)
 
-        # Сохраняем порядок вопросов в сессии
-        self.request.session['question_order'] = [q.id for q in all_questions]
-        self.request.session['question_index'] = 0  # Начинаем с первого вопроса
-        self.request.session['test_responses'] = {}  # Для хранения ответов
+        if len(all_questions) == 0:
+            print(all_questions)
+            # Очищаем сессию дабы избежать конфликтов
+            if 'test_id' in self.request.session:
+                del self.request.session['test_id']
+
+            if 'remaining_time' in self.request.session:
+                del self.request.session['remaining_time']
+
+            if 'test_start_time' in self.request.session:
+                del self.request.session['test_start_time']
+
+
+            return redirect('app:index')
+        else:
+            # Сохраняем порядок вопросов в сессии
+            self.request.session['question_order'] = [q.id for q in all_questions]
+            self.request.session['question_index'] = 0  # Начинаем с первого вопроса
+            self.request.session['test_responses'] = {}  # Для хранения ответов
 
     def get_form_kwargs(self):
         # Передаем текущий вопрос в форму
@@ -1290,7 +1308,8 @@ class TakeTestReviewView(FormView):
     def initialize_session_test(self):
         questions = Question.objects.filter(test=self.test)
 
-        if not questions.exists():
+        if len(questions) == 0:
+            print('not questions')
             # Вариант: перенаправление или сообщение об ошибке
             self.request.session['test_review_session'] = []
         else:

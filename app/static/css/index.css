@@ -6,6 +6,12 @@
     padding-bottom: 60px;
 }
 
+@media (max-width: 450px) {
+    .test-group-container {
+        max-width: calc(100% - 30px);
+    }
+}
+
 .test-group {
     background-color: #3A354A;
     margin-bottom: 10px;
@@ -60,6 +66,17 @@
     justify-content: start; /* Выравнивание элементов по левому краю */
     padding: 0 22px; /* Отступы по краям, чтобы первый и последний тест имели отступы слева и справа */
     margin-bottom: 60px;
+}
+
+@media (max-width: 500px) {
+    .tests {
+        justify-content: center;
+    }
+
+    .category h3 {
+        text-align: center;
+        padding-left: 0;
+    }
 }
 
 .arrow {

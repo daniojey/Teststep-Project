@@ -183,6 +183,16 @@ header {
 }
 
 
+@media (max-width: 450px) {
+    .nav-links {
+        padding-right: 15px;
+    }
+
+    .name-site {
+        padding-left: 15px;
+    }
+}
+
 /* Стили для ссылок */
 a {
     color: inherit;

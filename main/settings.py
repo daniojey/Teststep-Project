@@ -200,7 +200,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'DEFAULT_SECRET_KEY')
 
 # Если запускается на локальном сервере просто закоментировать
-# ALLOWED_HOSTS  = ['teststep.herokuapp.com']
+ALLOWED_HOSTS  = ['localhost', '127.0.0.1', 'yourdomain.com']
 
 # SSL (для безопасности данных)
 SECURE_SSL_REDIRECT = False
