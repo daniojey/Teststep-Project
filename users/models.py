@@ -37,3 +37,19 @@ class UsersGroupMembership(models.Model):
         db_table = 'user_group_membership'
         verbose_name = 'Членство пользователя в группе'
         verbose_name_plural = 'Членства пользователей в группах'
+
+
+class LoginAttempt(models.Model):
+    email = models.EmailField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    success = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return f"{self.email or self.id_address} at {self.timestamp} - {'Sucess' if self.success else 'Filed'}"
+    
+
+    class Meta:
+        db_table = 'loginattempt'
+        verbose_name = 'Попытки логина'
+        verbose_name_plural = 'Попытки логинов'

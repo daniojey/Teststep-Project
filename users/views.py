@@ -9,8 +9,9 @@ from django.http import JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .utils import is_blocked
 
-from .models import User, UsersGroupMembership
+from .models import LoginAttempt, User, UsersGroupMembership
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 
@@ -23,10 +24,21 @@ class UserLoginView(FormView):
     def form_valid(self, form):        
         email = form.cleaned_data.get('email')
         password = form.cleaned_data.get('password')
-        user = authenticate(self.request, email=email, password=password)
+        ip_address = self.request.META.get('REMOTE_ADDR')
+        user_agent = self.request.META.get('HTTP_USER_AGENT', '')
+        print(ip_address)
+        print(user_agent)
 
+        # Проверяем заблокирован ли пользователь
+        if is_blocked(email=email, ip_address=ip_address):
+            status = form.add_error(None, 'Ваш обліковий запис тимчасово заблокованый, спробуйте через деякий час')
+            print(status)
+            return self.form_invalid(form)
+
+        user = authenticate(self.request, email=email, password=password)
         if user is not None:
             self.object = user
+            LoginAttempt.objects.create(email=email, ip_address=ip_address, success=True)
             login(self.request, user)
 
             if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -41,19 +53,32 @@ class UserLoginView(FormView):
             
             return redirect(self.get_success_url())
         else:
+           # Неудачная попытка входа
+            LoginAttempt.objects.create(email=email, ip_address=ip_address,  success=False)
             form.add_error(None, 'Невірний логін або пароль')
+            print()
             return self.form_invalid(form)
         
     def form_invalid(self, form):
-        response = super().form_invalid(form)
+        # Получаем данные из запроса
+        email = self.request.POST.get('email', '')
+        ip_address = self.request.META.get('REMOTE_ADDR')
+        user_agent = self.request.META.get('HTTP_USER_AGENT', '')
 
-        if form.cleaned_data.get('multiple_users_error'):
-            return JsonResponse({"status": "error", "message": "Помилка L1. Зверніться до служби підтримки для вирішення проблемми"})
-        
+        # Проверяем, заблокирован ли пользователь
+        if is_blocked(email=email, ip_address=ip_address):
+            return JsonResponse({"status": "error", "message": "Ваш обліковий запис тимчасово заблокованый, спробуйте через деякий час"})
+
+        # Логируем неудачную попытку из-за невалидной формы
+        status = LoginAttempt.objects.create(email=email, ip_address=ip_address, success=False)
+        print(status)
+
+        # Возвращаем ошибку
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({"status": "error", "message": "Невірна пошта або пароль"})
-        else:
-            return response
+            error_message = next(iter(form.errors.values()))[0] if form.errors else "Невідома помилка"
+            return JsonResponse({"status": "error", "message": error_message})
+        
+        return super().form_invalid(form)
     
 
     def get_context_data(self, **kwargs):

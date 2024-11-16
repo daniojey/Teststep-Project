@@ -71,6 +71,7 @@
 @media (max-width: 530px) {
     .tests {
         justify-content: center;
+        grid-template-columns: repeat(auto-fill, minmax(286px, max-content));
     }
 
     .category h3 {
