@@ -6,7 +6,7 @@ User = get_user_model()
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, email=None, password=None, **kwargs):
         try:
-            # Если передано имя пользователя, ищем по имени пользователя
+            # Если передано имя пользователя, ищем по имени
             if username:
                 user = User.objects.get(username=username)
             # Если передан email, ищем по email
