@@ -87,56 +87,8 @@
                 </div>
             </div>
         </div>
-        
     </div>
+    <script src="{% static "js/dropdown_panel.js" %}"></script>
+    <script src="{% static "js/image_lazy_loading.js" %}"></script>
 </body>
-    
-<script>
-    function toggleGroup(groupId) {
-        var groupContent = document.getElementById(groupId);
-        var arrow = groupContent.previousElementSibling.querySelector('.arrow'); // Находим стрелку в заголовке
-
-        if (groupContent.style.display === "none" || groupContent.style.display === "") {
-            groupContent.style.display = "block";
-            arrow.classList.add("rotate"); // Поворачиваем стрелку
-        } else {
-            groupContent.style.display = "none";
-            arrow.classList.remove("rotate"); // Возвращаем стрелку в исходное положение
-        }
-    }
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const lazyBackgrounds = document.querySelectorAll(".test-item[data-bg]");
-    
-        // Проверяем, поддерживает ли браузер Intersection Observer
-        if ("IntersectionObserver" in window) {
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const element = entry.target;
-                        const bgUrl = element.getAttribute("data-bg");
-                        if (bgUrl) {
-                            element.style.backgroundImage = `url('${bgUrl}')`;
-                            element.removeAttribute("data-bg"); // Удаляем атрибут после установки
-                            observer.unobserve(element); // Останавливаем наблюдение
-                        }
-                    }
-                });
-            });
-    
-            lazyBackgrounds.forEach((bg) => observer.observe(bg));
-        } else {
-            // Если Intersection Observer не поддерживается, загружаем сразу
-            lazyBackgrounds.forEach((bg) => {
-                const bgUrl = bg.getAttribute("data-bg");
-                if (bgUrl) {
-                    bg.style.backgroundImage = `url('${bgUrl}')`;
-                    bg.removeAttribute("data-bg");
-                }
-            });
-        }
-    });
-</script>
-
 {% endblock content %}

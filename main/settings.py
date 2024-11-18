@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "app",
     "tests",
     "users",
+    'csp'
 ]
 
 MIDDLEWARE = [
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
+    "csp.middleware.CSPMiddleware",
     'tests.middlewares.TestExitMiddleware',
 ]
 
@@ -207,3 +209,14 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
+
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://teststep-54d2adad5311.herokuapp.com", "127.0.0.1")
+CSP_STYLE_SRC = ("'self'", "https://teststep-54d2adad5311.herokuapp.com", "127.0.0.1")
+CSP_IMG_SRC = ("'self'", "data:", "https://teststep-54d2adad5311.herokuapp.com", "127.0.0.1")
+CSP_FONT_SRC = ("'self'", "https://teststep-54d2adad5311.herokuapp.com", "127.0.0.1")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_FRAME_SRC = ("'none'",)
+CSP_REPORT_ONLY = True  # Включаем режим отчёта
+CSP_REPORT_URI = "/csp-report/"  # Эндпоинт для отчётов
