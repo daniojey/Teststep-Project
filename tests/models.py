@@ -18,8 +18,8 @@ class Tests(models.Model):
     MANUAL_CHECK = 'manual'
     AUTO_CHECK = 'auto'
     CHECK_CHOICES = [
-        (MANUAL_CHECK, 'Manual Check'),
-        (AUTO_CHECK, 'Auto Check')
+        (MANUAL_CHECK, 'Ручна перевірка'),
+        (AUTO_CHECK, 'Авто-перевірка')
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')

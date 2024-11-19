@@ -33,7 +33,7 @@
             <li><a class="custom-link {% if active_tab == 'profile' %}active{% endif %}" href="{% url 'users:profile' %}">Профіль</a></li>
             
             {% if user.is_staff or user.is_admin or user.is_superuser %}
-            <li><a href="{% url "tests:create_test" %}" class="create-test-button">
+            <li><a href="{% url "tests:create_test" %}" class="create-test-button {% if active_link == 'create' %}create{% endif %}" >
                 <span class="icon">+</span> Створити тест
             </a></li>
             {% endif %}

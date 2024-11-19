@@ -172,13 +172,26 @@ class CreateTestView(LoginRequiredMixin, FormView):
 
         test.students = {'students': selected_students}
 
+        duration = form.cleaned_data.get('raw_duration')
+        test.duration = duration
+        
+
         test.save()
+        print(test.duration)
 
         return redirect('tests:add_questions', test_id=test.id)
     
     def form_invalid(self, form):
         # Здесь возвращаем форму, если валидация не прошла
+        print(form)
+        print(form.errors)
         return self.render_to_response({'form': form})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['active_link'] = 'create'
+        return context
     
         
     def get_success_url(self) -> str:

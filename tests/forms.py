@@ -1,44 +1,97 @@
+from datetime import timedelta
 import random
+import re
 from django import forms
 
 from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, Answer, TestsReviews
 
 class TestForm(forms.ModelForm):
-    class Meta:
-        model = Tests
-        fields = ['name', 'description', 'image', 'duration','category', 'check_type', 'date_out']
-        widgets = {
-            'duration': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Введіть тривалісь тесту гг:хх:сс)',
-                'pattern': '^([0-9]{1,2}):([0-5][0-9]):([0-5][0-9])$',  # Опционально для валидации в браузере
-                'title': 'формат гг:хх:сс'
-            }),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'date_out': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-        name = forms.CharField(required=True)
-
+    raw_duration = forms.CharField(
+        required=False, 
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Введіть тривалість тесту (наприклад, 1г, 30хв, 45сек)'
+        })
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        self.fields['category'].choices = [(item.id, item.name) for item in Categories.objects.all()]
+
+
+    class Meta:
+        model = Tests
+        fields = ['name', 'description', 'image','category', 'check_type', 'date_out']
+        widgets = {
+            'name':forms.TextInput(attrs={'placeholder': 'Назва тесту'}),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'custom-file-input',
+                'id': 'uploadImage',
+                'style': 'display: none;'  # Скрываем стандартный input
+            }),
+            # 'duration': forms.TextInput(attrs={
+            #     'placeholder': 'Введіть тривалісь тесту гг:хх:сс)',
+            # }),
+            'category': forms.Select(attrs={'class': 'custom-select'}),
+            'check_type': forms.Select(attrs={'class': 'custom-select'}),
+            'date_out': forms.DateInput(attrs={'type': 'text'}),
+        }
+
+        name = forms.CharField(required=True)
+
         
-        # Получаем группу, в которой состоит пользователь
-        user_group = UsersGroupMembership.objects.filter(user=self.user).first()
-        if user_group:
-            # Получаем всех пользователей группы
-            users_in_group = UsersGroupMembership.objects.filter(group=user_group.group)
-            choices_user = [(user.user.id, user.user.username) for user in users_in_group]
+    def clean_raw_duration(self):
+        data = self.cleaned_data.get('raw_duration')
+        print(f"data {data}")
+
+        if not data:
+            raise forms.ValidationError("Поле тривалості тесту не може бути порожнім")
+        
+        if isinstance(data, timedelta):
+            return data
+
+
+        pattern = r'(\d+)(г|хв|сек)'
+        match = re.match(pattern, data)
+        if not match:
+            raise forms.ValidationError("Невірний формат часу, вкажіть вірний формат часу г|хв|сек")
+        
+        value, unit = match.groups()
+        value = int(value)
+
+        if unit == 'г':
+            result = timedelta(hours=value)
+        elif unit == 'хв':
+            result = timedelta(minutes=value)
+        elif unit == 'сек':
+            result = timedelta(seconds=value)
+        else:
+            raise forms.ValidationError("Невідома одиниця виміру")
+        
+        return result
+    
+    def clean_date_out(self):
+        data = self.cleaned_data.get('date_out')
+        print(data)
+        return data
+    
+
+        
+        # # Получаем группу, в которой состоит пользователь
+        # user_group = UsersGroupMembership.objects.filter(user=self.user).first()
+        # if user_group:
+        #     # Получаем всех пользователей группы
+        #     users_in_group = UsersGroupMembership.objects.filter(group=user_group.group)
+        #     choices_user = [(user.user.id, user.user.username) for user in users_in_group]
             
-            # Добавляем поле students с выбором
-            self.fields['students'] = forms.MultipleChoiceField(
-                choices=choices_user,
-                widget=forms.CheckboxSelectMultiple,
-                label="Оберіть студентів"
-            )
+        #     # Добавляем поле students с выбором
+        #     self.fields['students'] = forms.MultipleChoiceField(
+        #         choices=choices_user,
+        #         widget=forms.CheckboxSelectMultiple,
+        #         label="Оберіть студентів"
+        #     )
 
 
     # def clean(self):

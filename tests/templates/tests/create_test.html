@@ -2,22 +2,198 @@
 {% load static %}
 
 {% block content %}
-    <link rel="stylesheet" type="text/css" href="{% static "css/styles.css" %}">
-
+    <link rel="stylesheet" type="text/css" href="{% static "css/create_test.css" %}">
+    
+{% comment %} 
     <div align='left'>
         <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
-    </div>
-    
-    <head>
-        <h1>Створення тесту</h1>
-    </head>
+    </div> {% endcomment %}
     <body>
         
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Створити тест</button>
-        </form>
+        <form method="post" enctype="multipart/form-data" class='custom-form'>
+            <div class='base-container'>
+                    <h2 class='test-header'>Створення тесту</h2>
+                {% for error in form.errors %}
+                    {{ error }}
+                {% endfor %}
+                {% csrf_token %}
+                <!-- Назва тесту -->
+                    <div class="form-group">
+                        <input type="text" name="name" id="id_name" class="form-control" placeholder="Назва тесту">
+                        {% if form.name.errors %}
+                            <div class="error">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Опис тесту -->
+                    <div class="form-group">
+                        <textarea name="description" id="id_description" rows="4" class="form-control" placeholder="Опис тесту"></textarea>
+                        {% if form.description.errors %}
+                            <div class="error">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Зображення -->
+                    <div class="form-group-upload-image">
+                        {{ form.image }}
+
+                        <!-- Кастомная кнопка -->
+                        <button type="button" id="uploadButton" class="btn-upload">Додати фото</button>
+
+                        <!-- Контейнер для показа имени загруженного файла -->
+                        <span id="fileName" class="file-name"></span>
+                        {% if form.image.errors %}
+                            <div class="error">{{ form.image.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class='form-group'>
+                        <input type="text" name='raw_duration' id='id_raw_duration' placeholder='Тривалість тесту гг.хв.с'>
+                        {% if form.raw_duration.errors %}
+                            <div class="error">{{ form.raw_duration.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Категорія -->
+                    <div class="form-group">
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="error">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Тип перевірки -->
+                    <div class="form-group">
+                        {{ form.check_type }}
+                        {% if form.check_type.errors %}
+                            <div class="error">{{ form.check_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+            
+
+
+
+                    <!-- Поле для ПК -->
+                    
+                    <!-- Поле для мобильных -->
+                    {% comment %} <div class="date-wrapper mobile-only" style="display: none;">
+                        <input type="date" name='date_out' id="date-input-mobile" placeholder="Оберіть дату">
+                    </div>
+                    
+                    <div class="date-wrapper desktop-only">
+                        <input type="text" name='date_out' id="date-input-pc" placeholder="Оберіть дату">
+                        <button type="button" class="calendar-icon">
+                            <img src="{% static 'icons/create_test_calendar.svg' %}" alt="Календар">
+                        </button>
+                    </div> {% endcomment %}
+
+                    <div class="date-wrapper">
+                        <input type="text" name="date_out" id="date-input" placeholder="Оберіть дату">
+                        <button type="button" class="calendar-icon">
+                            <img src="{% static 'icons/create_test_calendar.svg' %}" alt="Календар">
+                        </button>
+                    </div>
+
+                    <!-- Подключаем Flatpickr -->
+                    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+                    
+                </div>
+                <button type="submit" class='submit-btn'>Створити тест</button>
+            </form>
+
+        {% comment %} <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uploadButton = document.getElementById('uploadButton');
+                const fileInput = document.getElementById('uploadImage');
+                const fileNameSpan = document.getElementById('fileName');
+            
+                // Открытие диалога выбора файла
+                uploadButton.addEventListener('click', () => {
+                    fileInput.click();
+                });
+            
+                // Изменение текста кнопки и отображение имени файла
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files.length > 0) {
+                        const fileName = fileInput.files[0].name;
+                        uploadButton.textContent = 'Змінити файл';
+                        fileNameSpan.textContent = `Завантажено: ${fileName}`;
+                    }
+                });
+            });
+            </script>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                    const dateInput = document.querySelector("#date-input");
+                    const customIcon = document.querySelector(".calendar-icon");
+            
+                    if (isMobile) {
+                        // Для мобильных устройств: используем стандартный календарь
+                        dateInput.type = "date"; // Меняем тип на date для мобильных устройств
+                        dateInput.placeholder = "Оберіть дату"; // Плейсхолдер для мобильных
+
+                        customIcon.style.display = "none";
+            
+                        customIcon.addEventListener("click", function () {
+                            dateInput.click(); // Программно вызываем клик на нативное поле
+                        });
+                    } else {
+                        // Для ПК: инициализируем Flatpickr
+                        flatpickr(dateInput, {
+                            enableTime: false,
+                            dateFormat: "Y-m-d", // Формат, совместимый с Django
+                            disableMobile: true, // Отключаем мобильный интерфейс
+                        });
+            
+                        // Обработчик клика на кастомную кнопку
+                        customIcon.addEventListener("click", function () {
+                            dateInput._flatpickr.open(); // Открываем Flatpickr
+                        });
+                    }
+                });
+            </script> {% endcomment %}
+
+            <script src="{% static "js/create_test_date_add.js" %}"></script>
+            <script src="{% static "js/create_test_add_image.js" %}"></script>
+
+            {% comment %} <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                
+                    if (isMobile) {
+                        // Показываем блок для мобильных
+                        document.querySelector(".mobile-only").style.display = "flex";
+                
+                        // Вешаем обработчик на кастомную иконку
+                        const customIcon = document.querySelector(".calendar-icon");
+                        const nativeDateInput = document.querySelector("#date-input-mobile");
+                
+                        customIcon.addEventListener("click", function () {
+                            nativeDateInput.click(); // Программно вызываем клик на нативное поле
+                        });
+                    } else {
+                        // Для ПК: показываем ПК-блок и инициализируем Flatpickr
+                        document.querySelector(".desktop-only").style.display = "flex";
+                        dateelement = document.querySelector("#date-input-pc")
+                        
+                        const flatpickrInstance = flatpickr(dateelement, {
+                            enableTime: false,
+                            dateFormat: "Y-m-d", // Формат, совместимый с Django
+                            disableMobile: true, // Отключаем нативный календарь
+                        });
+                        console.log(document.querySelector("#date-input-pc").value);
+                        
+                        
+                        // Обработчик клика на кастомную кнопку
+                        document.querySelector(".calendar-icon").addEventListener("click", function () {
+                            flatpickrInstance.open();
+                        });
+                    }
+                });
+            </script> {% endcomment %}
     </body>
 
 {% endblock content %}
