@@ -838,6 +838,11 @@ class TestsResultsView(View):
         if test.check_type == Tests.MANUAL_CHECK:
             self.save_audio_responses(request, responses, audio_answers)
             self.clear_test_session(request)
+
+            # На случай если пользователь перезагрузил страницу
+            if not test_time:
+                return redirect('tests:success_page')
+            
             test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
             TestsReviews.objects.create(
                 test=test,
@@ -848,6 +853,11 @@ class TestsResultsView(View):
             )
             return render(request, 'tests/success_page_manual_test.html')
         else:
+
+            # На случай если пользователь перезагрузил страницу
+            if not test_time:
+                return render(request, self.template_name)
+            
             score, correct_answers, total_questions, test_duration = self.calculate_results(test, responses, test_time)
             self.save_test_results(request, test, score, test_duration)
             self.clear_test_session(request)
@@ -996,7 +1006,7 @@ class TestsResultsView(View):
         """Очищаем данные теста из сессии"""
         session_keys = ['question_order','question_index','test_responses','remaining_time', 'test_id']
         for key in session_keys:
-            if key in session_keys:
+            if key in request.session:
                 del request.session[key]
 
     def get_context_data(self, test, score, correct_answers, total_questions):

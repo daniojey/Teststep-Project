@@ -2,7 +2,10 @@
 {% load static %}
 
 {% block content %}
-<div align='center'>
-    <h2>Результат вашого тесту відправленний вчителю, будь ласка очікуйте перевірки</h2>
+<link rel="stylesheet" href="{% static "css/success_test_manual_page.css" %}">
+<div class='base-container'>
+    <h2>Результат вашого тесту відправлений вчителю, будь ласка очікуйте перевірки</h2>
+
+    <a href="{% url "app:index" %}" class='return-link'>На головну</a>
 </div>
 {% endblock %}

@@ -794,10 +794,10 @@ class CreateTestViewTest(TestCase):
             'user': self.user.id,
             'name': "Test Name",
             'description': "Test Description",
-            'students': [str(self.user.pk),],  # IDs студентов
             'category': self.category.id,
             'check_type': 'auto',
             'duration': "00:00:25",
+            'raw_duration':'60хв',
             'date_out': date(year=2024, month=9, day=25),
         }
 
@@ -816,9 +816,9 @@ class CreateTestViewTest(TestCase):
         # Проверка данных теста
         created_test = Tests.objects.get(name="Test Name")
         self.assertEqual(created_test.user, self.user)
+
+        self.assertEqual(created_test.duration, timedelta(hours=1))
         
-        # Теперь проверяем, что `students` сохранен как список
-        self.assertEqual(created_test.students['students'], form_data['students'])
 
         expected_url = reverse('tests:add_questions', kwargs={"test_id": created_test.id})
         self.assertRedirects(response, expected_url)

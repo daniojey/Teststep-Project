@@ -1,7 +1,17 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<h2>Ваш результат по {{ test.name }}</h2>
-<p>Ви відповіли вірно на {{ correct_answers }} із {{ total_questions }} питань.</p>
-<p>Ваш балл: {{ score }}%</p>
+<link rel="stylesheet" href="{% static "css/test_result.css" %}">
+
+<div class='base-container'>
+    <h2>Ваш результат по тесту "{{ test.name }}"</h2>
+
+    <div class='result-container'>
+        <p>Вірні відповіді {{ correct_answers }} із {{ total_questions }} питань</p>
+        <p>Ваш поточний бал {{ score }}%</p>
+    </div>
+
+    <a href="{% url "app:index" %}" class='return-link'>На головну</a>
+</div>
 {% endblock content %}
