@@ -20,5 +20,5 @@ ENV DATABASE_URL=postgres://tests:root@db:5432/Tests
 EXPOSE 8000
 
 # Запускаем скрипт ожидания и сервер Django
-# CMD ["sh", "-c", "python wait_for_db.py db 5432 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
-CMD ["gunicorn", "main.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["sh", "-c", "python wait_for_db.py db 5432 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# CMD ["gunicorn", "main.wsgi:application", "--bind", "0.0.0.0:8000"]

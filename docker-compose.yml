@@ -11,16 +11,20 @@ services:
       - "5432:5432"
     networks:
       - app-network
+    volumes:
+      - db_data:/var/lib/postgresql/data
 
   web:
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
     environment:
       DATABASE_HOST: db
     volumes:
-      - .:/app
+      - .:/application 
+      - ./media:/application/static/media
+    # volumes:
+    #   - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -31,3 +35,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db_data:
