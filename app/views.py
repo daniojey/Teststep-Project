@@ -14,7 +14,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         user_id = str(user.id)
 
         # Группа пользователя
-        group_membership = UsersGroupMembership.objects.filter(user=user).first()
+        group_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
         group = group_membership.group if group_membership else  "Без группы"
 
         # Фильтруем тесты, где поле students сщдержит ID текущего пользователя

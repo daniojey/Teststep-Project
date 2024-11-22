@@ -1,5 +1,6 @@
 # tests/views.py
 import random
+from django.db.models import F, ExpressionWrapper, Prefetch, fields
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
@@ -28,7 +29,7 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         
         # Проверка на принадлежность к группе и статус учителя
-        membership = UsersGroupMembership.objects.filter(user=user).first()
+        membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
         if membership and membership.owner:
             # Пользователь - учитель группы, выводим тесты, которые он выгружал
             context['tests'] = Tests.objects.filter(user=user)  # Все тесты, созданные учителем
@@ -37,12 +38,13 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
             test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
             context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
             
-        if membership and membership.group:
-            context['group'] = membership.group
 
-        
-        context['user'] = user
-        context['active_tab'] = 'rating'
+        context.update({
+            'group': membership.group if membership and membership.group else None,
+            'user': user,
+            'active_tab': 'rating',
+        })
+
         return context
     
 
@@ -64,32 +66,45 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         user = get_object_or_404(User, id=self.request.user.id)
-
         test_id = self.kwargs.get('test_id')
 
-        test = Tests.objects.filter(id=test_id).first()
 
-        user_group = UsersGroupMembership.objects.filter(user=user).first()
+        test = get_object_or_404(Tests, id=test_id)
+        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
+
 
         if user_group:
-            group_members = UsersGroupMembership.objects.filter(group=user_group.group).order_by('user__username')
+            group_members = UsersGroupMembership.objects.filter(group=user_group.group).select_related('user')
+            results = TestResult.objects.filter(
+                 user__id__in=[member.user.id for member in group_members],
+                test=test
+            ).annotate(
+                scores=F('score'),
+                duration_seconds=ExpressionWrapper(F('duration'), output_field=fields.DurationField())
+            ).order_by('-scores', 'duration_seconds')
         else:
-            group_members = []
+            results = []
 
-        results = [
-            TestResult.objects.filter(user=item.user, test=test).first()
-            for item in group_members
-            if TestResult.objects.filter(user=item.user, test=test).exists()
-        ]
+        # results = [
+        #     TestResult.objects.filter(user=item.user, test=test).first()
+        #     for item in group_members
+        #     if TestResult.objects.filter(user=item.user, test=test).exists()
+        # ]
 
-        results = sorted(results, key=lambda x: (x.score, -x.duration.total_seconds()), reverse=True)
+        # results = sorted(results, key=lambda x: (x.score, -x.duration.total_seconds()), reverse=True)
 
-        context['test'] = test
-        context['user'] = user
-        context['results'] = results
-        context['active_tab'] = 'rating'
+        # context['test'] = test
+        # context['user'] = user
+        # context['results'] = results
+        # context['active_tab'] = 'rating'
+
+        context.update({
+            'test': test,
+            'user': user,
+            'results': results,
+            'active_tab': 'rating',
+        })
 
         return context
 
@@ -167,29 +182,25 @@ class CreateTestView(LoginRequiredMixin, FormView):
         test = form.save(commit=False)
         test.user = self.request.user
 
-        # Получаем список студентов из формы
+        # Обработка студентов
         selected_students = form.cleaned_data.get('students')
-
         test.students = {'students': selected_students}
 
-        duration = form.cleaned_data.get('raw_duration')
-        test.duration = duration
-        
 
+        # Обработка длительности
+        test.duration = form.cleaned_data.get('raw_duration')
         test.save()
-        print(test.duration)
 
         return redirect('tests:add_questions', test_id=test.id)
     
+
     def form_invalid(self, form):
         # Здесь возвращаем форму, если валидация не прошла
-        print(form)
-        print(form.errors)
         return self.render_to_response({'form': form})
+    
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context['active_link'] = 'create'
         return context
     
@@ -272,18 +283,60 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         test_id = self.kwargs.get('test_id')
-        test = get_object_or_404(Tests, id=test_id)
+
+        # Получаем тест с минимальным количеством запросов
+        test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
         user = self.request.user
 
-        context['test'] = test
-        context['question_groups'] = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
-        context['ungrouped_questions'] = Question.objects.filter(test=test, group__isnull=True)
-        context['questions'] = Question.objects.filter(test=test)
+        
+        # Заранее загружаем все вопросы, связаные с тестом
+        questions = Question.objects.filter(test=test).select_related('group')
 
-        context['question_form'] = QuestionForm(test=test)
-        context['form_student'] = QuestionStudentsForm(test=test, user=user)
+
+        # Группы вопросов с предзагрузкой вопросов
+        question_groups = (
+            QuestionGroup.objects.filter(test=test).prefetch_related(
+                Prefetch('questions_group', queryset=questions)
+            )
+        )
+        
+        # print(question_groups)
+        # for group in question_groups:
+        #     print(group)
+        #     for question in group.questions_group.all():
+        #         print(question)
+
+        # заранее фильтруем вопросы без группы
+        ungrouped_questions = [q for q in questions if q.group is None]
+
+
+        # Формы
+        question_form = QuestionForm(test=test)
+        form_student = QuestionStudentsForm(test=test, user=user)
+
+        context.update({
+            'test': test,
+            'question_groups': question_groups,
+            'ungrouped_questions': ungrouped_questions,
+            'questions': questions,
+            'question_form': question_form,
+            'form_student': form_student,
+        })
 
         return context
+
+        # test = get_object_or_404(Tests, id=test_id)
+        # user = self.request.user
+
+        # context['test'] = test
+        # context['question_groups'] = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
+        # context['ungrouped_questions'] = Question.objects.filter(test=test, group__isnull=True)
+        # context['questions'] = Question.objects.filter(test=test)
+
+        # context['question_form'] = QuestionForm(test=test)
+        # context['form_student'] = QuestionStudentsForm(test=test, user=user)
+
+        # return context
     
     def post(self, request, *args, **kwargs):
         test_id = self.kwargs.get('test_id')
@@ -397,15 +450,26 @@ class AddAnswersView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
-        question = get_object_or_404(Question, id=question_id)
+        question = get_object_or_404(
+            Question.objects.select_related('test').prefetch_related('test__questions'),
+            id=question_id)
+        
         test = question.test
         questions = test.questions.all()
 
-        context['test'] = test
-        context['question'] = question
-        context['questions'] = questions
-        context['form_type'] = 'Ответ'
-        context['action_url'] = 'tests:add_answers'
+        # context['test'] = test
+        # context['question'] = question
+        # context['questions'] = questions
+        # context['form_type'] = 'Ответ'
+        # context['action_url'] = 'tests:add_answers'
+
+        context.update({
+            'test': test,
+            'question': question,
+            'questions': questions,
+            'form_type': 'Ответ',
+            'action_url': 'tests:add_answers'
+        })
 
         return context
 
@@ -459,15 +523,28 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
-        question = get_object_or_404(Question, id=question_id)
+
+        question = get_object_or_404(
+            Question.objects.select_related('test').prefetch_related('test__questions'),
+            id=question_id
+        )
+
         test = question.test
         questions = test.questions.all()
 
-        context['test'] = test
-        context['question'] = question
-        context['questions'] = questions
-        context['form_type'] = 'Соотвецтвие'
-        context['action_url'] = 'tests:add_matching_pair'
+        # context['test'] = test
+        # context['question'] = question
+        # context['questions'] = questions
+        # context['form_type'] = 'Соотвецтвие'
+        # context['action_url'] = 'tests:add_matching_pair'
+
+        context.update({
+            'test': test,
+            'question': question,
+            'questions': questions,
+            'form_type': 'Соотвецтвие',
+            'action_url': 'tests:add_matching_pair'
+        })
 
         return context
 
@@ -509,10 +586,10 @@ class TestPreviewView(TemplateView):
 
         if self.request.user.is_authenticated:
             # test_results = user.test_results.all()
-            test = get_object_or_404(Tests, id=test_id)
-            test_results = TestResult.objects.filter(test=test, user=user).first()
-            test_review = TestsReviews.objects.filter(user=user, test=test)
-            user_test = TestResult.objects.filter(user=user)
+            test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
+            test_results = TestResult.objects.filter(test=test, user=user).select_related('test', 'user').first()
+            test_review = TestsReviews.objects.filter(user=user, test=test).select_related('test', 'user')
+            user_test = TestResult.objects.filter(user=user).select_related('test')
             if len(user_test) > 0:
                 if user_test[0].remaining_atemps > 0:
                     test_required = True
@@ -591,7 +668,7 @@ class TakeTestView(FormView):
     def initialize_test_session(self):
         # Получаем вопросы, отсортированные по группам
         questions_by_group = {}
-        for group in QuestionGroup.objects.filter(test=self.test):
+        for group in QuestionGroup.objects.filter(test=self.test).prefetch_related('questions_group'):
             questions_by_group[group.name] = list(group.questions_group.all())
 
         # Перемешиваем вопросы внутри каждой группы
@@ -609,7 +686,6 @@ class TakeTestView(FormView):
         all_questions.extend(questions_not_group)
 
         if len(all_questions) == 0:
-            print(all_questions)
             # Очищаем сессию дабы избежать конфликтов
             if 'test_id' in self.request.session:
                 del self.request.session['test_id']
@@ -634,11 +710,11 @@ class TakeTestView(FormView):
         question_order = self.request.session['question_order']
         question_index = self.request.session['question_index']
         current_question_id = question_order[question_index]
-        self.current_question = get_object_or_404(Question, id=current_question_id)
-        print(self.current_question.test)
-        print(self.current_question.question_type)
-        print(self.current_question.answer_type)
-        print(self.current_question)
+        self.current_question = get_object_or_404(Question.objects.select_related('group'), id=current_question_id)
+        # print(self.current_question.test)
+        # print(self.current_question.question_type)
+        # print(self.current_question.answer_type)
+        # print(self.current_question)
 
         kwargs['question'] = self.current_question
         return kwargs
@@ -689,17 +765,31 @@ class TakeTestView(FormView):
         context = super().get_context_data(**kwargs)
         question_order = self.request.session['question_order']
         question_index = self.request.session['question_index']
-        context['test'] = self.test
-        context['question'] = self.current_question
-        context['all_questions'] = {
-            "current": question_index + 1,
-            "all": len(question_order)
-        }
-        context['test_btn'] = {
-            'text_btn': 'Завершити' if question_index + 1 == len(question_order) else 'Далі',
-        }
-        context['current_question_group'] = self.current_question.group
-        context['remaining_time'] = self.request.session['remaining_time']
+        # context['test'] = self.test
+        # context['question'] = self.current_question
+        # context['all_questions'] = {
+        #     "current": question_index + 1,
+        #     "all": len(question_order)
+        # }
+        # context['test_btn'] = {
+        #     'text_btn': 'Завершити' if question_index + 1 == len(question_order) else 'Далі',
+        # }
+        # context['current_question_group'] = self.current_question.group
+        # context['remaining_time'] = self.request.session['remaining_time']
+
+        context.update({
+            'test':self.test,
+            'question': self.current_question,
+            'all_questions': {
+                'current': question_index + 1,
+                'all': len(question_order)
+            },
+            'test_btn': {
+                'text_btn': 'Завершити' if question_index + 1 == len(question_order) else 'Далі'
+            },
+            'current_question_group': self.current_question.group,
+            'remaining_time': self.request.session['remaining_time']
+        })
         return context
 
 
@@ -839,9 +929,9 @@ class TestsResultsView(View):
             self.save_audio_responses(request, responses, audio_answers)
             self.clear_test_session(request)
 
-            # На случай если пользователь перезагрузил страницу
+            # На случай если пользователь перезагрузил страницу при ручном тесте
             if not test_time:
-                return redirect('tests:success_page')
+                return redirect('app:index')
             
             test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
             TestsReviews.objects.create(
@@ -856,7 +946,7 @@ class TestsResultsView(View):
 
             # На случай если пользователь перезагрузил страницу
             if not test_time:
-                return render(request, self.template_name)
+                return redirect('app:index')
             
             score, correct_answers, total_questions, test_duration = self.calculate_results(test, responses, test_time)
             self.save_test_results(request, test, score, test_duration)
@@ -1173,23 +1263,27 @@ class TestsForReviewView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
-        user_groups = UsersGroupMembership.objects.filter(user=user)
+        user_groups = UsersGroupMembership.objects.filter(user=user).select_related('group')
 
         if user_groups.exists():
             group = user_groups.first().group
-            group_memberships = UsersGroupMembership.objects.filter(group=group)
 
+
+            group_memberships = UsersGroupMembership.objects.filter(group=group).select_related('user')
+
+
+            tests_reviews = Tests.objects.filter(
+                user__in=[member.user for member in group_memberships],
+                check_type="manual"
+            )
+        else:
+            tests_reviews = Tests.objects.none()
         
-        tests_reviews = [
-            test for item in group_memberships 
-            for test in Tests.objects.filter(user=item.user, check_type='manual')
-            ]
 
-        # Если нужно сохранить логику фильтрации, можно сделать так:
-        tests_results = [t for t in tests_reviews if t]
-
-        context['test_result'] = tests_results
-        context['active_tab'] = 'my_tests'
+        context.update({
+            'test_result': tests_reviews,
+            'active_tab': 'my_tests'
+        })
 
         return context
 
@@ -1234,36 +1328,32 @@ class TestGroupReviewsView(TemplateView):
         # Получаем всех членов группы и название группы
         group_memberships, group_name = self.get_user_group(user=user)
 
-        user_completely_test = []
         user_reviews = []
-        user_not_reviews = []
 
         # Здесь мы можем сразу выбрать нужные данные
         reviews_qs = TestsReviews.objects.filter(test=test).select_related('user')
-        results_qs = TestResult.objects.filter(test=test).select_related('user')
 
         for us in group_memberships:
             review = reviews_qs.filter(user=us.user).first()
-            results = results_qs.filter(user=us.user).first()
             if review:    
                 user_reviews.append(review)
-            elif results:
-                user_completely_test.append(results)
-            else:
-                user_not_reviews.append(us.user)
 
-        context['test'] = test
-        context['user_reviews'] = user_reviews
-        context['user_not_reviews'] = user_not_reviews
-        context['user_complete_test'] = user_completely_test
+        # context['test'] = test
+        # context['user_reviews'] = user_reviews
+
+        context.update({
+            'test': test,
+            'user_reviews': user_reviews
+        })
+
 
         return context
 
     def get_user_group(self, user):
-        user_group = UsersGroupMembership.objects.filter(user=user).first().group
+        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first().group
         
         if user_group:
-            group_memberships = UsersGroupMembership.objects.filter(group=user_group)
+            group_memberships = UsersGroupMembership.objects.filter(group=user_group).select_related('group')
             group_name = user_group.name
         else:
             group_memberships = None
@@ -1350,7 +1440,7 @@ class TakeTestReviewView(FormView):
         question = self.request.session['question_index']
         
         current_question_id = question_order[question]
-        self.current_question = get_object_or_404(Question, id=current_question_id)
+        self.current_question = get_object_or_404(Question.objects.select_related('group').prefetch_related('matching_pairs','answers'), id=current_question_id)
 
     # Проверка на существование и инициализация атрибутов, если они равны None
         # if not hasattr(self.test_student_responses, 'answers') or self.test_student_responses.answers is None:
@@ -1378,11 +1468,9 @@ class TakeTestReviewView(FormView):
     def form_valid(self, form):
 
         if self.request.method == 'POST':
-            print(self.request.POST)
             action = self.request.POST.get('action')
             if action == 'correct':
                 self.request.session['teacher_answers'] += 1.0
-                print("ball",self.request.session['teacher_answers'])
 
             elif action == 'incorrect':
                 # Ответ неверный поэтому ничего не добавляем
@@ -1399,7 +1487,6 @@ class TakeTestReviewView(FormView):
                     for left_item in left_items:
                         student_answer = self.request.POST.get(f'answer_{left_item}')
                         if any(pair.left_item == left_item and pair.right_item == student_answer for pair in matching_pairs):
-                                print('+1')
                                 self.request.session['teacher_answers'] += point
 
 
@@ -1460,15 +1547,26 @@ class TakeTestReviewView(FormView):
         context = super().get_context_data(**kwargs)
         test_review_session = self.request.session['test_review_session']
         question_index = self.request.session['question_index']
-        context['test'] = self.test
-        context['user'] = self.user
-        context['question'] = self.current_question
-        context['all_questions'] = {
+
+        context.update({
+            'test': self.test,
+            'user': self.user,
+            'question': self.current_question,
+            'all_questions': {
             "current": question_index + 1,
             "all": len(test_review_session)
-        }
+            },
+            'current_question_group': self.current_question.group
+        })
+        # context['test'] = self.test
+        # context['user'] = self.user
+        # context['question'] = self.current_question
+        # context['all_questions'] = {
+        #     "current": question_index + 1,
+        #     "all": len(test_review_session)
+        # }
 
-        context['current_question_group'] = self.current_question.group
+        # context['current_question_group'] = self.current_question.group
         return context
 
     
@@ -1697,20 +1795,16 @@ class TestReviewResults(View):
         correct_answers = self.request.session['teacher_answers']
         test_review_id = self.request.session['test_student_responses_id']
         if test_review_id:
-            test_review = TestsReviews.objects.filter(id=test_review_id).first()
+            test_review = TestsReviews.objects.filter(id=test_review_id).select_related('user', 'test').first()
         else:
             test_review = None
 
         if test_review:
-            test_id = test_review.test.id
             user = test_review.user
             test = test_review.test
             duration = test_review.duration
             questions = test.questions.count()
-            print(test)
-            print(questions)
-            print(correct_answers)
-            print(test_review)
+
         
 
             score = round((correct_answers / questions) * 100) if questions > 0 else 0
