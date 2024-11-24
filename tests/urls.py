@@ -12,6 +12,7 @@ urlpatterns = [
     path('all_tests/', views.AllTestsView.as_view() , name='all_tests'),
     path('test/<int:test_id>', views.TestPreviewView.as_view() , name='test_preview'),
     path('create/', views.CreateTestView.as_view(), name='create_test'),
+    path('edit/<int:pk>/', views.EditTestView.as_view(), name='edit_test'),
     path('delete/<int:test_id>', views.delete_test, name='delete_test'),
     path('add_question_group/<int:test_id>/', views.AddQuestionGroupView.as_view(), name='add_question_group'),
     path('<int:test_id>/add_questions/', views.AddQuestionsView.as_view(), name='add_questions'),

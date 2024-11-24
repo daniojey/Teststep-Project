@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "postgres://test:root@localhost:5432/Tests")
+        default=os.getenv("DATABASE_URL", "postgres://test:admin@localhost:5432/Tests")
     )
 }
 

@@ -11,7 +11,7 @@ from users.models import User, UsersGroupMembership
 from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 import base64
 import os
@@ -207,6 +207,13 @@ class CreateTestView(LoginRequiredMixin, FormView):
         
     def get_success_url(self) -> str:
         return reverse('tests:add_questions', kwargs={'test_id': self.object.id})
+    
+
+class EditTestView(UpdateView):
+    model=Tests
+    template_name = "tests/edit_test.html"
+    fields = ['name', 'description','image', 'date_out', 'category', 'check_type']
+    success_url = reverse_lazy('tests:all_tests')
 
 
 # @login_required

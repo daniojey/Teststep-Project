@@ -1,6 +1,6 @@
 name: Django CI my project
 
-on: workflow-dispatch
+on: workflow_dispatch
   
   # push:
   #   branches:

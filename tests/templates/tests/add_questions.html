@@ -13,6 +13,7 @@
 
 <body>
     <h1>Додати питання для тесту: {{ test.name }}</h1>
+    <a href="{% url "tests:edit_test" test.pk%}">Редагувати тест</a>
 
     {% if test.image %}
     <div align='center'>
