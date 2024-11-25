@@ -1,7 +1,215 @@
-body {
-    color: #FFF;
+.test-and-students {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 10px;
 }
 
-a {
-    color: aqua;
+.main-test-container {
+    display: flex;
+    min-width: 300px; /* Минимальная ширина */
+    max-width: 630px; /* Максимальная ширина */
+    width: 100%;   
+    flex-direction: column;
+    padding: 24px;
+    background: #363242;
+    border-radius: 12px;
+    max-width: 630px;
+}
+
+.main-test-container h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 40px;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center; /* Центровка изображения по горизонтали */
+    align-items: center;    /* Центровка по вертикали */
+    max-width: 410px;
+    max-height: 240px;
+    overflow: hidden;       /* Скрыть содержимое, выходящее за пределы */
+    margin: 0 auto;
+    border-radius: 12px;    /* Применить скругление границ контейнера */
+    overflow: hidden;
+}
+
+.image-container img {
+    max-width: 100%;        /* Ограничить изображение размерами контейнера */
+    max-height: 100%;       /* Аналогично для высоты */
+    object-fit: cover;      /* Изображение сохраняет пропорции, заполняя контейнер */
+    object-position: center; /* Центровка внутри контейнера */
+    border-radius: 12px;    /* Скругление для изображения */
+}
+
+.test-link-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.test-link-container a{
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    color: #7260F5;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    border-radius: 12px;
+    border: 1.5px solid #7260F5;
+    padding: 7px 12px;
+}
+
+.form-test-container {
+    margin-top: 40px;
+}
+
+.main-test-container form{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Стили для описания к тесту */
+.main-test-container textarea {
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    width: 100%;
+    height: 130px;
+}
+
+.main-test-container textarea::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+
+/* dropdown панели */
+/* Основной стиль для select */
+.custom-select {
+    height: 57px;
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background: #363242;
+    color: #fff;
+    border: 1px solid #FFF;
+    border-radius: 12px;
+    appearance: none; /* Убираем стандартную стрелочку */
+    background-image: url('/static/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 24px; /* Размер стрелки */
+}
+
+
+
+/* Для кастомизации панели выбора */
+.custom-select option {
+    max-height: 200px; /* Максимальная высота */
+    overflow-y: auto; /* Прокрутка, если пунктов много */
+    background: #363242;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 4px;
+}
+
+.question-btn {
+    max-width: 260px;
+    margin: 0 auto;
+    margin-top: 8px;
+    padding: 20px 24px;
+    color: #ffffff;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    background-color: #7260F5;
+    border-radius: 12px;
+}
+
+.students-container {
+    display: flex;
+    background: #363242;
+    max-width: 410px;
+    width: 100%;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+.students-container form p{
+    color: #ffffff;
+}
+
+.students-container form p label{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+#id_students {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    text-align: center;
+    margin-top: 40px;
+    color: #ffffff;
+    gap: 32px;
+}
+
+#id_students label{
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+input[type="checkbox"] {
+    appearance: checkbox; /* Включаем стандартный вид чекбокса */
+    width: 24px; /* Возвращаем стандартный размер чекбокса */
+    height: 24px; /* Возвращаем стандартный размер чекбокса */
+    margin-right: 16px; /* Добавляем отступ справа от чекбокса */
+    color: #000000;
+    background-color: #FFFFFF;
+    accent-color: #ffffff;
+}
+
+
+.questions-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+    padding: 24px;
+    border-radius: 12px;
+    background: #363242;
 }

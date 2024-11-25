@@ -140,25 +140,26 @@ class QuestionForm(forms.ModelForm):
         #     self.fields.pop('answer_type', None)
 
         if test:
-            self.fields['group'].queryset = QuestionGroup.objects.filter(test=test)
+            question_groups = [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
+            self.fields['group'].choices = [('','Группа питання')] + question_groups
 
             # Если тип проверки auto, убираем голосовую опцию для answer_type
             if test.check_type == 'auto':
-                self.fields['answer_type'].choices = [
+                filtered_choices = [
                     (choice, label) for choice, label in Question.ANSWER_TYPES if choice != Question.ANSWER_AUDIO
                 ]
             else:
-                self.fields['answer_type'].choices = [
+                filtered_choices = [
                     (choice, label) for choice, label in Question.ANSWER_TYPES
                 ]
+
+            self.fields['answer_type'].choices = [('', 'Тип відповіді')] + filtered_choices
         else:
             self.fields['group'].queryset = QuestionGroup.objects.none()
 
         # Убираем пустой вариант и устанавливаем значение по умолчанию
-        self.fields['question_type'].choices = [
-            (choice, label) for choice, label in Question.QUESTION_TYPES if choice
-        ]
-        self.fields['question_type'].initial = Question.SINGLE_CHOICE
+        question_type = [(choice, label) for choice, label in Question.QUESTION_TYPES]
+        self.fields['question_type'].choices = [('','Тип питання')] + question_type
 
         
 
@@ -167,10 +168,10 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['text', 'question_type','answer_type','image', 'audio', 'group']
         widgets = {
-            'text': forms.Textarea(attrs={'rows': 3}),
-            'question_type': forms.RadioSelect(),
-            'group': forms.Select(attrs={'class': 'form-control'}),
-            'answer_type': forms.RadioSelect()
+            'text': forms.TextInput(),
+            'question_type': forms.Select(attrs={'class': 'custom-select'}),
+            'group': forms.Select(attrs={'class': 'custom-select'}),
+            'answer_type': forms.Select(attrs={'class': 'custom-select'})
         }
 
 class QuestionStudentsForm(forms.ModelForm):
@@ -192,7 +193,7 @@ class QuestionStudentsForm(forms.ModelForm):
             self.fields['students'] = forms.MultipleChoiceField(
                 choices=students,  # Список студентов в формате (id, имя)
                 widget=forms.CheckboxSelectMultiple,
-                label='Студенти',
+                label='Додати студентів до тесту',
                 required=False
             )
         

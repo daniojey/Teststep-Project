@@ -1,7 +1,7 @@
 # tests/views.py
 import random
 from django.db.models import F, ExpressionWrapper, Prefetch, fields
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 from django.urls import reverse, reverse_lazy
@@ -366,7 +366,9 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
             if students_form.is_valid():
                 test.students = {'students': students_form.cleaned_data.get('students')}
                 test.save()
-                return redirect('tests:add_questions', test_id = test.id)
+                return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Студент.'})
             
         
         context = self.get_context_data()
