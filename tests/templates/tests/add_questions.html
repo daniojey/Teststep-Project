@@ -63,16 +63,18 @@
             <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}" id="studentForm">
                 <input type="hidden" name="form_type" value="form_student">
                 {% csrf_token %}
-                <div class='student-item'>
+
+                <div class="student-item">
                     {{ form_student.as_p }}
                 </div>
+
             </form>
         </div>
     </div>
 
     <div class='questions-container'>
         {% if ungrouped_questions %}
-            <h4>Питання без групи:</h4>
+            <h4>Питання без групи</h4>
             {% for question in ungrouped_questions %}
                 {% if question.question_type == 'IMG' and question.text == "" %}
                     <div class='question-field'>
@@ -112,7 +114,7 @@
 
         {% if question_groups %}
             {% for group in question_groups %}
-            <h4>Группа "{{ group.name }}":</h4>
+            <h4>Группа "{{ group.name }}"</h4>
                 {% for question in group.questions_group.all %}
                     <div class='question-field'>
                         <p>{{ question }}</p>

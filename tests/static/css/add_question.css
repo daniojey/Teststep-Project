@@ -220,7 +220,7 @@
 .students-container form p label{
     color: #FFF;
     font-family: Roboto;
-    font-size: 18px;
+    font-size: 20px;
     font-style: normal;
     font-weight: 600;
     line-height: normal;
@@ -248,14 +248,51 @@
     line-height: normal;
 }
 
-input[type="checkbox"] {
-    appearance: checkbox; /* Включаем стандартный вид чекбокса */
-    width: 24px; /* Возвращаем стандартный размер чекбокса */
-    height: 24px; /* Возвращаем стандартный размер чекбокса */
-    margin-right: 16px; /* Добавляем отступ справа от чекбокса */
+/* input[type="checkbox"] {
+    appearance: checkbox; 
+    width: 24px; 
+    height: 24px; 
+    margin-right: 16px; 
     color: #000000;
-    background-color: #FFFFFF;
-    accent-color: #ffffff;
+    background-color: #363242;
+    accent-color: #363242;
+} */
+
+/* Убираем стандартный вид чекбокса */
+input[type="checkbox"] {
+    appearance: none; /* Убираем стандартное оформление */
+    -webkit-appearance: none; /* Для Safari */
+    outline: none;
+    border: 2px solid #fff; /* Границы */
+    background-color: #363242; /* Чёрный фон по умолчанию */
+    border-radius: 4px; /* Закругление */
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Состояние :checked */
+input[type="checkbox"]:checked {
+    background-color: #fff; /* Белый фон */
+    border-color: #fefffe; /* Зелёные границы */
+}
+
+/* Галочка (псевдоэлемент) */
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
+    width: 6px;
+    height: 12px;
+    border: solid #000000;
+    border-width: 0 2px 2px 0;
+    display: block;
 }
 
 
@@ -276,7 +313,7 @@ input[type="checkbox"] {
 .questions-container h4{
     color: #FFF;
     font-family: Roboto;
-    font-size: 18px;
+    font-size: 20px;
     font-style: normal;
     font-weight: 600;
     line-height: normal;
