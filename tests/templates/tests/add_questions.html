@@ -318,7 +318,7 @@
     </div> {% endcomment %}
 
     <div class='button-container'>
-        <a class='save-test-btn'>Зберегти тест</a>
+        <a class='save-test-btn' href="{% url 'tests:complete_questions' test_id=test.id %}">Зберегти тест</a>
         <div class="delete-btn">
             <!-- Кнопка для открытия модального окна -->
             <button type="button" class='delete-test-btn' onclick="openModal('testModal{{ test.id }}')">Видалити тест</button>

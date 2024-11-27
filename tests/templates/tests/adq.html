@@ -3,9 +3,21 @@
 
 
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Підтвердити</button>
-</form>
+<link rel="stylesheet" href="{% static "css/adq.css" %}">
+<body>
+    <div class='base-container'>
+        <div class='base-header'>
+            <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
+                <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
+            </a>
+            <h2>Створити группу питання</h2>
+            {% comment %} <h2>Створити группу для питань</h2> {% endcomment %}
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class='submit-btn'>Підтвердити</button>
+        </form>
+    </div>
+</body>
 {% endblock %}

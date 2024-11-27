@@ -128,6 +128,9 @@ class QuestionGroupForm(forms.ModelForm):
     class Meta:
         model = QuestionGroup
         fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Назва групи'})
+        }
 
 
 class QuestionForm(forms.ModelForm):

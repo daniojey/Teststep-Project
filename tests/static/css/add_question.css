@@ -123,7 +123,12 @@
     background-size: 24px; /* Размер стрелки */
 }
 
-
+/* Стили для select при фокусе */
+.custom-select:focus {
+    border-color: rgba(255, 255, 255, 0.8); /* Цвет бортика */
+    outline: none; /* Убираем стандартный фокус */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Подсветка */
+}
 
 /* Для кастомизации панели выбора */
 .custom-select option {
