@@ -361,6 +361,8 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 question.test = test
                 question.save()
                 return redirect('tests:add_questions', test_id=test.id)
+            else:
+                print(question_form.errors)
             
         elif form_type == 'form_student':
             if students_form.is_valid():
@@ -368,7 +370,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 test.save()
                 return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'})
             else:
-                return JsonResponse({'status': 'error', 'message': 'Студент.'})
+                return JsonResponse({'status': 'error', 'message': 'Opps, помилка'})
             
         
         context = self.get_context_data()

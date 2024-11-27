@@ -140,36 +140,55 @@ class QuestionForm(forms.ModelForm):
         #     self.fields.pop('answer_type', None)
 
         if test:
-            question_groups = [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
-            self.fields['group'].choices = [('','Группа питання')] + question_groups
+            question_groups = [('abs','Группа питання')] + [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
+            self.fields['group'].choices = question_groups
+
+            if question_groups:
+                self.fields['group'].initial = question_groups[0]
 
             # Если тип проверки auto, убираем голосовую опцию для answer_type
             if test.check_type == 'auto':
-                filtered_choices = [
+                filtered_choices = [('', 'Тип відповіді')] + [
                     (choice, label) for choice, label in Question.ANSWER_TYPES if choice != Question.ANSWER_AUDIO
                 ]
             else:
-                filtered_choices = [
+                filtered_choices = [('', 'Тип відповіді')] + [
                     (choice, label) for choice, label in Question.ANSWER_TYPES
                 ]
 
-            self.fields['answer_type'].choices = [('', 'Тип відповіді')] + filtered_choices
+            self.fields['answer_type'].choices = filtered_choices
+            self.fields['answer_type'].initial = filtered_choices[0]
         else:
             self.fields['group'].queryset = QuestionGroup.objects.none()
 
         # Убираем пустой вариант и устанавливаем значение по умолчанию
-        question_type = [(choice, label) for choice, label in Question.QUESTION_TYPES]
-        self.fields['question_type'].choices = [('','Тип питання')] + question_type
+        question_type = [('','Тип питання')] + [(choice, label) for choice, label in Question.QUESTION_TYPES]
+        self.fields['question_type'].choices = question_type
+        self.fields['question_type'].initial = question_type[0]
+
+        self.fields['group'].required = False
 
         
 
 
     class Meta:
         model = Question
-        fields = ['text', 'question_type','answer_type','image', 'audio', 'group']
+        fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group']
         widgets = {
             'text': forms.TextInput(),
             'question_type': forms.Select(attrs={'class': 'custom-select'}),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'custom-file-input',
+                'id': 'uploadImage',
+                'style': 'display: none;'
+                }
+
+            ),
+            'audio': forms.ClearableFileInput(attrs={
+                'class': 'custom-file-input',
+                'id': 'uploadAudio',
+                'style': 'display: none;'
+                }),
             'group': forms.Select(attrs={'class': 'custom-select'}),
             'answer_type': forms.Select(attrs={'class': 'custom-select'})
         }
