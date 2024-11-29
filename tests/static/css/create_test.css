@@ -127,20 +127,21 @@
 /* Стили кнопки загрузки */
 .btn-upload {
     display: inline-block;
-    height: 55px;
     min-width: 113px;
-    background-color: #6f42c1; /* Фиолетовый цвет */
-    padding-left: 24px;
-    padding-right: 24px;
-    color: white;
-    border: none;
+    background-color: #363242;
+    padding: 7px 12px;
+    color: #7260F5;
+    border: 1.5px solid #7260F5;
     border-radius: 12px;
-    font-size: 16px;
     cursor: pointer;
     text-align: center;
-    line-height: 55px;
     transition: background-color 0.3s ease;
     white-space: nowrap;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
 }
 
 .btn-upload:hover {
@@ -150,6 +151,7 @@
 /* Контейнер с именем файла */
 .file-name {
     max-width: 400px;
+    justify-content: start;
     align-items: center;
     display: inline-block;
     margin-left: 15px;

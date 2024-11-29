@@ -70,8 +70,15 @@
                     <div class='base-checkbox-container'>
                         <div class="checkbox-answer">
                             <label>
-                                <input type="checkbox" name="correct_answers" value="{{ answer.id }}" 
-                                {% if answer.is_correct %}checked{% endif %}>
+                                <input 
+                                    id="answer-{{ answer.id }}" 
+                                    type="checkbox" 
+                                    name="correct_answers" 
+                                    value="{{ answer.id }}" 
+                                    {% if answer.is_correct %}checked{% endif %}
+                                    class="correct-answer-checkbox"
+                                    data-answer-type="{{ question.answer_type }}"
+                                    data-question-id="{{ question.id }}">
                                 
                                 <label class='label-checkbox'>{{ answer.text }}</label>
                             </label>
@@ -88,26 +95,28 @@
                         <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ answer.id }}')">
                     </div>
                         
-                     <!-- Модальное окно для удаления -->
-                    <div id="testModal{{ answer.id }}" class="modal">
-                        <div class="modal-content">
-                            <span class="close" onclick="closeModal('testModal{{ answer.id }}')">&times;</span>
-                            <h2>Видалити відповідь?</h2>
-                            <p>Ви впевненні що бажаєте видалити відповідь? Цю дію неможливо буде відмінити.</p>
-                            
-                            <form method="post" action="{% url 'tests:delete_answer' answer.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="confirm-btn">Видалити</button>
-                                <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ answer.id }}')">Відмінити</button>
-                            </form>
-                        </div>
-                    </div>
                 </div>
                 {% endfor %}
             </form>
-            
-            <!-- Кнопка, расположенная за пределами формы -->
-            
+            <!-- Переносим модальные окна в отдельный контейнер -->
+            <div class="delete-models">
+                {% for answer in question.answers.all %}
+                <!-- Модальное окно для удаления -->
+                <div id="testModal{{ answer.id }}" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal('testModal{{ answer.id }}')">&times;</span>
+                        <h2>Видалити відповідь?</h2>
+                        <p>Ви впевненні, що бажаєте видалити відповідь? Цю дію неможливо буде відмінити.</p>
+                        
+                        <form method="post" action="{% url 'tests:delete_answer' answer.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="confirm-btn">Видалити</button>
+                            <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ answer.id }}')">Відмінити</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>            
         </div>
         <div>
         <form method="post" action="{% url action_url question.id %}">
@@ -154,12 +163,6 @@
                     class="form-check-input" 
                     id="is_correct" 
                     value="False">
-                    {% comment %} <div class="col-md-12 mb-3">
-                        <label for="is_correct" class="form-label">Вірний ?</label>
-                        <input type="checkbox" class="form-check-input" id="is_correct"
-                        name="is_correct"
-                        placeholder="Відповідь">
-                    </div> {% endcomment %}
                 {% endif %}
             </div>
 
@@ -168,35 +171,13 @@
                 <button type="submit" form="correctAnswersForm" class='save-answers-btn'>Зберегти</button>
             </div>
         </form>
+        
         </div>  
     </div>
 
-   
-
+    <script src="{% static "js/selection_limiter.js" %}"></script>
     <!-- JavaScript для управления модальным окном -->
-    <script>
-        // Функция для открытия модального окна
-        function openModal(modalId) {
-            var modal = document.getElementById(modalId);
-            modal.classList.add("show");
-        }
-
-        // Функция для закрытия модального окна
-        function closeModal(modalId) {
-            var modal = document.getElementById(modalId);
-            modal.classList.remove("show");
-        }
-
-        // Закрытие модального окна при клике вне его области
-        window.onclick = function(event) {
-            var modals = document.getElementsByClassName("modal");
-            for (let i = 0; i < modals.length; i++) {
-                if (event.target == modals[i]) {
-                    modals[i].classList.remove("show");
-                }
-            }
-        }
-    </script>
+    <script src="{% static "js/open_delete_window.js" %}"></script>
 </body>
 
 {% endblock content %}

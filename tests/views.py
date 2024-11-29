@@ -472,7 +472,7 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         # test = question.test
         # questions = test.questions.all()
 
-        print(question.SINGLE_CHOICE)
+        print(question.answer_type)
         context.update({
             'question': question,
             # 'test': test,
@@ -512,9 +512,24 @@ class AddAnswersView(LoginRequiredMixin, FormView):
 
 class SaveCorrectView(View):
     def post(self, request, *args, **kwargs):
+        print(request.POST)
         question = get_object_or_404(Question.objects.prefetch_related('answers'), id=self.kwargs['question_id'])
 
-        correct_answers_ids = request.POST.getlist('correct_answers') 
+        correct_answers_ids = request.POST.getlist('correct_answers')
+        if question.answer_type == 'SC':
+            question.answers.all().update(is_correct=False)
+            if correct_answers_ids:
+                id_answer = correct_answers_ids[0]
+                answer = Answer.objects.filter(id=id_answer).update(is_correct=True)
+            
+                print(answer)
+        elif question.answer_type == 'MC':
+            question.answers.all().update(is_correct=False)
+            answers = Answer.objects.filter(id__in=correct_answers_ids).update(is_correct=True)
+            print(answers)
+        else:
+            # INP и MTCH не трогаем так как сохраняется всё коректно по умолчанию
+            ...
         # answer = Answer.objects.get(id=correct_answers_ids[0])
         # print(answer)
         # print(answer.is_correct)
