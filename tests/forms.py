@@ -253,6 +253,10 @@ class MatchingPairForm(forms.ModelForm):
     class Meta:
         model = MatchingPair
         fields = ['left_item', 'right_item']
+        widgets = {
+            'left_item': forms.TextInput(attrs={'placeholder': 'Ліва частина (Відповідність)'}),
+            'right_item': forms.TextInput(attrs={'placeholder': 'Права частина (Відповідність)'}),
+        }
 
 class AnswerForm(forms.ModelForm):
     class Meta:

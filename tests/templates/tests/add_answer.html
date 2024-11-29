@@ -9,142 +9,169 @@
 </head>
 
 {% block content %}
+<link rel="stylesheet" href="{% static "css/add_answers.css" %}">
 <link rel="stylesheet" type="text/css" href="{% static "css/delete_confirm.css" %}">
 
 
 <body>
-    <h1>{{ test.name }}</h1>
-    <p>{{ test.description }}</p>
-
-    <h2>Питання</h2>
-    <ul>
-        {% for question in questions %}
-            <li>
-                {% if question.question_type == "MTCH" %}
-                    <strong>
-                        {{ question.text }}
-                        <a href="{% url 'tests:add_matching_pair' question.id %}">Редагувати відповідність</a>
-                    </strong>
-                {% else %}
-                    <strong>
-                        {{ question.text }}
-                        <a href="{% url 'tests:add_answers' question.id %}">Редагувати питання</a>
-                    </strong>
-                {% endif %}
-                {% if question.image %}
-                    <div>
-                        <img src="{{ question.image.url }}" alt="Question Image">
-                    </div>
-                {% endif %}
-                {% if question.audio %}
-                    <div>
-                        <audio controls>
-                            <source src="{{ question.audio.url }}" type="audio/mpeg">
-                            Ваш браузер не підтримує аудіо елемент.
-                        </audio>
-                    </div>
-                {% endif %}
-                <ul>    
-
-                        {% for answer in question.matching_pairs.all %}
-                            <li>                                
-                                {{ answer }}
-                            </li>
-                        {% endfor %}
-
-                        
-                        {% for answer in question.answers.all %}
-                            <li>
-                                {% if answer.is_correct == True %}
-                                    Правильний
-                                {% else %}
-                                    -
-                                {% endif %}
-                                    :
-                                {{ answer.text }}
-                                    :
-                                    <div class="delete-btn">
-                                        <!-- Кнопка для открытия модального окна -->
-                                        <button type="button" class="delete-btn" onclick="openModal('answerModal{{ answer.id }}')">Видалити відповідь</button>
-                                    
-                                        <!-- Модальное окно для вопроса -->
-                                        <div id="answerModal{{ answer.id }}" class="modal">
-                                            <div class="modal-content">
-                                                <span class="close" onclick="closeModal('answerModal{{ answer.id }}')">&times;</span>
-                                                <h2>Видалити відповідь ?</h2>
-                                                <p>Ви впевненні що бажаєте видалити відповідь для цього питання ?</p>
-                                                
-                                                <form method="post" action="{% url 'tests:delete_answer' answer.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                                    <button type="button" class="cancel-btn" onclick="closeModal('answerModal{{ answer.id }}')">Відмінити</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            </li>
-                        {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-    </ul>
-
-    <h2>Додати відповідь к питанню: {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}{{ question }}{% else %}{{ question.text }}{% endif %}</h2>
-    <form method="post" action="{% url action_url question.id %}">
-        {% csrf_token %}
-        <div class="row">
-            
-            {% if question.question_type == "MTCH" %}
-                <div class='col-md-6 mb-3'>
-                    <label for="left_item" class='form-label'>Ліва частина</label>
-                    {{ form.left_item }}
-                </div>
-                <div class='col-md-6 mb-3'>
-                    <label for="right_item" class='form-label'>Права частина</label>
-                    {{ form.right_item }}
-                </div>
+    <div class='base-container'>
+        <div class='container-header'>
+                <p class='category'>Категорія питання: {% if group %}{{ group.name }}{% else %}Без группы{% endif %}</p>
+            {% if question.question_type == "IMG" and question.text != "" %}
+                <p class='question-text'>{{ question.text }}</p>
             {% else %}
-                <div class="col-md-12 mb-3">
-                    <label for="id_text" class="form-label">Текст відповіді</label>
-                    <input type="text" class="form-control" id="id_text"
-                    name="text"
-                    placeholder="Введите ответ" value="" required>
-                </div>
-            {% endif %}
-
-            {% if question.answer_type == "INP" %}
-                <input type="hidden" 
-                name="is_correct" 
-                class="form-check-input" 
-                id="is_correct" 
-                value="True">
-            
-            {% elif question.question_type == "IMG" %}
-                <input type="hidden" 
-                name="is_correct" 
-                class="form-check-input" 
-                id="is_correct" 
-                value="True">
-                
-            {% elif question.question_type == "MTCH" %}
-            {% else %}
-                <div class="col-md-12 mb-3">
-                    <label for="is_correct" class="form-label">Вірний ?</label>
-                    <input type="checkbox" class="form-check-input" id="is_correct"
-                    name="is_correct"
-                    placeholder="Відповідь">
-                </div>
+                <p class='question-text'>{{ question }}</p>
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-dark">Зберегти</button>
-    </form>
-    {% comment %} <form method="post">
-        {% csrf_token %}
-        {{ answer_form.as_p }}
-        
-        <button type="submit">Добавить ответ</button>
-    </form> {% endcomment %}
+
+        <div class='answers-cotainer'>
+            <form id="correctAnswersForm" method="post" action="{% url 'tests:correct_answers' question_id=question.id %}">
+                {% csrf_token %}
+                {% if question.question_type == 'MTCH' %}    
+                <div class='delete-and-answers'>
+
+                    {% for pair in question.matching_pairs.all %}
+                    <div class='base-matching-container'>
+                        <div class='items-container'>
+                            <div class='left-item-container'>
+                                <label class='left-item-label'>{{ pair.left_item }}</label>
+                            </div>
+                            <div class='right-item-container'>
+                                <label class='right-item-label'>{{ pair.right_item }}</label>
+                            </div>
+                        </div>
+                        
+
+                        <div class='delete-container'>
+                            <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ pair.id }}')">
+                        </div>
+
+                         <!-- Модальное окно для удаления -->
+                        <div id="testModal{{ pair.id }}" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeModal('testModal{{ pair.id }}')">&times;</span>
+                                <h2>Видалити відність?</h2>
+                                <p>Ви впевненні що бажаєте видалити відповідність? Цю дію неможливо буде відмінити.</p>
+                                
+                                <form method="post" action="{% url 'tests:delete_matching_pair' pair_id=pair.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="confirm-btn">Видалити</button>
+                                    <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ pair.id }}')">Відмінити</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% for answer in question.answers.all %}               
+                    {% if question.answer_type == 'SC' or question.answer_type == 'MC'%}
+                    <div class='base-checkbox-container'>
+                        <div class="checkbox-answer">
+                            <label>
+                                <input type="checkbox" name="correct_answers" value="{{ answer.id }}" 
+                                {% if answer.is_correct %}checked{% endif %}>
+                                
+                                <label class='label-checkbox'>{{ answer.text }}</label>
+                            </label>
+                        </div>
+                    {% else %}
+                    <div class='base-input-container'>
+                        <div class='input-label'>
+                            <label class='input-ans-label'>{{ answer.text }}</label>
+                        </div>
+                            
+                    
+                    {% endif %}
+                    <div class='delete-container'>
+                        <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ answer.id }}')">
+                    </div>
+                        
+                     <!-- Модальное окно для удаления -->
+                    <div id="testModal{{ answer.id }}" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeModal('testModal{{ answer.id }}')">&times;</span>
+                            <h2>Видалити відповідь?</h2>
+                            <p>Ви впевненні що бажаєте видалити відповідь? Цю дію неможливо буде відмінити.</p>
+                            
+                            <form method="post" action="{% url 'tests:delete_answer' answer.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="confirm-btn">Видалити</button>
+                                <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ answer.id }}')">Відмінити</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </form>
+            
+            <!-- Кнопка, расположенная за пределами формы -->
+            
+        </div>
+        <div>
+        <form method="post" action="{% url action_url question.id %}">
+            {% csrf_token %}
+            <div class="row">          
+                {% if question.question_type == "MTCH" %}
+                    <div class='matching-form'>
+                        <div class='matching-form-label'>
+                            {{ form.left_item }}
+                        </div>
+                        <div class='matching-form-label'>
+                            {{ form.right_item }}
+                        </div>
+                    </div>
+                {% else %}
+                        <div class="col-md-12 mb-3">
+                        {% comment %} <label for="id_text" class="form-label"></label> {% endcomment %}
+                        <input type="text" class="form-control" id="id_text"
+                        name="text"
+                        placeholder="Відповідь ({% if question.answer_type == 'SC' %}Одиночний вибір{% elif question.answer_type == 'MC' %}Множинний вибір{% elif question.answer_type == 'INP' %}Текстова відповідь{% endif %})"
+                        value="" 
+                        required>
+                    </div>
+                {% endif %}
+
+                {% if question.answer_type == "INP" %}
+                    <input type="hidden" 
+                    name="is_correct" 
+                    class="form-check-input" 
+                    id="is_correct" 
+                    value="True">
+                
+                {% elif question.question_type == "IMG" %}
+                    <input type="hidden" 
+                    name="is_correct" 
+                    class="form-check-input" 
+                    id="is_correct" 
+                    value="True">
+                    
+                {% elif question.question_type == "MTCH" %}
+                {% else %}
+                    <input type="hidden" 
+                    name="is_correct" 
+                    class="form-check-input" 
+                    id="is_correct" 
+                    value="False">
+                    {% comment %} <div class="col-md-12 mb-3">
+                        <label for="is_correct" class="form-label">Вірний ?</label>
+                        <input type="checkbox" class="form-check-input" id="is_correct"
+                        name="is_correct"
+                        placeholder="Відповідь">
+                    </div> {% endcomment %}
+                {% endif %}
+            </div>
+
+            <div class='button-container'>
+                <button type="submit" class="add-answer-btn">Додати відповідь</button>
+                <button type="submit" form="correctAnswersForm" class='save-answers-btn'>Зберегти</button>
+            </div>
+        </form>
+        </div>  
+    </div>
+
+   
 
     <!-- JavaScript для управления модальным окном -->
     <script>
@@ -174,3 +201,12 @@
 
 {% endblock content %}
 
+{% comment %} {% if question.question_type == 'TXT' %}
+            <p class='category'>Категорія питання:Питання з текстом</p>
+            {% elif question.question_type == 'IMG' %}
+            <p class='category'>Категорія питання:Питання з картинкою</p>
+            {% elif question.question_type == 'AUD' %}
+            <p class='category'>Категорія питання:Питання з аудіо</p>
+            {% elif question.question_type == 'MTCH' %}
+            <p class='category'>Категорія питання:Встановлення відповідкості</p>
+            {% endif %} {% endcomment %}

@@ -450,6 +450,7 @@ class AddAnswersView(LoginRequiredMixin, FormView):
     form_class = AnswerForm
 
     def form_valid(self, form):
+        print(self.request.POST)
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(Question, id=question_id)
 
@@ -462,22 +463,22 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(
-            Question.objects.select_related('test').prefetch_related('test__questions'),
+            Question.objects.select_related('test').prefetch_related('answers'),
             id=question_id)
         
-        test = question.test
-        questions = test.questions.all()
+        answers = question.answers.all()
+        question_group = question.group
+        
+        # test = question.test
+        # questions = test.questions.all()
 
-        # context['test'] = test
-        # context['question'] = question
-        # context['questions'] = questions
-        # context['form_type'] = 'Ответ'
-        # context['action_url'] = 'tests:add_answers'
-
+        print(question.SINGLE_CHOICE)
         context.update({
-            'test': test,
             'question': question,
-            'questions': questions,
+            # 'test': test,
+            # 'questions': questions,
+            'group': question_group,
+            'answers': answers,
             'form_type': 'Ответ',
             'action_url': 'tests:add_answers'
         })
@@ -508,6 +509,23 @@ class AddAnswersView(LoginRequiredMixin, FormView):
 #         'form_type':'Ответ',
 #         'action_url':'tests:add_answers',
 #     })
+
+class SaveCorrectView(View):
+    def post(self, request, *args, **kwargs):
+        question = get_object_or_404(Question.objects.prefetch_related('answers'), id=self.kwargs['question_id'])
+
+        correct_answers_ids = request.POST.getlist('correct_answers') 
+        # answer = Answer.objects.get(id=correct_answers_ids[0])
+        # print(answer)
+        # print(answer.is_correct)
+
+        # for item_id in correct_answers_ids:
+        #     print(f"Type{type(item_id)} and id {item_id}")
+        #     print(get_object_or_404(Answer, id=item_id))
+        print(correct_answers_ids)
+
+        return redirect(reverse('tests:add_answers', args=[question.id]))
+
 
 def delete_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id)
@@ -542,6 +560,9 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
 
         test = question.test
         questions = test.questions.all()
+        matching_pairs = MatchingPair.objects.filter(question=question)
+        print(matching_pairs)
+        print(question.matching_pairs.all())
 
         # context['test'] = test
         # context['question'] = question
@@ -558,6 +579,16 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         })
 
         return context
+    
+def delete_matching_pair(request, pair_id):
+    print(pair_id)
+    matching_pair = get_object_or_404(MatchingPair, id=pair_id)
+    question = get_object_or_404(Question, id=matching_pair.question.id)
+
+    print(f"pair:{matching_pair}")
+    print(f"question: {question}")
+    matching_pair.delete()
+    return redirect('tests:add_matching_pair', question_id=question.id)
 
 #     test = question.test
 #     questions = test.questions.all()
