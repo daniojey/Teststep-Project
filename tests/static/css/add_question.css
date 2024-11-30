@@ -1,9 +1,21 @@
+html, body {
+    height: 100%;
+    min-height: 100vh; /* Задает минимальную высоту в высоту окна */
+}
+
+.main-container {
+    height: 100%;
+}
+
 .test-and-students {
     display: flex;
     align-items: start;
     justify-content: center;
     margin-top: 40px;
     gap: 25px;
+    max-height: 1008px;
+    height: 100%;
+    min-height: 1007px;
 }
 
 .main-test-container {
@@ -204,13 +216,27 @@
     color: #7260F5;
 }
 
+.students-base-container {
+    position: relative; /* Важно для позиционирования дочернего элемента */
+    display: flex;
+    max-width: 410px;
+    width: 100%;
+    border-radius: 12px;
+    height: 100%;
+    overflow: hidden; /* Ограничение движения внутри контейнера */
+    
+}
+
 .students-container {
+    position: absolute; /* Позволяет двигаться внутри родителя */
     display: flex;
     background: #363242;
     max-width: 410px;
     width: 100%;
+    height: auto; /* Пусть контент определяет высоту */
     padding: 24px;
     border-radius: 12px;
+    transition: transform 0.05s linear; /* Гладкость движения */
 }
 
 .students-container form p{

@@ -12,335 +12,145 @@
 <link rel="stylesheet" type="text/css" href="{% static "css/add_question.css" %}">
 
 <body>
-    <div class='test-and-students'>
-        <div class='main-test-container'>
-            <h2>Додати питання до тесту: {{ test.name }}</h2>
-
-            {% if test.image %}
+    <div class='main-container'>
+        <div class='test-and-students'>
+            <div class='main-test-container'>
+                <h2>Додати питання до тесту: {{ test.name }}</h2>
+                
+                {% if test.image %}
                 <div class='image-container'>
                     <img src="{{ test.image.url }}">
                 </div>
-            {% endif %}
-
-            <div class='test-link-container'>
-                <label><a href="{% url "tests:edit_test" test.pk%}">Редагувати параметри тесту</a></label>
-                <label><a href="{% url "tests:add_question_group" test_id=test.id %}">Створити группу питань</a></label>
-            </div>
-                
-            <div class='form-test-container'>
-                <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
-                    <input type="hidden" name="form_type" value="form_question">
-                    {% csrf_token %}
-                    {% for field in question_form %}
-                        {% if field.name == 'text' %}
-                            <textarea name="text" id="id_text" rows="5" class="form-control" placeholder="Текст питання"></textarea>
-                        {% elif field.name == 'image' %}
-                            <div id="image-field" style="display: none;" class='upload-field'>
-                                {{ field }}
-                                <button type='button', id="uploadImageButton" class="btn-upload">Додати фото</button>
-
-                                <span id="fileName" class="file-name"></span>
-                            </div>
-                        {% elif field.name == 'audio' %}
-                            <div id="audio-field" style="display: none;" class='upload-field'>
-                                {{ field }}
-                                <button type='button', id="uploadAudioButton" class="btn-upload">Додати аудіо</button>
-
-                                <span id="fileName" class="file-name"></span>
-                            </div>
-                        {% else %}
-                                {{ field }}
-                        {% endif %}
-                        {% endfor %}
-            
-                    <button type="submit" class='question-btn'>Додати питання</button>
-                </form>
-            </div>
-        
-        </div>
-
-        <div class='students-container'>
-            <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}" id="studentForm">
-                <input type="hidden" name="form_type" value="form_student">
-                {% csrf_token %}
-
-                <div class="student-item">
-                    {{ form_student.as_p }}
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    <div class='questions-container'>
-        {% if ungrouped_questions %}
-            <h4>Питання без групи</h4>
-            {% for question in ungrouped_questions %}
-                {% if question.question_type == 'IMG' and question.text == "" %}
-                    <div class='question-field'>
-                        <p style="display: none;">{{ question }}</p> 
-
-                        <div class='field-image-and-text'>
-                            <img src="{% static "icons/image_question.svg" %}">
-                            <p>Фото питання</p>
-                        </div>
-
-                        <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
-                    </div>
-                {% elif question.question_type == 'AUD' and question.text == "" %}
-                    <div class='question-field'>
-                        <p style="display: none;">{{ question }}</p> 
-
-                        <div class='field-image-and-text'>
-                            <img src="{% static "icons/micro.svg" %}">
-                            <p>Аудіо питання</p>
-                        </div>
-
-                        <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
-                    </div>
-                {% elif question.question_type == 'MTCH' %}
-                    <div class='question-field'>
-                        <p>{{ question }}</p>
-                        <label><a href="{% url "tests:add_matching_pair" question.id %}">Додати відповідь</a></label>
-                    </div>
-                {% else %}
-                    <div class='question-field'>
-                        <p>{{ question.text }}</p>
-                        <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
-                    </div>
                 {% endif %}
-            {% endfor %}
-        {% endif %}
-
-        {% if question_groups %}
-            {% for group in question_groups %}
-            <h4>Группа "{{ group.name }}"</h4>
-                {% for question in group.questions_group.all %}
-                    <div class='question-field'>
-                        <p>{{ question }}</p>
-                        <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
-                    </div>
-                {% endfor %}
-            {% endfor %}
-        {% endif %}
-    </div>
-
-
-    {% comment %} <h1>Додати питання для тесту: {{ test.name }}</h1>
-    <a href="{% url "tests:edit_test" test.pk%}">Редагувати тест</a>
-
-    {% if test.image %}
-    <div align='center'>
-        <div class='fixed-container' >
-            {% if test.image %}
-                <img src="{{ test.image.url }}" alt="{{ test.name }}" >
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-
-    <h2><a href="{% url "tests:add_question_group" test_id=test.id %}">Додати группу для питань</a></h2>
-
-    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
-        <input type="hidden" name="form_type" value="form_question">
-        {% csrf_token %}
-        {{ question_form.as_p }}
-
-        <button type="submit">Додати питання</button>
-    </form>
-
-    <h2>Группи та питання</h2>
-    <ul>
-        {% if question_groups %}
-            {% for group in question_groups %}
-                <li>
-                    <h3>Группа - {{ group.name }}</h3>
-                    <ul>
-                        {% for question in group.questions_group.all %}
-                            {% if question.question_type == "INP" %}
-                                <li>
-                                    <div class="delete-btn">
-                                        <!-- Кнопка для открытия модального окна -->
-                                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
-                                    
-                                        <!-- Модальное окно для вопроса -->
-                                        <div id="questionModal{{ question.id }}" class="modal">
-                                            <div class="modal-content">
-                                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
-                                                <h2>Видалити питання?</h2>
-                                                <p>Ви впевненні що бажаєте видалити це питання?</p>
-                                                
-                                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
-                                    {{ question }}
-                                    {% else %}
-                                    {{ question.text }}
-                                    {% endif %}
-                                    <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
-                                </li>   
-                            {% else %}
-                                <li>
-                                    <div class="delete-btn">
-                                        <!-- Кнопка для открытия модального окна -->
-                                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
-                                    
-                                        <!-- Модальное окно для вопроса -->
-                                        <div id="questionModal{{ question.id }}" class="modal">
-                                            <div class="modal-content">
-                                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
-                                                <h2>Видалити питання?</h2>
-                                                <p>Ви впевненні що бажаєте видалити це питання?</p>
-                                                
-                                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
-                                    {{ question }}
-                                    {% else %}
-                                    {{ question.text }}
-                                    {% endif %}
-                                    <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endfor %}
-        {% else %}
-            <li>Відсутні группи питань.</li>
-        {% endif %}
-    </ul>
-
-    <h2>Питання без группи</h2>
-    <ul>
-        {% if ungrouped_questions %}
-            {% for question in ungrouped_questions %}
-                <li>
-                    {% if question.question_type == "MTCH" %}
-                    <div class="delete-btn">
-                        <!-- Кнопка для открытия модального окна -->
-                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
-                    
-                        <!-- Модальное окно для вопроса -->
-                        <div id="questionModal{{ question.id }}" class="modal">
-                            <div class="modal-content">
-                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
-                                <h2>Видалити питання?</h2>
-                                <p>Ви впевненні що бажаєте видалити це питання?</p>
-                                
-                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                        {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
-                        {{ question }}
-                        {% else %}
-                        {{ question.text }}
-                        {% endif %}
-                        <a href="{% url "tests:add_matching_pair" question.id %}">Додати відповідність</a>
-                    {% else %}
-                    <div class="delete-btn">
-                        <!-- Кнопка для открытия модального окна -->
-                        <button type="button" class="delete-btn" onclick="openModal('questionModal{{ question.id }}')">Видалити питання</button>
-                    
-                        <!-- Модальное окно для вопроса -->
-                        <div id="questionModal{{ question.id }}" class="modal">
-                            <div class="modal-content">
-                                <span class="close" onclick="closeModal('questionModal{{ question.id }}')">&times;</span>
-                                <h2>Видалити питання?</h2>
-                                <p>Ви впевненні що бажаєте видалити це питання?</p>
-                                
-                                <form method="post" action="{% url 'tests:delete_question' question.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                    <button type="button" class="cancel-btn" onclick="closeModal('questionModal{{ question.id }}')">Відмінити</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                        {% if question.question_type == 'IMG' or question.question_type == 'AUD' %}
-                        {{ question }}
-                        {% else %}
-                        {{ question.text }}
-                        {% endif %}
-                        <a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        {% else %}
-            <li>Відсутні питання без группи.</li>
-        {% endif %}
-    </ul>
-
-    <h2><a class='custom-link' href="{% url 'tests:complete_questions' test_id=test.id %}">Завершити додавання питань</a></h2>
-    
-    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
-        <input type="hidden" name="form_type" value="form_student">
-        {% csrf_token %}
-        {{ form_student.as_p }}
-
-        <button type='submit'>Зберегти</button>
-    </form>
-
-
-    <div class="delete-btn">
-        <!-- Кнопка для открытия модального окна -->
-        <button type="button" class="delete-btn" onclick="openModal('testModal{{ test.id }}')">Видалити тест</button>
-        
-        <!-- Модальное окно для теста -->
-        <div id="testModal{{ test.id }}" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('testModal{{ test.id }}')">&times;</span>
-                <h2>Видалити тест?</h2>
-                <p>Ви впевненні що бажаєте видалити тест? Цю дію неможливо буде відмінити.</p>
                 
-                <form method="post" action="{% url 'tests:delete_test' test.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="confirm-btn">Видалити</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ test.id }}')">Відмінити</button>
-                </form>
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-    <div class='button-container'>
-        <a class='save-test-btn' href="{% url 'tests:complete_questions' test_id=test.id %}">Зберегти тест</a>
-        <div class="delete-btn">
-            <!-- Кнопка для открытия модального окна -->
-            <button type="button" class='delete-test-btn' onclick="openModal('testModal{{ test.id }}')">Видалити тест</button>
-            
-            <!-- Модальное окно для теста -->
-            <div id="testModal{{ test.id }}" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal('testModal{{ test.id }}')">&times;</span>
-                    <h2>Видалити тест?</h2>
-                    <p>Ви впевненні що бажаєте видалити тест? Цю дію неможливо буде відмінити.</p>
-                    
-                    <form method="post" action="{% url 'tests:delete_test' test.id %}">
+                <div class='test-link-container'>
+                    <label><a href="{% url "tests:edit_test" test.pk%}">Редагувати параметри тесту</a></label>
+                    <label><a href="{% url "tests:add_question_group" test_id=test.id %}">Створити группу питань</a></label>
+                </div>
+                
+                <div class='form-test-container'>
+                    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
+                        <input type="hidden" name="form_type" value="form_question">
                         {% csrf_token %}
-                        <button type="submit" class="confirm-btn">Видалити</button>
-                        <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ test.id }}')">Відмінити</button>
+                        {% for field in question_form %}
+                        {% if field.name == 'text' %}
+                        <textarea name="text" id="id_text" rows="5" class="form-control" placeholder="Текст питання"></textarea>
+                        {% elif field.name == 'image' %}
+                        <div id="image-field" style="display: none;" class='upload-field'>
+                            {{ field }}
+                            <button type='button', id="uploadImageButton" class="btn-upload">Додати фото</button>
+                            
+                            <span id="fileName" class="file-name"></span>
+                        </div>
+                        {% elif field.name == 'audio' %}
+                        <div id="audio-field" style="display: none;" class='upload-field'>
+                            {{ field }}
+                            <button type='button', id="uploadAudioButton" class="btn-upload">Додати аудіо</button>
+                            
+                            <span id="fileName" class="file-name"></span>
+                        </div>
+                        {% else %}
+                        {{ field }}
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <button type="submit" class='question-btn'>Додати питання</button>
+                    </form>
+                </div>
+                
+            </div>
+            <div class='students-base-container'>
+                <div class='students-container'>
+                    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}" id="studentForm">
+                        <input type="hidden" name="form_type" value="form_student">
+                        {% csrf_token %}
+                        
+                        <div class="student-item">
+                            {{ form_student.as_p }}
+                        </div>
+                        
                     </form>
                 </div>
             </div>
         </div>
+        
+        <div class='questions-container'>
+            {% if ungrouped_questions %}
+            <h4>Питання без групи</h4>
+            {% for question in ungrouped_questions %}
+            {% if question.question_type == 'IMG' and question.text == "" %}
+            <div class='question-field'>
+                <p style="display: none;">{{ question }}</p> 
+                
+                <div class='field-image-and-text'>
+                    <img src="{% static "icons/image_question.svg" %}">
+                    <p>Фото питання</p>
+                </div>
+                
+                <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+            </div>
+            {% elif question.question_type == 'AUD' and question.text == "" %}
+            <div class='question-field'>
+                <p style="display: none;">{{ question }}</p> 
+                
+                <div class='field-image-and-text'>
+                    <img src="{% static "icons/micro.svg" %}">
+                    <p>Аудіо питання</p>
+                </div>
+                
+                <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+            </div>
+            {% elif question.question_type == 'MTCH' %}
+            <div class='question-field'>
+                <p>{{ question }}</p>
+                <label><a href="{% url "tests:add_matching_pair" question.id %}">Додати відповідь</a></label>
+            </div>
+            {% else %}
+            <div class='question-field'>
+                <p>{{ question.text }}</p>
+                <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            
+            {% if question_groups %}
+            {% for group in question_groups %}
+            <h4>Группа "{{ group.name }}"</h4>
+            {% for question in group.questions_group.all %}
+            <div class='question-field'>
+                <p>{{ question }}</p>
+                <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class='button-container'>
+            <a class='save-test-btn' href="{% url 'tests:complete_questions' test_id=test.id %}">Зберегти тест</a>
+            <div class="delete-btn">
+                <!-- Кнопка для открытия модального окна -->
+                <button type="button" class='delete-test-btn' onclick="openModal('testModal{{ test.id }}')">Видалити тест</button>
+                
+                <!-- Модальное окно для теста -->
+                <div id="testModal{{ test.id }}" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal('testModal{{ test.id }}')">&times;</span>
+                        <h2>Видалити тест?</h2>
+                        <p>Ви впевненні що бажаєте видалити тест? Цю дію неможливо буде відмінити.</p>
+                        
+                        <form method="post" action="{% url 'tests:delete_test' test.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="confirm-btn">Видалити</button>
+                            <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ test.id }}')">Відмінити</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <script src="{% static "js/scroll_students_container.js" %}"></script>
     <script src="{% static "js/add_question_custom_select_delete_none.js" %}"></script>
     <script src="{% static "js/add_image_or_audio.js" %}"></script>
     <script src="{% static "js/add_students_in_test.js" %}"></script>
