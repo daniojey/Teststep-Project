@@ -44,7 +44,6 @@ class TestForm(forms.ModelForm):
         
     def clean_raw_duration(self):
         data = self.cleaned_data.get('raw_duration')
-        print(f"data {data}")
 
         if not data:
             raise forms.ValidationError("Поле тривалості тесту не може бути порожнім")
@@ -74,7 +73,6 @@ class TestForm(forms.ModelForm):
     
     def clean_date_out(self):
         data = self.cleaned_data.get('date_out')
-        print(data)
         return data
     
 
@@ -226,11 +224,6 @@ class QuestionStudentsForm(forms.ModelForm):
                 self.initial['students'] = [str(student_id) for student_id in test.students['students']]  # JSONField хранит список ID
             except Exception as e:
                 print(f"У вашій группі на данний момент відсутні студенти {e}")
-
-    def clean_students(self):
-        students = self.cleaned_data.get('students')
-        print(students)
-        return students  # Убедитесь, что возвращаете список
 
 
     class Meta:

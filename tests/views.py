@@ -362,7 +362,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 question.save()
                 return redirect('tests:add_questions', test_id=test.id)
             else:
-                print(question_form.errors)
+                print(f"Question_FORM -:{question_form.errors}")
             
         elif form_type == 'form_student':
             if students_form.is_valid():
@@ -472,7 +472,6 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         # test = question.test
         # questions = test.questions.all()
 
-        print(question.answer_type)
         context.update({
             'question': question,
             # 'test': test,
@@ -522,7 +521,7 @@ class SaveCorrectView(View):
                 id_answer = correct_answers_ids[0]
                 answer = Answer.objects.filter(id=id_answer).update(is_correct=True)
             
-                print(answer)
+
         elif question.answer_type == 'MC':
             question.answers.all().update(is_correct=False)
             answers = Answer.objects.filter(id__in=correct_answers_ids).update(is_correct=True)
@@ -576,8 +575,8 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         test = question.test
         questions = test.questions.all()
         matching_pairs = MatchingPair.objects.filter(question=question)
-        print(matching_pairs)
-        print(question.matching_pairs.all())
+        # print(matching_pairs)
+        # print(question.matching_pairs.all())
 
         # context['test'] = test
         # context['question'] = question
@@ -596,12 +595,12 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         return context
     
 def delete_matching_pair(request, pair_id):
-    print(pair_id)
+    # print(pair_id)
     matching_pair = get_object_or_404(MatchingPair, id=pair_id)
     question = get_object_or_404(Question, id=matching_pair.question.id)
 
-    print(f"pair:{matching_pair}")
-    print(f"question: {question}")
+    # print(f"pair:{matching_pair}")
+    # print(f"question: {question}")
     matching_pair.delete()
     return redirect('tests:add_matching_pair', question_id=question.id)
 
@@ -1062,7 +1061,7 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                print(correct_answers_list)
+                # print(correct_answers_list)
             
                 # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
                 if set(map(int, value)) == set(correct_answers_list):
@@ -1092,7 +1091,7 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                print(correct_answers_list)
+                # print(correct_answers_list)
             
                 # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
                 if set(map(int, value)) == set(correct_answers_list):
@@ -1111,7 +1110,7 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                print(correct_answers_list)
+                # print(correct_answers_list)
             
                 # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
                 if set(map(int, value)) == set(correct_answers_list):
@@ -1589,7 +1588,7 @@ class TakeTestReviewView(FormView):
         if self.request.session['question_index'] + 1 < len(self.request.session['test_review_session']):
             self.request.session['question_index'] += 1
         else:
-            print('redirect 1')
+            # print('redirect 1')
             return redirect('tests:test_review_results')
 
         # question_index = self.request.session['question_index']

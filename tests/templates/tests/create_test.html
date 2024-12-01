@@ -11,12 +11,9 @@
     <body>
         
         <form method="post" enctype="multipart/form-data" class='custom-form'>
+            {% csrf_token %}
             <div class='base-container'>
                     <h2 class='test-header'>Створення тесту</h2>
-                {% for error in form.errors %}
-                    {{ error }}
-                {% endfor %}
-                {% csrf_token %}
                 <!-- Назва тесту -->
                     <div class="form-group">
                         <input type="text" name="name" id="id_name" class="form-control" placeholder="Назва тесту">

@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from .validators import validate_image 
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -26,7 +27,7 @@ class Tests(models.Model):
     students = models.JSONField(verbose_name='Юзеры', default=list)
     name = models.CharField(verbose_name="Название",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
-    image = models.ImageField(verbose_name="Превью",null=True, blank=True)
+    image = models.ImageField(verbose_name="Превью",null=True, blank=True, validators=[validate_image])
     duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
     date_taken = models.DateTimeField(auto_now_add=True)
     date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')

@@ -62,6 +62,7 @@ MIDDLEWARE = [
     
     "csp.middleware.CSPMiddleware",
     'tests.middlewares.TestExitMiddleware',
+    "app.middleware.coop_policy_middleware",
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "postgres://test:admin@localhost:5432/Tests")
+        default=os.getenv("DATABASE_URL", "postgres://test:root@localhost:5432/Tests")
     )
 }
 
@@ -171,10 +172,6 @@ LOGIN_URL = '/user/login/'
 
 LOGIN_REDIRECT_URL = '/'
 
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
 AUTHENTICATION_BACKENDS = (
     'users.backends.EmailBackend',
     # 'django.contrib.auth.backends.ModelBackend'
@@ -220,3 +217,10 @@ CSP_OBJECT_SRC = ("'none'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_REPORT_ONLY = True  # Включаем режим отчёта
 CSP_REPORT_URI = "/csp-report/"  # Эндпоинт для отчётов
+
+
+if DEBUG:
+    SECURE_SSL_REDIRECT = False
+    SECURE_PROXY_SSL_HEADER = None
+
+# SECURE_REFERRER_POLICY = 'no-referrer'
