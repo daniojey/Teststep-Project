@@ -141,7 +141,7 @@ class QuestionForm(forms.ModelForm):
         #     self.fields.pop('answer_type', None)
 
         if test:
-            question_groups = [('abs','Группа питання')] + [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
+            question_groups = [('','Группа питання')] + [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
             self.fields['group'].choices = question_groups
 
             if question_groups:
