@@ -6,30 +6,65 @@ from tests.models import TestResult, Tests, TestsReviews
 from users.models import User, UsersGroupMembership
 
 class IndexView(LoginRequiredMixin, TemplateView):
+    """
+    View to render the main index page for logged-in users.
+
+    This view displays tests associated with the current user, grouped into
+    categories such as completed tests, uncompleted tests, and tests awaitin review.
+    It also provides information about the user's group memebership.
+
+    
+    Attributes
+    ----------
+    template_name : str
+        The path to the template user for renedering the index page.
+
+    
+    Methods
+    -------
+    get_context_data(**kwargs)
+        Adds custom context data for the template, including tests categorized
+        by their status(completed, uncompleted, or awaiting review) and the user`s group
+    """
     template_name = 'app/index.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Retrieve and add context data for the index page
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments passed to the view
+
+        Returns
+        -------
+        dict
+            A dictionary containing the following keys:
+            - 'tests' : QuerySet of all test associated with the user.
+            - 'uncompleted_tests' : QuerySet of tests the user has not completed.
+            - 'awaitig_tests' : QuerySet of tests awaiting teacher review.
+            - 'completed_tests' : QuerySet of tests the user has completed.
+            - 'group' : str or Group
+                The name of the user`s group, or 'Без группы' if the user not in a group
+        
+        """
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
         user_id = str(user.id)
 
-        # Группа пользователя
+
         group_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
         group = group_membership.group if group_membership else  "Без группы"
 
-        # Фильтруем тесты, где поле students сщдержит ID текущего пользователя
         tests = Tests.objects.filter(students__students__contains=[user_id]).order_by('-date_taken')
 
-        # Завершенные тесты
         completed_tests = TestResult.objects.filter(user=user).values_list('test_id', flat=True)
 
-        # Тесты ожидающие проверку
         awaiting_tests = TestsReviews.objects.filter(user=user).values_list('test_id', flat=True)
 
-        # Тесты ожидающие прохождения
         uncompleted_tests = tests.exclude(id__in=completed_tests).exclude(id__in=awaiting_tests)
 
-        # Передаём данные в контекст
         context.update({
             'tests': tests,
             'uncompleted_tests': uncompleted_tests,

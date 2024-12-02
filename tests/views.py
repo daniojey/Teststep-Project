@@ -22,9 +22,44 @@ def index(request):
     return render(request, 'tests/index.html')
 
 class UserRatingView(LoginRequiredMixin, TemplateView):
+    """
+    Displays the page where tests for which there are already 
+    results from other group members are posted.
+
+    This view will display for the average user a page with tests for which he has a result, 
+    and for the teacher will display all the tests that he has created.
+
+    Attributes
+    ----------
+    template_name : str
+        The path to the template user for rendering rating page.
+
+    Methods
+    -------
+    get_context_data(**kwargs)
+        In this method, we get information about(tests, user, group, active_tab)
+    """
+
     template_name = 'tests/rating.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Retrieves and adds data to the context for rendering the rating page.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments passed to the view.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the following keys:
+            - 'tests' : QuerySet of tests filtered by the user's role in the group (either teacher or student).
+            - 'group' : The name of the group. If the user is not part of a group, it returns None.
+            - 'active_tab' : Used to highlight the active tab in the navigation menu (affects link styling in `base.html`).
+        """
+
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
@@ -41,7 +76,6 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
 
         context.update({
             'group': membership.group if membership and membership.group else None,
-            'user': user,
             'active_tab': 'rating',
         })
 
@@ -62,9 +96,43 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
 
 
 class RatingTestView(LoginRequiredMixin, TemplateView):
+    """
+    This view renders the rating_test page
+
+    This page will draw a table with the result of users on the test that was selected on the rating page 
+
+    Attributes
+    ----------
+    template_name : str
+        This variable contains the path to the rating_test page
+
+    Methods
+    -------
+    get_context_data(**kwargs)
+        This method retrieves data(test, user, results, active_tab)
+    """
     template_name = "tests/rating_test.html"
 
     def get_context_data(self, **kwargs):
+        """
+        This method retrieves data to be passed to rating_test
+
+        Parametrs
+        ---------
+        **kwargs : dict
+            Additional keyword arguments passed to the view.
+
+        Returns
+        -------
+        dict
+            The following keys are passed in this dictionary
+            - 'test' : The test object is transferred.
+            - 'results': Queryset which contains test results (TestsResult model),
+            user,test,score,duration these parameters will be used in the template, 
+            if the user is not in the group we pass an empty list.
+            - 'active_tab' : Used to highlight the active tab in the navigation menu (affects link styling in `base.html`).
+        """
+        
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
         test_id = self.kwargs.get('test_id')
@@ -86,22 +154,9 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
         else:
             results = []
 
-        # results = [
-        #     TestResult.objects.filter(user=item.user, test=test).first()
-        #     for item in group_members
-        #     if TestResult.objects.filter(user=item.user, test=test).exists()
-        # ]
-
-        # results = sorted(results, key=lambda x: (x.score, -x.duration.total_seconds()), reverse=True)
-
-        # context['test'] = test
-        # context['user'] = user
-        # context['results'] = results
-        # context['active_tab'] = 'rating'
 
         context.update({
             'test': test,
-            'user': user,
             'results': results,
             'active_tab': 'rating',
         })
