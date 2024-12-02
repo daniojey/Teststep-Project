@@ -90,11 +90,10 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "postgres://test:root@localhost:5432/Tests")
-    )
-}
-
+        "default": dj_database_url.config(
+            default="postgres://test:root@localhost:5432/Tests", conn_max_age=600
+        )
+    }
 
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': 'Tests',
