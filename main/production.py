@@ -1,8 +1,8 @@
 from .settings import *
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['teststep.herokuapp.com', 'teststep-54d2adad5311.herokuapp.com', 'teststep-container-928592b92ce5.herokuapp.com', 'localhost']
+ALLOWED_HOSTS = ['teststep.herokuapp.com', 'teststep-54d2adad5311.herokuapp.com', 'teststep-container-928592b92ce5.herokuapp.com', "teststep-cli-545b2751a8dc.herokuapp.com", 'localhost']
 
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True  # Для работы через HTTPS
