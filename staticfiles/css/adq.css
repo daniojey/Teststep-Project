@@ -1,0 +1,103 @@
+.base-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1070px;
+    width: 100%;
+    margin: 40px auto;
+    background-color: #363242;
+    border-radius: 12px;
+    padding: 24px 24px 40px 24px;
+
+}
+
+
+.base-header {
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.base-header h2{
+    position: absolute; /* Абсолютное позиционирование относительно контейнера */
+    left: 50%; /* Сдвигаем влево на 50% ширины контейнера */
+    transform: translateX(-50%); /* Центрируем текст по оси X */
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.base-header a{
+    width: 24px;
+    height: 29px;
+}
+
+.base-header img{
+    width: 24px;
+    height: 29px;
+}
+
+input {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    display: flex;
+    width: 1020px;
+    height: 58px;
+    padding: 12px;
+    align-items: center;
+    color: #FFF;
+    background: #363242;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
+
+label {
+    display: none;
+}
+
+.submit-btn {
+    max-width: 260px;
+    width: 100%;
+    height: 58px;
+    border-radius: 12px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+    background: #7260F5;
+    transition: color 0.6s ease, background-color 0.6s ease;
+}
+
+.submit-btn:hover {
+    color: #7260F5;
+    background-color: #FFF;
+}

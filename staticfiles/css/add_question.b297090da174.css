@@ -1,0 +1,460 @@
+html, body {
+    height: 100%;
+    min-height: 100vh; /* Задает минимальную высоту в высоту окна */
+}
+
+.main-container {
+    height: 100%;
+}
+
+.test-and-students {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 25px;
+    max-height: 1008px;
+    height: 100%;
+    min-height: 1007px;
+}
+
+.main-test-container {
+    display: flex;
+    min-width: 300px; /* Минимальная ширина */
+    max-width: 630px; /* Максимальная ширина */
+    width: 100%;   
+    flex-direction: column;
+    padding: 24px;
+    background: #363242;
+    border-radius: 12px;
+    max-width: 630px;
+}
+
+.main-test-container h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 40px;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center; /* Центровка изображения по горизонтали */
+    align-items: center;    /* Центровка по вертикали */
+    max-width: 410px;
+    max-height: 240px;
+    overflow: hidden;       /* Скрыть содержимое, выходящее за пределы */
+    margin: 0 auto;
+    border-radius: 12px;    /* Применить скругление границ контейнера */
+    overflow: hidden;
+}
+
+.image-container img {
+    max-width: 100%;        /* Ограничить изображение размерами контейнера */
+    max-height: 100%;       /* Аналогично для высоты */
+    object-fit: cover;      /* Изображение сохраняет пропорции, заполняя контейнер */
+    object-position: center; /* Центровка внутри контейнера */
+    border-radius: 12px;    /* Скругление для изображения */
+}
+
+.test-link-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.test-link-container a{
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    color: #7260F5;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    border-radius: 12px;
+    border: 1.5px solid #7260F5;
+    padding: 7px 12px;
+}
+
+.form-test-container {
+    margin-top: 40px;
+}
+
+.main-test-container form{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Стили для описания к тесту */
+.main-test-container textarea {
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    width: 100%;
+    height: 130px;
+}
+
+.main-test-container textarea::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+
+/* dropdown панели */
+/* Основной стиль для select */
+.custom-select {
+    height: 57px;
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background: #363242;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    border-radius: 12px;
+    appearance: none; /* Убираем стандартную стрелочку */
+    background-image: url("/static/icons/create_test_arrow.95818abba96e.svg"); /* Добавляем свою стрелку */
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 24px; /* Размер стрелки */
+}
+
+/* Стили для select при фокусе */
+.custom-select:focus {
+    border-color: rgba(255, 255, 255, 0.8); /* Цвет бортика */
+    outline: none; /* Убираем стандартный фокус */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Подсветка */
+}
+
+/* Для кастомизации панели выбора */
+.custom-select option {
+    max-height: 200px; /* Максимальная высота */
+    overflow-y: auto; /* Прокрутка, если пунктов много */
+    background: #363242;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 4px;
+}
+
+.main-test-container form .upload-field {
+    display: flex;
+    align-items: center;
+    justify-content: start !important;
+    
+}
+
+.file-name {
+    max-width: 400px;
+    align-items: center;
+    display: inline-block;
+    margin-left: 15px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    text-align: start;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+}
+
+.btn-upload{
+    display: flex;
+    height: 55px;
+    min-width: 113px;
+    background-color: #6f42c1; /* Фиолетовый цвет */
+    padding-left: 24px;
+    padding-right: 24px;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 55px;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-right: 10px;
+}
+
+.question-btn {
+    max-width: 260px;
+    margin: 0 auto;
+    margin-top: 8px;
+    padding: 20px 24px;
+    color: #ffffff;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    background-color: #7260F5;
+    border-radius: 12px;
+    transition: color 0.6s ease, background-color 0.6s ease;
+}
+
+.question-btn:hover{
+    background-color: #FFFFFF;
+    color: #7260F5;
+}
+
+.students-base-container {
+    position: relative; /* Важно для позиционирования дочернего элемента */
+    display: flex;
+    max-width: 410px;
+    width: 100%;
+    border-radius: 12px;
+    height: 100%;
+    overflow: hidden; /* Ограничение движения внутри контейнера */
+    
+}
+
+.students-container {
+    position: absolute; /* Позволяет двигаться внутри родителя */
+    display: flex;
+    background: #363242;
+    max-width: 410px;
+    width: 100%;
+    height: auto; /* Пусть контент определяет высоту */
+    padding: 24px;
+    border-radius: 12px;
+    transition: transform 0.05s linear; /* Гладкость движения */
+}
+
+.students-container form p{
+    color: #ffffff;
+}
+
+.students-container form p label{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+#id_students {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    text-align: center;
+    margin-top: 40px;
+    color: #ffffff;
+    gap: 32px;
+}
+
+#id_students label{
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+/* input[type="checkbox"] {
+    appearance: checkbox; 
+    width: 24px; 
+    height: 24px; 
+    margin-right: 16px; 
+    color: #000000;
+    background-color: #363242;
+    accent-color: #363242;
+} */
+
+/* Убираем стандартный вид чекбокса */
+input[type="checkbox"] {
+    appearance: none; /* Убираем стандартное оформление */
+    -webkit-appearance: none; /* Для Safari */
+    outline: none;
+    border: 2px solid #fff; /* Границы */
+    background-color: #363242; /* Чёрный фон по умолчанию */
+    border-radius: 4px; /* Закругление */
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Состояние :checked */
+input[type="checkbox"]:checked {
+    background-color: #fff; /* Белый фон */
+    border-color: #fefffe; /* Зелёные границы */
+}
+
+/* Галочка (псевдоэлемент) */
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
+    width: 6px;
+    height: 12px;
+    border: solid #000000;
+    border-width: 0 2px 2px 0;
+    display: block;
+}
+
+
+.questions-container {
+    display: flex;
+    color: #ffffff;
+    flex-direction: column;
+    margin: 40px auto;
+    padding: 24px;
+    border-radius: 12px;
+    background: #363242;
+    max-width: 1070px;
+    width: 100%;
+    text-align: start;
+    gap: 40px;
+}
+
+.questions-container h4{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.button-container p{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.questions-container a{
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    color: #7260F5;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    border-radius: 12px;
+    border: 1.5px solid #7260F5;
+    padding: 7px 12px;
+    transition: color 0.9s ease;
+}
+
+.questions-container a:hover{
+    color: #FFFFFF;
+}
+
+.question-field {
+    display: flex;
+    width: 100%;
+    gap: auto;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-field p{
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.field-image-and-text {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+.button-container{
+    display: flex;
+    margin: 0 auto;
+    margin-bottom: 40px;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.save-test-btn {
+    max-width: 260px;
+    width: 100%;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    color: #FFF;
+    background-color: #7260F5;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: color 0.6s ease, background-color 0.6s ease;
+}
+
+.save-test-btn:hover{
+    background-color: #FFFFFF;
+    color: #7260F5;
+}
+
+.delete-btn {
+    max-width: 260px;
+    width: 100%;
+}
+
+.delete-test-btn {
+    max-width: 260px;
+    width: 100%;
+    height: 55px;
+    color: #FFF;
+    background-color: #BF4949;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    border-radius: 12px;
+    transition: color 0.6s ease, background-color 0.6s ease;
+}
+
+.delete-test-btn:hover{
+    color: #BF4949;
+    background-color: #FFFFFF;
+}

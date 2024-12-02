@@ -1,0 +1,321 @@
+.base-container{
+    display: flex;
+    flex-direction: column;
+    max-width: 1068px;
+    width: 100%;
+    background: #363242;
+    border-radius: 12px;
+    margin: 40px auto;
+    padding: 24px 24px 40px 24px;
+}
+
+.container-header {
+    display: flex;
+    flex-direction: column;
+    text-align: start;
+    align-items: start;
+    justify-content: start;
+    color: #ffff;
+    gap: 20px;
+}
+
+.category {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.question-text {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
+.answers-cotainer{
+    display: flex;
+    flex-direction: column;
+    color: #ffff;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.base-checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.base-input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.input-label {
+    width: 100%;
+    border: 1px solid #FFF;
+    text-align: start;
+    border-radius: 12px;
+    padding: 18px;
+    margin-right: 40px;
+    margin-bottom: 8px;
+}
+
+.checkbox-answer {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    text-align: center;
+    padding: 10px;
+}
+
+.checkbox-answer label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.label-checkbox {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.label-input-answer{
+    color: #ffffff;
+    width: 100%;
+    border: 1px solid #ffffff;
+}
+
+.delete-and-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.base-matching-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.items-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #FFF;
+    padding: 10px 18px;
+    border-radius: 12px;
+    gap: 12px;
+}
+
+.left-item-container {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.right-item-container {
+    padding: 5px 16px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    color: #000;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+
+.delete-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #BF4949;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.delete-container:hover {
+    border-color: #ffff;
+}
+
+.delete-container img {
+    width: 21.333px;
+    height: 24px;
+}
+
+/* Убираем стандартный вид чекбокса */
+input[type="checkbox"] {
+    appearance: none; /* Убираем стандартное оформление */
+    -webkit-appearance: none; /* Для Safari */
+    outline: none;
+    border: 2px solid #fff; /* Границы */
+    background-color: #363242; /* Чёрный фон по умолчанию */
+    border-radius: 4px; /* Закругление */
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Состояние :checked */
+input[type="checkbox"]:checked {
+    background-color: #fff; /* Белый фон */
+    border-color: #fefffe; /* Зелёные границы */
+}
+
+/* Галочка (псевдоэлемент) */
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
+    width: 6px;
+    height: 12px;
+    border: solid #000000;
+    border-width: 0 2px 2px 0;
+    display: block;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.form-control {
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    width: 100%;
+    height: 57px;
+    margin-bottom: 40px;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.matching-form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+    gap: 40px;
+}
+
+.matching-form-label {
+    width: 50%;
+}
+
+.matching-form-label input{
+    width: 100%;
+}
+
+.matching-form-label input {
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    height: 57px;
+    margin-bottom: 40px;
+}
+
+.matching-form-label input::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.add-answer-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 260px;
+    width: 100%;
+    height: 58px;
+    background-color: #7260F5;
+    border-radius: 12px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+    transition: color 0.6s ease, background-color 0.6s ease;
+
+}
+
+.save-answers-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 260px;
+    width: 100%;
+    height: 58px;
+    background-color: #7260F5;
+    border-radius: 12px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+    transition: color 0.6s ease, background-color 0.6s ease;
+}
+
+.add-answer-btn:hover{
+    color: #7260F5;
+    background-color: #ffffff;
+}
+
+.save-answers-btn:hover{
+    color: #7260F5;
+    background-color: #ffffff;
+}
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
+
