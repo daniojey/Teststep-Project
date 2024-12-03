@@ -23,4 +23,4 @@ EXPOSE 8000
 ENV PORT=8000
 
 # Запускаем сервер с использованием переменной $PORT
-CMD ["sh", "-c", "echo PORT=$PORT && gunicorn main.wsgi:application --bind 0.0.0.0:$PORT"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn main.wsgi:application --bind 0.0.0.0:$PORT"]
