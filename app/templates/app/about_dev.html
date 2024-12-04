@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static "css/about.css" %}">
+<body>
+
+    <div class='base-container'>
+        <div class='image-container'>
+            <img src="{{ github_user.image }}" alt="dev_image">
+        </div>
+
+        <div class='information-container'>
+            <p>My bio -> {{ github_user.bio }}</p>
+            <p>My github account -> <a href="{{ github_user.github_url }}">CLICK!!</a></p>
+            <p>Public projects - {{ github_user.dev_projects }}</p>
+        </div>
+    </div>
+    
+</body>
+
+{% endblock content %}

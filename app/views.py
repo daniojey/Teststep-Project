@@ -1,6 +1,8 @@
+from typing import Any
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+import requests
 
 from tests.models import TestResult, Tests, TestsReviews
 from users.models import User, UsersGroupMembership
@@ -75,8 +77,28 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         return context
 
-def about(request):
-    return render(request, "app/about.html")
+class AboutDevView(TemplateView):
+    template_name = 'app/about_dev.html'
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        dev_name = 'daniojey'
+        url = f"https://api.github.com/users/{dev_name}"
+
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            context['github_user'] = {
+                "image": data["avatar_url"],
+                'bio': data["bio"],
+                'github_url': data['html_url'],
+                'dev_projects': data['public_repos']
+            }
+
+        return context
+    
 
 # @login_required
 # def index(request):
