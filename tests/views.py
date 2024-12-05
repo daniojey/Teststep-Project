@@ -197,9 +197,42 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 
 
 class AllTestsView(LoginRequiredMixin, TemplateView):
+    """
+    This view renders the all_tests page
+
+    This page contains tests created by the teacher of the group,
+    all the tests are displayed for the administrator.
+
+    Attributes
+    ----------
+    template_name : str
+        This variable contains the path to all_tests page
+
+    Methods
+    -------
+    get_context_data(**kwargs)
+        This method retriever data(tests)
+    """
+
     template_name = "tests/all_tests.html"
 
     def get_context_data(self, **kwargs):
+        """
+        This method retrives data to all_tests page
+        
+        Parametrs
+        ---------
+        **kwargs : dict
+            Additional keyword arguments passed to the view
+
+        Returns
+        -------
+        dict
+            The following keys are passed in this dictionary
+            - 'tests': QuerySet where the filtered tests are located
+            - 'active_tab': Used to highlight the active tab in the navigation menu (affects link styling in `base.html`).
+        """
+
         context = super().get_context_data(**kwargs)
 
         if self.request.user.is_superuser:
@@ -207,8 +240,10 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
         else:
             tests = Tests.objects.filter(user=self.request.user)
 
-        context['tests'] = tests
-        context['active_tab'] = 'my_tests'
+        context.update({
+            'tests': tests,
+            'active_tab': 'my_tests'
+        })
 
         return context
 
@@ -225,15 +260,67 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
 
 
 class CreateTestView(LoginRequiredMixin, FormView):
+    """
+    Handles the creation of tests by teachers.
+
+    Attributes:
+    ----------
+    template_name : str
+        Path to the HTML template for rendering the test creation page.
+    form_class : Form instance
+        The form class used to collect test data(tests.forms.TestForm, line=9).
+
+    Methods:
+    -------
+    get_form_kwargs()
+        Adds the current user to the form context.
+    form_valid(form)
+        Creates and saves a new test instance if the form data is valid.
+    form_invalid(form)
+        Renders the form page with validation errors for user correction.
+    get_context_data(**kwargs)
+        Adds additional context variables (e.g., active link) to the template.
+    get_success_url()
+        Returns the URL for redirecting upon successful form submission.
+    """
+
     template_name = 'tests/create_test.html'
     form_class = TestForm
 
     def get_form_kwargs(self):
+        """
+        Returns the current user to the form
+
+        Returns
+        -------
+        - 'user': Current user
+        """
+
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
     
     def form_valid(self, form):
+        """
+        Processes the validated form data to create and save a test instance.
+
+        Parameters
+        ----------
+        form : Form instance
+            The validated form filled out by the user.
+
+        Returns
+        -------
+        HttpResponseRedirect
+            A redirect to the success URL, as defined in the `get_success_url` method.
+
+        Notes
+        -----
+        - The `super().form_valid(form)` method is called to handle the redirection logic.
+        - The `get_success_url` method from the parent class (`FormView`) is used to determine the redirect destination.
+        - Before calling the parent method, this implementation saves additional data (e.g., test duration, user, and selected students) to the `Tests` model instance.
+        """
+
         test = form.save(commit=False)
         test.user = self.request.user
 
@@ -246,21 +333,38 @@ class CreateTestView(LoginRequiredMixin, FormView):
         test.duration = form.cleaned_data.get('raw_duration')
         test.save()
 
-        return redirect('tests:add_questions', test_id=test.id)
-    
+        self.object = test
+        return super().form_valid(form)
 
     def form_invalid(self, form):
+        """
+        Returns an invalid form to handle errors in the template
+        """
         # Здесь возвращаем форму, если валидация не прошла
         return self.render_to_response({'form': form})
     
     
     def get_context_data(self, **kwargs):
+        """
+        This method returns to the data in the template context
+
+        Returns
+        -------
+        dict
+          - 'active_link':sed to highlight the active link in the navigation menu (affects link styling in `base.html`).
+        """
         context = super().get_context_data(**kwargs)
         context['active_link'] = 'create'
         return context
     
         
     def get_success_url(self) -> str:
+        """
+        Returns
+        ------- 
+        Url to redirect to the add questions page after creating a quiz
+        """
+
         return reverse('tests:add_questions', kwargs={'test_id': self.object.id})
     
 
