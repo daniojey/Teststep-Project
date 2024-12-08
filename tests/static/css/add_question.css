@@ -406,7 +406,7 @@ input[type="checkbox"]:checked::after {
 .button-container{
     display: flex;
     margin: 0 auto;
-    margin-bottom: 40px;
+    padding-bottom: 40px;
     justify-content: center;
     align-items: center;
     gap: 40px;
