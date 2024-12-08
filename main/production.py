@@ -1,6 +1,6 @@
 from .settings import *
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['https://teststep-container-test-efc46be344e7.herokuapp.com','teststep.herokuapp.com', 'teststep-54d2adad5311.herokuapp.com', 'localhost', '*']
 ALLOWED_HOSTS += [os.environ.get('HEROKU_APP_NAME', '') + '.herokuapp.com']
