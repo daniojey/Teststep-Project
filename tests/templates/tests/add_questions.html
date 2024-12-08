@@ -73,7 +73,8 @@
                 </div>
             </div>
         </div>
-        
+
+    {% if unngrouped_questions or question_groups %}
         <div class='questions-container'>
             {% if ungrouped_questions %}
             <h4>Питання без групи</h4>
@@ -126,6 +127,7 @@
             {% endfor %}
             {% endif %}
         </div>
+    {% endif %}
         
         <div class='button-container'>
             <a class='save-test-btn' href="{% url 'tests:complete_questions' test_id=test.id %}">Зберегти тест</a>
