@@ -1,10 +1,5 @@
 html, body {
     height: 100%;
-    min-height: 100vh; /* Задает минимальную высоту в высоту окна */
-}
-
-.main-container {
-    height: 100%;
 }
 
 .test-and-students {
@@ -13,9 +8,7 @@ html, body {
     justify-content: center;
     margin-top: 40px;
     gap: 25px;
-    max-height: 1008px;
-    height: 100%;
-    min-height: 1007px;
+    margin-bottom: 40px;
 }
 
 .main-test-container {
@@ -222,7 +215,9 @@ html, body {
     max-width: 410px;
     width: 100%;
     border-radius: 12px;
+    min-height: 794px;
     height: 100%;
+    max-height: 1007px;
     overflow: hidden; /* Ограничение движения внутри контейнера */
     
 }
@@ -233,7 +228,6 @@ html, body {
     background: #363242;
     max-width: 410px;
     width: 100%;
-    height: auto; /* Пусть контент определяет высоту */
     padding: 24px;
     border-radius: 12px;
     transition: transform 0.05s linear; /* Гладкость движения */
@@ -326,7 +320,7 @@ input[type="checkbox"]:checked::after {
     display: flex;
     color: #ffffff;
     flex-direction: column;
-    margin: 40px auto;
+    margin: 0 auto;
     padding: 24px;
     border-radius: 12px;
     background: #363242;
@@ -402,7 +396,6 @@ input[type="checkbox"]:checked::after {
 }
 
 
-
 .button-container{
     display: flex;
     margin: 0 auto;
@@ -410,6 +403,7 @@ input[type="checkbox"]:checked::after {
     justify-content: center;
     align-items: center;
     gap: 40px;
+    margin-top: 40px;
 }
 
 .save-test-btn {

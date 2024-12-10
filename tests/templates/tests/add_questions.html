@@ -12,7 +12,6 @@
 <link rel="stylesheet" type="text/css" href="{% static "css/add_question.css" %}">
 
 <body>
-    <div class='main-container'>
         <div class='test-and-students'>
             <div class='main-test-container'>
                 <h2>Додати питання до тесту: {{ test.name }}</h2>
@@ -149,9 +148,9 @@
                         </form>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div>\
     </div>
+    <script src="{% static "js/copy_site_container.js" %}"></script>
     <script src="{% static "js/scroll_students_container.js" %}"></script>
     <script src="{% static "js/add_question_custom_select_delete_none.js" %}"></script>
     <script src="{% static "js/add_image_or_audio.js" %}"></script>
