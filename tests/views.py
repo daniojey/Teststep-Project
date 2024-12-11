@@ -369,6 +369,20 @@ class CreateTestView(LoginRequiredMixin, FormView):
     
 
 class EditTestView(UpdateView):
+    """
+    Edit test view.
+
+    Attributes
+    ----------
+    model : Model Object
+        Refers to the Tests model, which is located at tests.models.Tests (line=18).
+    template_name : str
+        Path to the HTML tamplate for rendering the test edit page.
+    fields: list['str']
+        Contains the names of fields from the Tests model that will be passed to the form so that they can be modified.
+    success_url : url path
+        Contains the url path to which the user will be redirected after successful test change, the url specified in success_url can be viewed in tests.urls (line=15).
+    """
     model=Tests
     template_name = "tests/edit_test.html"
     fields = ['name', 'description','image', 'date_out', 'category', 'check_type']
@@ -409,10 +423,40 @@ def delete_test(request, test_id):
 
 
 class AddQuestionGroupView(LoginRequiredMixin, FormView):
+    """
+    The view is used to create a group for the questions in the test 
+
+    Attributes
+    ----------
+    template_name : str
+        Path to the HTML template for rendering the add question group page
+    form_class : Form instance
+        The form class used to collect test data(tests.forms.QuestionGroupForm, line=125)
+    
+    Methods
+    -------
+    form_valid(form)
+        Saves the question group for the test if the form is valid
+    """
+
     template_name = 'tests/adq.html'
     form_class = QuestionGroupForm
 
     def form_valid(self, form):
+        """
+        Processes the validated form data to create and save a question group instance
+
+        Parameters
+        ----------
+        form : Form instance
+            The validated form filled out by the user
+        
+        Returns
+        -------
+        HttpResponseRedirect
+            Redirects to the url specified in the redirect function,
+            also passes test.id required for the specified url (path to url tests.urls, line=18).
+        """
         test_id = self.kwargs.get('test_id')
         test = get_object_or_404(Tests, id=test_id)
 
@@ -444,9 +488,40 @@ class AddQuestionGroupView(LoginRequiredMixin, FormView):
 #     return render(request, 'tests/adq.html', context=context)
     
 class AddQuestionsView(LoginRequiredMixin, TemplateView):
+    """
+    This view is used to create questions for tests, 
+    also 2 forms are used here, the form for adding 
+    questions and the form for adding students to the test
+
+    Attributes
+    ----------
+    template_name : str
+        Path to the HTML tempalte for rendering the add question page.
+
+    Methods
+    -------
+    get_context_data(**kwargs)
+        Adds additional context variables (test, question_groups, ungrouped_questions,question_form, form_student)
+    post(*args, **kwargs)
+
+    """
+
     template_name = 'tests/add_questions.html'
 
     def get_context_data(self, **kwargs):
+        """
+        This method returns to the data in the tamplate context
+
+        Returns
+        -------
+        dict
+          A dictionary containing the following keys:
+          - 'test': returns Object test
+          - 'question_groups': Queryset which returns questions that are in groups of questions.
+          - 'ungrouped_questions': a Queryset that contains questions not supported by any of the question groups.
+          - 'question_form': Question creation form (this form can be viewed at tests.forms.QuestionForm, line=135).
+          - 'form_student': Form for selecting students from the group in which the teacher is a member.
+        """
         context = super().get_context_data(**kwargs)
         test_id = self.kwargs.get('test_id')
 
@@ -484,27 +559,66 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
             'test': test,
             'question_groups': question_groups,
             'ungrouped_questions': ungrouped_questions,
-            'questions': questions,
             'question_form': question_form,
             'form_student': form_student,
         })
 
         return context
 
-        # test = get_object_or_404(Tests, id=test_id)
-        # user = self.request.user
-
-        # context['test'] = test
-        # context['question_groups'] = QuestionGroup.objects.filter(test=test).prefetch_related('questions_group')
-        # context['ungrouped_questions'] = Question.objects.filter(test=test, group__isnull=True)
-        # context['questions'] = Question.objects.filter(test=test)
-
-        # context['question_form'] = QuestionForm(test=test)
-        # context['form_student'] = QuestionStudentsForm(test=test, user=user)
-
-        # return context
     
     def post(self, request, *args, **kwargs):
+        """
+        Handles post requests sent from the client, 
+        forms from which post requests to this view may be received:
+        (the path to both forms is the same, tests.forms)
+        QuestionForm - line 135
+        QuestionStudentsForm - line 197
+
+        Parameters
+        ----------
+        request : HttpRequest
+            the HTTP request object containing form data.
+        *args : tuple
+            Additional positional arguments
+        **kwargs : dict
+            Additional keyword arguments, including 'test_id'.
+
+        Returns
+        -------
+        HttpResponse
+            - On successful processing of the `QuestionForm`, redirects to the add questions page.
+            - On successful processing of the `QuestionStudentsForm`, returns a JSON response with status "success."
+            - If the forms are invalid, re-renders the page with errors displayed in the context.
+
+        Behavior
+        --------
+        - Determines the form type (`form_question` or `form_student`) based on the `form_type` field in the POST data.
+        - Validates the submitted form:
+          - If `QuestionForm` is valid, saves the question and associates it with the test.
+          - If `QuestionStudentsForm` is valid, updates the test's student information and saves it.
+        - If a form is invalid, errors are logged and displayed to the user.
+
+        Side Effects
+        ------------
+        - Saves the question to the database if `QuestionForm` is valid.
+        - Updates the test's `students` field if `QuestionStudentsForm` is valid.
+
+        Notes
+        -----
+        - The context for re-rendering the page includes updated forms and their validation states.
+        - If the `form_type` is not recognized, the method falls back to re-rendering the page with context data.
+
+        Examples
+        --------
+        Submitting a question form:
+        >>> POST data: {'form_type': 'form_question', 'question_text': 'Sample question', ...}
+        Redirects to 'tests:add_questions' with the test ID.
+
+        Submitting a student form:
+        >>> POST data: {'form_type': 'form_student', 'students': ['1', '2'], ...}
+        Returns: {"status": "success", "message": "Студенты обновлены."}
+        """
+        
         test_id = self.kwargs.get('test_id')
         test = get_object_or_404(Tests, id=test_id)
         user = request.user
