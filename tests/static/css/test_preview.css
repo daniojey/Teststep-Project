@@ -50,6 +50,7 @@
     object-fit: cover;
     object-position: 0 0;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 /* Текст */
