@@ -177,7 +177,7 @@ class QuestionForm(forms.ModelForm):
         fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group']
         widgets = {
             'text': forms.TextInput(),
-            'question_type': forms.Select(attrs={'class': 'custom-select'}),
+            'question_type': forms.Select(attrs={'class': 'custom-select', 'id': 'questionSelect'}),
             'image': forms.ClearableFileInput(attrs={
                 'class': 'custom-file-input',
                 'id': 'uploadImage',
@@ -191,7 +191,7 @@ class QuestionForm(forms.ModelForm):
                 'style': 'display: none;'
                 }),
             'group': forms.Select(attrs={'class': 'custom-select'}),
-            'answer_type': forms.Select(attrs={'class': 'custom-select'})
+            'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'})
         }
 
 class QuestionStudentsForm(forms.ModelForm):

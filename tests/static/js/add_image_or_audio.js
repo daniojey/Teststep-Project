@@ -7,7 +7,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const audioInput = document.getElementById('uploadAudio');
     const imageField = document.getElementById('image-field');
     const audioField = document.getElementById('audio-field');
-    const fileNameSpan = document.getElementById('fileName');
+    const fileNameImage = document.getElementById('fileName1');
+    const fileNameAudio = document.getElementById('fileName2');
+
+
+
 
     // Функция для обновления видимости полей
     function updateFieldVisibility() {
@@ -34,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearFileInput(fileInput) {
         if (fileInput) {
             fileInput.value = ''; // Очищает выбранный файл
-            fileNameSpan.textContent = ''; // Очищает отображение имени файла
+            fileNameImage.textContent = ''; // Очищает отображение имени файла
+            fileNameAudio.textContent = '';
             imageButton.textContent = 'Додати фото';
             audioButton.textContent = 'Додати аудіо';
         }
@@ -62,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const truncatedFileName = fileName.length > maxLength ? fileName.slice(0, maxLength) + '...' : fileName;
 
             imageButton.textContent = 'Змінити файл';
-            fileNameSpan.textContent = `${truncatedFileName}`;
+            fileNameImage.textContent = `${truncatedFileName}`;
         }
     });
 
@@ -70,12 +75,13 @@ document.addEventListener('DOMContentLoaded', function () {
     audioInput.addEventListener('change', () => {
         if (audioInput.files.length > 0) {
             const fileName = audioInput.files[0].name;
+            console.log(fileName)
             const maxLength = 100;
             // Если длина имени файла больше 100 символов, обрезаем его и добавляем многоточие
             const truncatedFileName = fileName.length > maxLength ? fileName.slice(0, maxLength) + '...' : fileName;
 
             audioButton.textContent = 'Змінити файл';
-            fileNameSpan.textContent = `${truncatedFileName}`;
+            fileNameAudio.textContent = `${truncatedFileName}`;
         }
     });
 

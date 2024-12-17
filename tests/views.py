@@ -811,7 +811,7 @@ class SaveCorrectView(View):
         #     print(get_object_or_404(Answer, id=item_id))
         print(correct_answers_ids)
 
-        return redirect(reverse('tests:add_answers', args=[question.id]))
+        return redirect(reverse('tests:add_questions', args=[question.test.id]))
 
 
 def delete_answer(request, answer_id):
@@ -860,6 +860,7 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         context.update({
             'test': test,
             'question': question,
+            'group': question.group,
             'questions': questions,
             'form_type': 'Соотвецтвие',
             'action_url': 'tests:add_matching_pair'
