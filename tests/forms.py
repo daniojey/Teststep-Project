@@ -36,7 +36,7 @@ class TestForm(forms.ModelForm):
             # }),
             'category': forms.Select(attrs={'class': 'custom-select'}),
             'check_type': forms.Select(attrs={'class': 'custom-select'}),
-            'date_out': forms.DateInput(attrs={'type': 'text'}),
+            'date_out': forms.DateInput(attrs={'type': 'date'}),
         }
 
         name = forms.CharField(required=True)

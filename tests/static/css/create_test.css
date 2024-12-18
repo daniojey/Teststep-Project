@@ -193,15 +193,11 @@ input[type="text"] {
     position: relative;
     display: flex;
     align-items: center;
-    /* border: 1px solid #ccc;
-    border-radius: 12px; */
-    /* padding: 0 12px; */
 }
 
 .date-wrapper input {
     width: 100%;
-    border: 1px solid;
-    border-color: rgba(255, 255, 255, 0.60);
+    border: 1px solid rgba(255, 255, 255, 0.60);
     border-radius: 12px;
     outline: none;
     flex: 1;
@@ -209,58 +205,43 @@ input[type="text"] {
     font-size: 16px;
     padding: 16px 12px 16px 12px;
     background-color: transparent;
+    appearance: none !important; /* Убираем стандартную иконку */
+    -webkit-appearance: none; /* Для Safari/Chrome */
+    -moz-appearance: none; /* Для Firefox */
+    background-image: url('/static/icons/create_test_calendar.svg'); 
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение иконки */
+    background-size: 24px; /* Размер иконки */
 }
 
-
-
-/* Настраиваем контейнер с кастомной иконкой */
-.date-wrapper {
-    position: relative;
-}
-
-
-.date-wrapper .calendar-icon {
+/* .date-wrapper .calendar-icon {
     position: absolute;
-    right: 10px; /* Смещаем иконку вправо */
+    right: 10px; 
     top: 50%;
     transform: translateY(-50%);
-    align-items: center;
     background: none;
     border: none;
     cursor: pointer;
 }
 
 .date-wrapper .calendar-icon img {
-    width: 24px; /* Размер вашей иконки */
+    width: 24px; 
     height: 24px;
     display: block;
+    z-index: 0;
 }
-
-
-/* Цвет фона календаря */
-.flatpickr-rContainer {
-    background-color: #363242;
-    color: #ffffff;
-    border-radius: 6px;
-}
-
-.flatpickr-days .flatpickr-day {
-    background-color: transparent;
-    color: #ddd; /* Светло-серый текст */
-}
-
-
+*/
 
 input[type="date"]::-webkit-calendar-picker-indicator {
     color: rgba(0, 0, 0, 0);
     opacity: 1;
+    z-index: 1;
     display: block;
-    background: url('/static/icons/create_test_calendar.svg') no-repeat;
+    background: none;
     width: 24px;
     height: 24px;
-    border-width: thin;
-    transform: translateY(5%) translateX(16%);
-}
+    cursor: pointer;
+} */
 
 /* Когда в поле есть текст */
 .custom-form input:not(:placeholder-shown),
