@@ -977,7 +977,17 @@ class TakeTestView(FormView):
     def dispatch(self, request, *args, **kwargs):
         # Сохраняем test_id в сессию
         self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
+
+        # Очищаем сессию перед созданием новой для теста
+        print(self.test.id, "ID теста который Был запущен")
+        print(request.session.get('test_id'), "ID теста который уже в сессии")
+
+        session_test_id = request.session.get('test_id')
+        if self.test.id != session_test_id and session_test_id != None:
+            self.clear_test_session(request=request)
+
         request.session['test_id'] = self.test.id
+
 
         # Сохраняем время начала теста, если оно ещё не сохранено
         if 'test_start_time' not in request.session:
@@ -994,6 +1004,14 @@ class TakeTestView(FormView):
                 return response
 
         return super().dispatch(request, *args, **kwargs)
+
+    def clear_test_session(self, request):
+        """Очищает данные теста из сессии."""
+        print("Очистка сессии в представлении")
+        keys_to_clear = ['test_id', 'question_order', 'question_index', 'test_responses', 'remaining_time', 'test_start_time']
+        for key in keys_to_clear:
+            if key in request.session:
+                del request.session[key]
 
     def initialize_test_session(self):
         # Получаем вопросы, отсортированные по группам

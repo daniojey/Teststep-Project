@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Получаем элементы формы
-    const questionTypeField = document.getElementById('id_question_type');
+    const questionTypeField = document.getElementById('questionSelect');
     const imageButton = document.getElementById('uploadImageButton');
     const audioButton = document.getElementById('uploadAudioButton');
     const imageInput = document.getElementById('uploadImage');

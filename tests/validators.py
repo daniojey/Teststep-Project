@@ -11,7 +11,7 @@ def validate_image(image):
         raise ValidationError("Не вдалося визначити розмір зображення.")
 
     # Проверка размера файла
-    max_size = 5 * 1024 * 1024  # 5 MB
+    max_size = 10 * 1024 * 1024  # 5 MB
     if file_size > max_size:
         raise ValidationError(f"Розмір зображення повинент бути не більше 5 MB. Ваш файл: {file_size / 1024 / 1024:.2f} MB.")
     
