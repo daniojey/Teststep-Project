@@ -340,8 +340,18 @@ class CreateTestView(LoginRequiredMixin, FormView):
         """
         Returns an invalid form to handle errors in the template
         """
-        # Здесь возвращаем форму, если валидация не прошла
-        return self.render_to_response({'form': form})
+        # Сбор ошибок формы
+        errors = []
+        # Общие ошибки формы
+        if form.non_field_errors():
+            errors.extend(form.non_field_errors())
+        # Ошибки полей
+        for field, field_errors in form.errors.items():
+            for error in field_errors:
+                errors.append(f"- {error}")
+
+        # Передаем ошибки в шаблон
+        return self.render_to_response({'form': form, 'errors': errors})
     
     
     def get_context_data(self, **kwargs):

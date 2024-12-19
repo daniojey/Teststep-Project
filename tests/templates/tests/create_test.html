@@ -9,6 +9,8 @@
         <button onclick="window.history.back();" aling='left' class="button-back">Назад</button>
     </div> {% endcomment %}
     <body>
+        <!-- Всплывашка -->
+        <div id="error-popup" class="error-popup"></div>
         
         <form method="post" enctype="multipart/form-data" class='custom-form'>
             {% csrf_token %}
@@ -17,17 +19,11 @@
                 <!-- Назва тесту -->
                     <div class="form-group">
                         <input type="text" name="name" id="id_name" class="form-control" placeholder="Назва тесту">
-                        {% if form.name.errors %}
-                            <div class="error">{{ form.name.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Опис тесту -->
                     <div class="form-group">
                         <textarea name="description" id="id_description" rows="4" class="form-control" placeholder="Опис тесту"></textarea>
-                        {% if form.description.errors %}
-                            <div class="error">{{ form.description.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Зображення -->
@@ -39,32 +35,20 @@
 
                         <!-- Контейнер для показа имени загруженного файла -->
                         <span id="fileName" class="file-name"></span>
-                        {% if form.image.errors %}
-                            <div class="error">{{ form.image.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <div class='form-group'>
                         <input type="text" name='raw_duration' id='id_raw_duration' placeholder='Тривалість тесту гг.хв.с'>
-                        {% if form.raw_duration.errors %}
-                            <div class="error">{{ form.raw_duration.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Категорія -->
                     <div class="form-group">
                         {{ form.category }}
-                        {% if form.category.errors %}
-                            <div class="error">{{ form.category.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Тип перевірки -->
                     <div class="form-group">
                         {{ form.check_type }}
-                        {% if form.check_type.errors %}
-                            <div class="error">{{ form.check_type.errors.0 }}</div>
-                        {% endif %}
                     </div>
             
 
@@ -148,6 +132,24 @@
             </script> {% endcomment %}
             {% comment %} <script src="{% static "js/create_test_date_add.js" %}"></script> {% endcomment %}
             <script src="{% static "js/create_test_add_image.js" %}"></script>
+            <script>
+                // Функция для отображения всплывашки
+                function showError(messages) {
+                    const popup = document.getElementById('error-popup');
+                    popup.innerHTML = messages.join('<br>'); // Устанавливаем текст ошибок
+                    popup.style.display = 'block'; // Показываем всплывашку
+
+                    // Убираем всплывашку через 10 секунд
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                    }, 10000);
+                }
+
+                // Проверяем, есть ли ошибки
+                {% if errors %}
+                    showError({{ errors|safe }});
+                {% endif %}
+            </script>
     </body>
 
 {% endblock content %}
