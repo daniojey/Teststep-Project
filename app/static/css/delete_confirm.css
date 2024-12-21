@@ -24,6 +24,7 @@
 /* Содержимое модального окна */
 .modal-content {
     background-color: #2B2738;
+    color: #ffffff;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
@@ -31,6 +32,14 @@
     max-width: 500px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2{
+    margin: 10px 0px;
+}
+
+.modal-content p {
+    margin: 10px 0px;
 }
 
 /* Видимое модальное окно */
@@ -56,7 +65,7 @@
 }
 
 .confirm-btn, .cancel-btn {
-    margin: 10px;
+    margin: 20px;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;

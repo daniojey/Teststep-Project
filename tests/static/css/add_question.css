@@ -333,6 +333,31 @@ input[type="checkbox"]:checked::after {
     gap: 40px;
 }
 
+.add-and-delete {
+    display: flex;
+    gap: 20px;
+}
+
+.delete-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #BF4949;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.delete-container:hover {
+    border-color: #ffff;
+}
+
+.delete-container img {
+    width: 21.333px;
+    height: 24px;
+}
+
 .questions-container h4{
     color: #FFF;
     font-family: Roboto;

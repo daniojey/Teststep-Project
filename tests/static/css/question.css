@@ -293,6 +293,7 @@
     max-height: 240px;
     border-radius: 12px;
     margin-bottom: 40px;
+    overflow: hidden;
 }
 
 .question-image-container img {

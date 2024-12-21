@@ -1,6 +1,8 @@
 /* Контейнер для группы тестов */
 .test-group-container {
-    max-width: calc(100% - 160px); /* Ограничиваем ширину с учетом отступов */
+    /* max-width: calc(100% - 160px); */
+    width: 100%;
+    max-width: 1290px;
     margin: 0 auto; /* Центрируем блок */
     padding-top: 60px;
     padding-bottom: 60px;
@@ -62,7 +64,7 @@
 .tests {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, max-content)); /* Определяем фиксированную ширину в 286px для тестов */
-    gap: 40px 20px; /* 40px между строками, 20px между колонками */
+    gap: 40px 15px; /* 40px между строками, 20px между колонками */
     justify-content: start; /* Выравнивание элементов по левому краю */
     padding: 0 22px; /* Отступы по краям, чтобы первый и последний тест имели отступы слева и справа */
     margin-bottom: 60px;
