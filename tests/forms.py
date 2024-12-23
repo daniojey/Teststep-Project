@@ -471,23 +471,24 @@ class TestReviewForm(forms.Form):
                 # Одиночный выбор (показ ответа студента)
                 self.fields[f'answer'] = forms.ChoiceField(
                     choices=question_choises,
-                    widget=forms.RadioSelect,
-                    initial=answer
+                    widget=forms.RadioSelect(),
+                    initial=answer        
 
             )
             elif question.answer_type == Question.MULTIPLE_CHOICE:
                 # Множественный выбор (выводим варианты через запятую)
                 self.fields[f'answer'] = forms.MultipleChoiceField(
                 choices=question_choises,
-                widget=forms.CheckboxSelectMultiple,
+                widget=forms.CheckboxSelectMultiple(),
                 label=question.text,
                 initial=answer,
                 )
+
             elif question.answer_type == Question.ANSWER_INPUT:
                 # Текстовый ответ
                 self.fields[f'answer'] = forms.CharField(
                     label=f"{question.text}",
-                    widget=forms.TextInput,
+                    widget=forms.TextInput(),
                     initial=answer
                 )
             elif question.answer_type == Question.ANSWER_AUDIO:

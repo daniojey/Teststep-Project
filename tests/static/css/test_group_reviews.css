@@ -66,7 +66,7 @@
     align-items: center;
     justify-content: center;
     margin: 0px;
-    background-color: black;
+    background-color: #5C4F61;
 }
 
 .overlay-container::before {
@@ -76,7 +76,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный слой */
+    background-color: rgba(0, 0, 0, 0.0); /* Полупрозрачный чёрный слой */
     z-index: 1; /* Устанавливаем поверх фоновой картинки, но ниже текста */
 }
 

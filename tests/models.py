@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import User
-from .validators import validate_image 
+from .validators import validate_image, validate_audio_file
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -87,8 +87,8 @@ class Question(models.Model):
     text = models.TextField(verbose_name="Текст вопроса", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
-    image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка")
-    audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио")
+    image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка", validators=[validate_image])
+    audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио", validators=[validate_audio_file])
 
 
     class Meta:

@@ -645,7 +645,23 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 question.save()
                 return redirect('tests:add_questions', test_id=test.id)
             else:
-                print(f"Question_FORM -:{question_form.errors}")
+                # Сбор ошибок формы
+                errors = []
+                # Общие ошибки формы
+                if question_form.non_field_errors():
+                    errors.extend(question_form.non_field_errors())
+                # Ошибки полей
+                for field, field_errors in question_form.errors.items():
+                    for error in field_errors:
+                        errors.append(f"- {error}")
+
+                # Передаем ошибки и форму в контекст
+                context = self.get_context_data(test_id=kwargs.get('test_id'))
+                context['form_question'] = question_form
+                context['errors'] = errors
+            
+                # Возвращаем обновленный контекст с ошибками
+                return self.render_to_response(context)
             
         elif form_type == 'form_student':
             if students_form.is_valid():
@@ -1771,7 +1787,14 @@ class TakeTestReviewView(FormView):
         if 'teacher_answers' not in request.session:
             request.session['teacher_answers'] = 0.0
         
-        if 'test_review_session' not in request.session:
+         # Проверяем, если сессия не содержит необходимых данных, пересоздаем её
+        required_keys = ['teacher_answers', 'test_review_session', 'question_index', 'teacher_responses', 'test_student_responses_id']
+        
+        missing_keys = [key for key in required_keys if key not in request.session]
+        print(missing_keys)
+        
+        if missing_keys:
+            # Если какие-то ключи отсутствуют, пересоздаем сессию
             self.initialize_session_test()
 
         return super().dispatch(request, *args, **kwargs)

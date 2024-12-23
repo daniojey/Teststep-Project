@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="{% static "css/add_question.css" %}">
 
 <body>
+        <div id="error-popup" class="error-popup"></div>
         <div class='test-and-students'>
             <div class='main-test-container'>
                 <h2>Додати питання до тесту: {{ test.name }}</h2>
@@ -28,7 +29,7 @@
                 </div>
                 
                 <div class='form-test-container'>
-                    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'tests:add_questions' test_id=test.id %}" id='question_form_id'>
                         <input type="hidden" name="form_type" value="form_question">
                         {% csrf_token %}
                         {% for field in question_form %}
@@ -143,7 +144,9 @@
                 <p>{{ question.text|truncatechars:70 }}</p>
 
                 <div class='add-and-delete'>
-                    <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+                    {% if question.answer_type != 'AUD' %}
+                        <label><a href="{% url 'tests:add_answers' question.id %}">Додати відповідь</a></label>
+                    {% endif %}
                     
                     <div class="delete-container"
                             data-type="question" 
@@ -226,6 +229,24 @@
                 </button>
             </div>
     </div>
+    <script>
+        // Функция для отображения всплывашки
+        function showError(messages) {
+            const popup = document.getElementById('error-popup');
+            popup.innerHTML = messages.join('<br>'); // Устанавливаем текст ошибок
+            popup.style.display = 'block'; // Показываем всплывашку
+
+            // Убираем всплывашку через 10 секунд
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 10000);
+        }
+
+        // Проверяем, есть ли ошибки
+        {% if errors %}
+            showError({{ errors|safe }});
+        {% endif %}
+    </script>
     <script src="{% static "js/copy_site_container.js" %}"></script>
     <script src="{% static "js/scroll_students_container.js" %}"></script>
     <script src="{% static "js/add_question_custom_select_delete_none.js" %}"></script>

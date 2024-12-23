@@ -28,6 +28,13 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    max-width: 500px;
+    width: 75%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Ограничение на 3 строки */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Скрытие лишнего текста */
+    text-overflow: ellipsis; /* Добавление многоточия в конце */
 }
 
 .back-icon img {

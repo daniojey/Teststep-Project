@@ -11,7 +11,7 @@
             <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
                 <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
             </a>
-            <h2>{{ test }}({{ test.category }})</h2>
+            <h2 title="{{ test }}">{{ test }}({{ test.category }})</h2>
         </div>
 
         {% if test.image %}
