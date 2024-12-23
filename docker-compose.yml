@@ -20,6 +20,7 @@ services:
     build: .
     environment:
       DATABASE_HOST: db
+      DATABASE_URL: postgres://tests:root@db:5432/Tests
     volumes:
       - .:/application 
       - ./media:/application/static/media

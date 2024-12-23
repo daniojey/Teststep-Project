@@ -22,5 +22,8 @@ EXPOSE 8000
 # Добавляем переменную для порта (Heroku передаёт $PORT автоматически)
 ENV PORT=8000
 
-# Запускаем сервер с использованием переменной $PORT
-CMD ["sh", "-c", "python manage.py migrate && gunicorn main.wsgi:application --bind 0.0.0.0:$PORT"]
+# # Запускаем сервер с использованием переменной $PORT
+# CMD ["sh", "-c", "python manage.py migrate && gunicorn main.wsgi:application --bind 0.0.0.0:$PORT"]
+
+# Запускаем скрипт ожидания и сервер Django
+CMD ["sh", "-c", "python wait_for_db.py db 5432 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
