@@ -18,7 +18,7 @@
         <label>Категорія питання ({% if current_question_group %}{{ current_question_group }}{% else %}Усі{% endif %})</label>
     </div>
     
-    <form method="post">
+    <form method="post" class='readonly'>
         {% csrf_token %}
 
         {% if question.image %}
@@ -135,6 +135,16 @@
         </form>
 
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            const inputs = form.querySelectorAll("input, textarea, select");
+        
+            inputs.forEach(input => {
+                input.setAttribute("readonly", "readonly");
+            });
+        });
+    </script>
     <script>
         // Получаем элементы
         const durationLabel = document.getElementById("audioDuration");

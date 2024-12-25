@@ -10,6 +10,15 @@
     margin-top: 60px;
 }
 
+form.readonly {
+    pointer-events: none; /* Блокирует взаимодействие с элементами формы */
+    opacity: 0.8; /* Можно добавить визуальный эффект */
+}
+
+form.readonly button {
+    pointer-events: auto;
+}
+
 .test-header {
     gap: auto;
     color: #ffff;
@@ -249,6 +258,7 @@ h3 {
     width: 60px;
     height: 60px;
     cursor: pointer;
+    pointer-events: auto;
 }
 
 .question-audio img {

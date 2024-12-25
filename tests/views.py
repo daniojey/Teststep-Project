@@ -901,6 +901,8 @@ def delete_matching_pair(request, pair_id):
 
     # print(f"pair:{matching_pair}")
     # print(f"question: {question}")
+    print(question)
+    print(matching_pair)
     matching_pair.delete()
     return redirect('tests:add_matching_pair', question_id=question.id)
 

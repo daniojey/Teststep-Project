@@ -45,21 +45,7 @@
                         <div class='delete-container'>
                             <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ pair.id }}')">
                         </div>
-
-                         <!-- Модальное окно для удаления -->
-                        <div id="testModal{{ pair.id }}" class="modal">
-                            <div class="modal-content">
-                                <span class="close" onclick="closeModal('testModal{{ pair.id }}')">&times;</span>
-                                <h2>Видалити відність?</h2>
-                                <p>Ви впевненні що бажаєте видалити відповідність? Цю дію неможливо буде відмінити.</p>
-                                
-                                <form method="post" action="{% url 'tests:delete_matching_pair' pair_id=pair.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="confirm-btn">Видалити</button>
-                                    <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ pair.id }}')">Відмінити</button>
-                                </form>
-                            </div>
-                        </div>
+                        
                     </div>
                     {% endfor %}
                 </div>
@@ -98,6 +84,24 @@
                 </div>
                 {% endfor %}
             </form>
+            <div class='delete_mathing_modals'>
+                {% for pair in question.matching_pairs.all %}
+                 <!-- Модальное окно для удаления -->
+                 <div id="testModal{{ pair.id }}" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal('testModal{{ pair.id }}')">&times;</span>
+                        <h2>Видалити відподність?</h2>
+                        <p>Ви впевненні що бажаєте видалити відповідність? Цю дію неможливо буде відмінити.</p>
+                        
+                        <form method="post" action="{% url 'tests:delete_matching_pair' pair_id=pair.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="confirm-btn">Видалити</button>
+                            <button type="button" class="cancel-btn" onclick="closeModal('testModal{{ pair.id }}')">Відмінити</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             <!-- Переносим модальные окна в отдельный контейнер -->
             <div class="delete-models">
                 {% for answer in question.answers.all %}
@@ -181,13 +185,3 @@
 </body>
 
 {% endblock content %}
-
-{% comment %} {% if question.question_type == 'TXT' %}
-            <p class='category'>Категорія питання:Питання з текстом</p>
-            {% elif question.question_type == 'IMG' %}
-            <p class='category'>Категорія питання:Питання з картинкою</p>
-            {% elif question.question_type == 'AUD' %}
-            <p class='category'>Категорія питання:Питання з аудіо</p>
-            {% elif question.question_type == 'MTCH' %}
-            <p class='category'>Категорія питання:Встановлення відповідкості</p>
-            {% endif %} {% endcomment %}
