@@ -274,6 +274,8 @@ h3 {
     justify-content: start;
     width: 203px;
     height: 60px;
+    /* pointer-events: auto;
+    cursor: pointer; */
 }
 
 .section {
@@ -285,6 +287,8 @@ h3 {
     justify-content: start;
     border: #FFFFFF;
     border-radius: 1.313px;
+    /* pointer-events: auto;
+    cursor: pointer; */
 }
 
 .duration {

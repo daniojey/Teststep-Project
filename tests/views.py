@@ -1102,6 +1102,8 @@ class TakeTestView(FormView):
         if self.current_question.question_type == 'AUD' or self.current_question.question_type == 'IMG' or self.current_question.question_type == 'TXT':
             if self.current_question.answer_type == 'AUD':
                 audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
+                print(f"AUDIO_ANSWER_GET:{audio_answer}")
+                print(f"POST:{self.request.POST}")
                 if audio_answer is not None:
                     self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
             else:
@@ -1339,7 +1341,7 @@ class TestsResultsView(View):
                 audio_content = base64.b64decode(audio_data)
 
 
-                filename = f'audio_answer_{question_id}_{request.user.id}.webm'
+                filename = f'audio_answer_{question_id}_{request.user.id}.wav'
                 file_path = os.path.join('answers/audios/', filename)
                 audio_file = ContentFile(audio_content, filename)
                 saved_file = default_storage.save(file_path, audio_file) 
@@ -1347,6 +1349,7 @@ class TestsResultsView(View):
                 audio_answers[question_id] = file_url
 
                 responses[f'audio_answer_{question_id}'] = 'Перенесён'
+
         request.session['audio_answers'] = audio_answers   
 
 

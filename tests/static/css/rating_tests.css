@@ -14,6 +14,7 @@
     align-items: center;
     justify-content: start;
     margin-bottom: 40px;
+    width: 100%;
 }
 
 .leaderboard-header h2 {
@@ -26,6 +27,12 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    max-width: 530px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Ограничение на 3 строки */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Скрытие лишнего текста */
+    text-overflow: ellipsis; /* Добавление многоточия в конце */
 }
 
 .back-icon img {

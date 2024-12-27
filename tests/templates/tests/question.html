@@ -3,8 +3,10 @@
 {% load static %}
 
 {% block content %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">   
-<link rel="stylesheet" type="text/css" href="{% static 'css/question.css' %}">   
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles_tests.css' %}">   
+    <link rel="stylesheet" type="text/css" href="{% static 'css/question.css' %}">   
+</head>
 
 <body>
     <div class='base-container'>
@@ -39,9 +41,9 @@
                             <div class='question-audio' onclick="toggleAudio()">
                                 <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
                             </div>
-                            <div class='player-section'>
+                            {% comment %} <div class='player-section'>
                                 <label class='section'>|</label>
-                            </div>
+                            </div> {% endcomment %}
                             <!-- Общая длительность аудио -->
                             <span class="duration" id="audioDuration">0:00</span>
 
@@ -215,9 +217,9 @@
                             <div class='question-audio' onclick="toggleAudio()">
                                 <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
                             </div>
-                            <div class='player-section'>
+                            {% comment %} <div class='player-section'>
                                 <label class='section'>|</label>
-                            </div>
+                            </div> {% endcomment %}
                             <!-- Общая длительность аудио -->
                             <span class="duration" id="audioDuration">0:00</span>
                         </div>
@@ -314,86 +316,53 @@
         </div>
         
     </div>
-    
     <script>
-        // Получаем элементы
-        const audioPlayer = document.getElementById('audioPlayer');
-        const playIcon = document.getElementById('playIcon');
-        const playerSection = document.querySelector('.player-section');
-    
-        // Количество делений
-        const totalSections = 19;
-    
-        // Создаем деления с разной высотой
-        function createSections() {
-            for (let i = 0; i < totalSections; i++) {
-                const section = document.createElement('label');
-                section.classList.add('section');
-                section.style.height = `${Math.random() * 30 + 10}px`; // Рандомная высота от 10px до 40px
-                section.style.backgroundColor = '#4a4956'; // Начальный цвет для незаполненных делений
-                playerSection.appendChild(section);
-            }
-        }
-    
-        // Обновляем прогресс делений
-        function updateProgress() {
-            const progress = (audioPlayer.currentTime / audioPlayer.duration) * totalSections;
-            const sections = document.querySelectorAll('.section');
-    
-            sections.forEach((section, index) => {
-                if (index < Math.floor(progress)) {
-                    section.style.backgroundColor = '#FFFFFF'; // Заполненные деления белые
-                } else {
-                    section.style.backgroundColor = '#4a4956'; // Незаполненные деления серые
-                }
-            });
-    
-            // Обработка последнего деления
-            if (audioPlayer.currentTime >= audioPlayer.duration) {
-                sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые при завершении
-            }
-        }
-    
-        // Воспроизведение и пауза аудио
-        function toggleAudio() {
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-                playIcon.src = "{% static 'icons/pause_icon.svg' %}";
-            } else {
-                audioPlayer.pause();
-                playIcon.src = "{% static 'icons/play_icon.svg' %}";
-            }
-        }
-    
-        // Отображение продолжительности аудио
-        function displayDuration() {
-            const duration = audioPlayer.duration;
-            document.getElementById('audioDuration').textContent = formatTime(duration);
-        }
-    
-        // Форматирование времени
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-            return `${minutes}:${secs}`;
-        }
-    
-        // Создаем деления при загрузке страницы
-        createSections();
-    
-        // Обновление прогресса при проигрывании аудио
-        audioPlayer.addEventListener('timeupdate', updateProgress);
-    
-        // Полное заполнение делений и обновление иконки после завершения воспроизведения
-        audioPlayer.addEventListener('ended', () => {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(section => section.style.backgroundColor = '#FFFFFF'); // Все деления белые
-            playIcon.src = "{% static 'icons/play_icon.svg' %}"; // Возвращаем иконку в состояние "play"
-        });
+       // Получаем элементы
+       const durationLabel = document.getElementById("audioDuration");
+       const audioPlayer = document.getElementById("audioPlayer");
+       const playIcon = document.getElementById("playIcon");
+
+       // Воспроизведение и пауза аудио
+       function toggleAudio() {
+           if (audioPlayer.paused) {
+               audioPlayer.play();
+               playIcon.src = "{% static 'icons/pause_icon.svg' %}";
+           } else {
+               audioPlayer.pause();
+               playIcon.src = "{% static 'icons/play_icon.svg' %}";
+           }
+       }
+
+       // Отображение продолжительности аудио
+       function displayDuration() {
+           const duration = audioPlayer.duration;
+           if (isFinite(duration) && duration > 0) { // Проверка, что длительность корректна
+               durationLabel.textContent = formatTime(duration);
+           } else {
+               durationLabel.textContent = "0:00";
+           }
+       }
+
+       // Форматирование времени
+       function formatTime(seconds) {
+           if (!isFinite(seconds)) return "0:00"; // Проверка на корректное значение
+           const minutes = Math.floor(seconds / 60);
+           const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+           return `${minutes}:${secs}`;
+       }
+
+       // Полное заполнение делений и обновление иконки после завершения воспроизведения
+       audioPlayer.addEventListener("ended", () => {
+           playIcon.src = "{% static 'icons/play_icon.svg' %}"; // Возвращаем иконку в состояние "play"
+       });
+
+       // Установка длительности после загрузки метаданных аудио
+       audioPlayer.addEventListener("loadedmetadata", displayDuration);
     </script>
+    <script src="{% static "js/recorder.js" %}"></script>
     <script src="{% static 'js/radio_select.js' %}"></script>    
     <script src="{% static 'js/drag_and_drop.js' %}"></script>    
-    <script src="{% static 'js/answer_recorder.js' %}"></script>    
+    <script src="{% static 'js/answer_recorder.js' %}"></script>
     <script src="{% static 'js/test_timer.js' %}"></script>    
 </body>
 {% endblock %}
