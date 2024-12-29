@@ -8,6 +8,7 @@
     flex-direction: column;
     margin: 0 auto;
     margin-top: 60px;
+    margin-bottom: 60px;
 }
 
 /* Количество вопрсов| время | категория теста */
@@ -418,13 +419,13 @@
 .left-items-container {
     display:flex;
     flex-direction: column;
-    width: 50%;
+    width: 65%;
 }
 
 .right-items-container {
     display:flex;
     flex-direction: column;
-    width: 50%;
+    width: 35%;
     justify-content: end;
     align-items: end;
 }
