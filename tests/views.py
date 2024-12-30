@@ -4,7 +4,7 @@ from django.db.models import F, ExpressionWrapper, Prefetch, fields
 from django.forms import ClearableFileInput, DateInput, Textarea
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.timezone import now
+from django.utils.timezone import localtime, now
 from django.urls import reverse, reverse_lazy
 from django.views import View
 
@@ -399,6 +399,10 @@ class EditTestView(UpdateView):
     template_name = "tests/edit_test.html"
     fields = ['name', 'description','image', 'date_out', 'category', 'check_type']
 
+    def form_valid(self, form):
+        print("Submitted date:", form.cleaned_data['date_out'])
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context =  super().get_context_data(**kwargs)
 
@@ -412,7 +416,10 @@ class EditTestView(UpdateView):
         return context
     
     def get_form(self, form_class = None):
+        
         form = super().get_form(form_class)
+        print("Original date_out:", self.object.date_out)  # Дата из объекта
+        print("Formatted date_out:", self.object.date_out.strftime('%Y-%m-%d'))  # Отформатированная дата
         
         form.fields['description'].widget = Textarea(attrs={'rows': 4})
         form.initial['image'] = None
@@ -429,7 +436,10 @@ class EditTestView(UpdateView):
         )
 
         if self.object.date_out:
-            form.initial['date_out'] = self.object.date_out.strftime('%Y-%m-%d')
+            # Преобразуем дату в локальную таймзону
+            local_date = localtime(self.object.date_out).date()
+            form.initial['date_out'] = local_date.strftime('%Y-%m-%d')
+            print("Local date_out for form:", local_date)
         return form
     
     def get_success_url(self):
