@@ -2,6 +2,7 @@
     overflow: auto;
     margin: 0 auto;
     margin-top: 60px;
+    margin-bottom: 30px;
     padding: 24px;
     max-width: calc(100% - 120px);
     background-color: #363242;
@@ -15,7 +16,7 @@
     grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Колонки адаптируются к ширине контейнера */
     gap: 40px 15px; /* Минимальный gap между элементами */
     justify-content: space-between; /* Равномерное распределение */
-    margin-bottom: 40px;
+    margin-bottom: 16px;
     align-items: center;
 }
 
@@ -72,3 +73,4 @@
         
     }
 }
+

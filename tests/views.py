@@ -1,6 +1,7 @@
 # tests/views.py
 import random
 from django.db.models import F, ExpressionWrapper, Prefetch, fields
+from django.forms import ClearableFileInput, DateInput, Textarea
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
@@ -8,7 +9,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 
 from users.models import User, UsersGroupMembership
-from .models import MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
+from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 from django.core.files.base import ContentFile
 from django.views.generic import FormView, TemplateView, UpdateView
@@ -260,6 +261,7 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
 
 
 class CreateTestView(LoginRequiredMixin, FormView):
+    # TODO Обновить доку в ближайшее время
     """
     Handles the creation of tests by teachers.
 
@@ -396,7 +398,43 @@ class EditTestView(UpdateView):
     model=Tests
     template_name = "tests/edit_test.html"
     fields = ['name', 'description','image', 'date_out', 'category', 'check_type']
-    success_url = reverse_lazy('tests:all_tests')
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        test_id = self.kwargs.get('pk')
+        test = Tests.objects.get(id=test_id)
+
+        context.update({
+            'test': test
+        })
+
+        return context
+    
+    def get_form(self, form_class = None):
+        form = super().get_form(form_class)
+        
+        form.fields['description'].widget = Textarea(attrs={'rows': 4})
+        form.initial['image'] = None
+        form.fields['image'].widget = ClearableFileInput(attrs={
+            'class': 'form-image-field',  # Класс для стилизации
+            'data-no-file-text': 'Оберіть фото',  # Можно добавить атрибуты, если нужно
+            'id': 'uploadImage'
+        })
+
+        form.fields['category'].choices = [(item.id, item.name) for item in Categories.objects.all()]
+
+        form.fields['date_out'].widget = DateInput(
+            attrs={'type': 'date', 'class': 'date-wrapper'}
+        )
+
+        if self.object.date_out:
+            form.initial['date_out'] = self.object.date_out.strftime('%Y-%m-%d')
+        return form
+    
+    def get_success_url(self):
+        # Correct way to pass pk as an argument
+        return reverse_lazy('tests:add_questions', kwargs={'test_id': self.object.id})
 
 
 # @login_required

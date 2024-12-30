@@ -2,9 +2,57 @@
 {% load static %}
 
 {% block content %}
-<form method='post'>{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Update">
-</form>
+<link rel="stylesheet" href="{% static "css/edit_test.css" %}">
 
+<body>
+    <div class='main-test-container'>
+        <h2>{{ test.name }}</h2>
+        
+        {% if test.image %}
+        <div class='test-image'>
+            <img src="{{ test.image.url }}">
+        </div>
+        {% endif %}
+        
+        <form method='post' class='form-content' enctype="multipart/form-data" id='form-edit-test'>{% csrf_token %}
+            <div class='form-group'>
+                {{ form.name }}
+            </div>
+            
+            <div class='form-group'>
+                {{ form.description }}
+            </div>
+            
+            <div class='form-group-upload-image'>
+                {{ form.image }}
+                
+                <!-- Кастомная кнопка -->
+                <button type="button" id="uploadButton" class="btn-upload">Додати фото</button>
+                
+                <!-- Контейнер для показа имени загруженного файла -->
+                <span id="fileName" class="file-name"></span>
+            </div>
+            
+            <div class='form-group'>
+                {{ form.category }}
+            </div>
+            
+            <div class='form-group'>
+                {{ form.check_type }}
+            </div>
+            
+            <div class='form-group'>
+                {{ form.date_out }}
+            </div>
+            
+        </form>
+        
+        {% for error in form.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    <button type='submit' class='save-btn' form='form-edit-test'>Зберегти зміни</button>
+
+    <script src="{% static "js/create_test_add_image.js" %}"></script>    
+</body>
 {% endblock %}
