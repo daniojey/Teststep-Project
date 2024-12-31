@@ -130,7 +130,7 @@
     border: 1px solid #FFF;
     border-radius: 12px;
     appearance: none; /* Убираем стандартную стрелочку */
-    background-image: url('/static/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
     background-repeat: no-repeat;
     background-position: right 10px center; /* Положение стрелки */
     background-size: 24px; /* Размер стрелки */
@@ -154,7 +154,7 @@
     appearance: none !important; /* Убираем стандартную иконку */
     -webkit-appearance: none; /* Для Safari/Chrome */
     -moz-appearance: none; /* Для Firefox */
-    background-image: url('/static/icons/create_test_calendar.svg'); 
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_calendar.svg'); 
     background-repeat: no-repeat;
     background-position: right 10px center; /* Положение иконки */
     background-size: 24px; /* Размер иконки */

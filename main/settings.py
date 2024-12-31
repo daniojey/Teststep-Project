@@ -140,12 +140,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
 
-# Дополнительные настройки для WhiteNoise
-if 'test' in sys.argv:
-    # Используем стандартное хранилище для тестов, чтобы избежать ошибок с манифестом
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-else:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# # Дополнительные настройки для WhiteNoise
+# if 'test' in sys.argv:
+#     # Используем стандартное хранилище для тестов, чтобы избежать ошибок с манифестом
+#     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+# else:
+#     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # STATIC_URL = 'static/'
@@ -225,3 +225,34 @@ if DEBUG:
 # SECURE_REFERRER_POLICY = 'no-referrer'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+
+# НАСТРОЕЧКИ для AMAZON S3
+
+# Настройки для использования S3
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+
+# Указываем, что файлы должны быть публичными
+AWS_DEFAULT_ACL = 'public-read'
+
+# Настройки для хранения медиа файлов на S3
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Настройки для статических файлов (если нужно)
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Политика для загрузки файлов
+AWS_DEFAULT_ACL = None
+
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+AWS_MEDIA_LOCATION = 'media'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/'
+
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+    'ContentDisposition': 'inline',
+}

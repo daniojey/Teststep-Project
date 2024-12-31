@@ -86,7 +86,7 @@
     display: inline-block;
     width: 24px;  /* Укажи точную ширину твоей картинки */
     height: 24px; /* Укажи точную высоту твоей картинки */
-    background-image: url('/static/icons/arrow_icon.svg'); /* Путь к картинке */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/arrow_icon.svg'); /* Путь к картинке */
     background-size: contain; /* Сохраняем размер изображения */
     background-repeat: no-repeat; /* Не повторяем картинку */
     background-position: center; /* Центрируем картинку */
