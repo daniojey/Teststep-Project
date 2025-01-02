@@ -381,6 +381,8 @@ class CreateTestView(LoginRequiredMixin, FormView):
     
 
 class EditTestView(UpdateView):
+    # TODO Добарботать документатцию этого придеставления
+
     """
     Edit test view.
 
