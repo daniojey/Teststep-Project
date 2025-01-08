@@ -15,9 +15,10 @@ services:
       - db_data:/var/lib/postgresql/data
 
   web:
-    # env_file:
-    #   - .env
-    build: .
+    env_file:
+      - .env
+    build: 
+      context: .
     environment:
       DATABASE_HOST: db
       DATABASE_URL: postgres://tests:root@db:5432/Tests

@@ -15,6 +15,10 @@ COPY . /application
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=main.settings
 ENV DATABASE_URL=postgres://tests:root@db:5432/Tests
+ENV SECURE_SSL_REDIRECT=False
+ENV SESSION_COOKIE_SECURE=False
+ENV CSRF_COOKIE_SECURE=False
+ENV SECURE_PROXY_SSL_HEADER=None
 
 # Открываем порт, на котором будет работать Django-сервер
 EXPOSE 8000
