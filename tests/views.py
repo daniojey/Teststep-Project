@@ -8,6 +8,7 @@ from django.utils.timezone import localtime, now
 from django.urls import reverse, reverse_lazy
 from django.views import View
 
+from common.mixins import CacheMixin
 from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
@@ -1686,24 +1687,39 @@ class TestsResultsView(View):
 def success_manual_test(request):
     return render(request, 'tests/success_page_manual_test.html')
 
-class TestsForReviewView(TemplateView):
+class TestsForReviewView(CacheMixin ,TemplateView):
     template_name = 'tests/tr.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
-        user_groups = UsersGroupMembership.objects.filter(user=user).select_related('group')
+
+        user_groups = self.set_get_cache(
+            UsersGroupMembership.objects.filter(user=user).select_related('group'),
+            f"user_group_{user.id}",
+            30,
+        )
+        # user_groups = UsersGroupMembership.objects.filter(user=user).select_related('group')
 
         if user_groups.exists():
-            group = user_groups.first().group
+            # group = user_groups.first().group
+            group = self.set_get_cache(user_groups[0].group, f"user_first_group_{user.id}", 30)
 
 
             group_memberships = UsersGroupMembership.objects.filter(group=group).select_related('user')
 
 
-            tests_reviews = Tests.objects.filter(
-                user__in=[member.user for member in group_memberships],
-                check_type="manual"
+
+            # tests_reviews = Tests.objects.filter(
+            #     user__in=[member.user for member in group_memberships],
+            #     check_type="manual"
+            # )
+            tests_reviews = self.set_get_cache(
+                Tests.objects.filter(
+                    user__in=[member.user for member in group_memberships],
+                    check_type="manual"),
+                f"test_reviews_{user.id}",
+                30,
             )
         else:
             tests_reviews = Tests.objects.none()

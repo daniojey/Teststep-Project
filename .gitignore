@@ -5,6 +5,7 @@ env/
 # Игнорировать скомпилированные Python файлы
 __pycache__/
 __pycache__
+cache/
 *.pyc
 *.pyo
 

@@ -191,30 +191,8 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
-
-        # Тесты пользователя
-        test_results = user.test_results.all().order_by('-date_taken')
-        tests_reviews = TestsReviews.objects.filter(user=user).order_by('-date_taken')
-
-        # Получаем группу пользователя
-        user_groups = UsersGroupMembership.objects.filter(user=user)
-
-        if user_groups.exists():
-            group = user_groups.first().group
-            group_memberships = UsersGroupMembership.objects.filter(group=group)
-            group_name = group.name
-        else:
-            group = None
-            group_memberships = None
-            group_name = "Вы не присоединились к группе"
 
         context.update({
-            "test_results": test_results,
-            "user_group": group,
-            "group_name": group_name,
-            "group_memberships": group_memberships,
-            "user_test_rewiews": tests_reviews,
             "active_tab":"profile",
         })
 

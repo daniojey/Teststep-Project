@@ -3,10 +3,11 @@ import random
 import re
 from django import forms
 
+from common.mixins import CacheMixin
 from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, Answer, TestsReviews
 
-class TestForm(forms.ModelForm):
+class TestForm(CacheMixin,forms.ModelForm):
     raw_duration = forms.CharField(
         required=False, 
         widget=forms.TextInput(attrs={
@@ -18,7 +19,8 @@ class TestForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        self.fields['category'].choices = [(item.id, item.name) for item in Categories.objects.all()]
+        query = self.set_get_cache(Categories.objects.all(), "category_cache", 45)
+        self.fields['category'].choices = [(item.id, item.name) for item in query]
 
 
     class Meta:
