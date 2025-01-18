@@ -51,26 +51,45 @@ class IndexView(LoginRequiredMixin, TemplateView):
         
         """
         context = super().get_context_data(**kwargs)
-        user = get_object_or_404(User, id=self.request.user.id)
+        user = self.request.user  # Используем существующий объект user
         user_id = str(user.id)
 
+        # Получаем группу одним запросом с select_related
+        group_membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
+        group = group_membership.group if group_membership else "Без группы"
 
-        group_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
-        group = group_membership.group if group_membership else  "Без группы"
+        # Получаем все нужные test_id одним запросом
+        completed_test_ids = set(TestResult.objects.filter(user=user).values_list('test_id', flat=True))
+        awaiting_test_ids = set(TestsReviews.objects.filter(user=user).values_list('test_id', flat=True))
 
-        tests = Tests.objects.filter(students__students__contains=[user_id]).order_by('-date_taken')
-
-        completed_tests = TestResult.objects.filter(user=user).values_list('test_id', flat=True)
-
-        awaiting_tests = TestsReviews.objects.filter(user=user).values_list('test_id', flat=True)
-
-        uncompleted_tests = tests.exclude(id__in=completed_tests).exclude(id__in=awaiting_tests)
+        # Получаем все тесты одним запросом
+        all_tests = (Tests.objects
+                    .filter(students__students__contains=[user_id])
+                    .order_by('-date_taken'))
+        
+        # Используем Python для фильтрации вместо дополнительных запросов к БД
+        tests_dict = {test.id: test for test in all_tests}
+        
+        uncompleted_tests = [
+            test for test_id, test in tests_dict.items()
+            if test_id not in completed_test_ids and test_id not in awaiting_test_ids
+        ]
+        
+        awaiting_tests = [
+            test for test_id, test in tests_dict.items()
+            if test_id in awaiting_test_ids
+        ]
+        
+        completed_tests = [
+            test for test_id, test in tests_dict.items()
+            if test_id in completed_test_ids
+        ]
 
         context.update({
-            'tests': tests,
+            'tests': all_tests,
             'uncompleted_tests': uncompleted_tests,
-            'awaiting_tests': tests.filter(id__in=awaiting_tests),
-            'completed_tests': tests.filter(id__in=completed_tests),
+            'awaiting_tests': awaiting_tests,
+            'completed_tests': completed_tests,
             'group': group,
         })
 
