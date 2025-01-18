@@ -1771,17 +1771,19 @@ class TestGroupReviewsView(TemplateView):
         user = get_object_or_404(User, id=self.request.user.id)
 
         # Получаем всех членов группы и название группы
-        group_memberships, group_name = self.get_user_group(user=user)
+        group_memberships = self.get_user_group(user=user)
 
-        user_reviews = []
+        # user_reviews = []
 
-        # Здесь мы можем сразу выбрать нужные данные
-        reviews_qs = TestsReviews.objects.filter(test=test).select_related('user')
+        user_reviews = (
+            TestsReviews.objects.filter(test=test, user__id__in=group_memberships)
+            .select_related('user')  # Оптимизируем запросы, подтягивая данные пользователей
+        )
 
-        for us in group_memberships:
-            review = reviews_qs.filter(user=us.user).first()
-            if review:    
-                user_reviews.append(review)
+        # for us in group_memberships:
+        #     review = reviews_qs.filter(user=us.user).first()
+        #     if review:    
+        #         user_reviews.append(review)
 
         # context['test'] = test
         # context['user_reviews'] = user_reviews
@@ -1795,16 +1797,21 @@ class TestGroupReviewsView(TemplateView):
         return context
 
     def get_user_group(self, user):
-        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first().group
-        
-        if user_group:
-            group_memberships = UsersGroupMembership.objects.filter(group=user_group).select_related('group')
-            group_name = user_group.name
-        else:
-            group_memberships = None
-            group_name = None
+        """
+        Получаем список ID пользователей, которые находятся в одной группе с текущим пользователем.
+        """
+        # Получаем текущую группу пользователя
+        user_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
 
-        return group_memberships, group_name
+        if user_membership and user_membership.group:
+            # Возвращаем ID всех пользователей, которые находятся в этой группе
+            return (
+                UsersGroupMembership.objects.filter(group=user_membership.group)
+                .values_list('user_id', flat=True)
+            )
+        else:
+            # Если пользователь не состоит в группе, возвращаем пустой список
+            return []
 
 # def test_group_reviews(request, test_id):
 #     test = get_object_or_404(Tests, id=test_id)
