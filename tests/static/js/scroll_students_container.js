@@ -7,6 +7,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Функция для проверки и активации скрипта в зависимости от ширины окна
+    const checkWindowWidth = () => {
+        if (window.innerWidth <= 1000) {
+            console.log("Скрипт отключен для ширины окна <= 1000px.");
+            window.removeEventListener('scroll', updatePosition); // Отключаем обработчик скролла
+            // Возвращаем элемент в обычное положение
+            students.style.position = 'static'; // Сбрасываем позицию
+            students.style.top = ''; // Сбрасываем отступы
+        } else {
+            console.log("Скрипт активирован для ширины окна > 1000px.");
+            window.addEventListener('scroll', updatePosition); // Включаем обработчик скролла
+        }
+    };
+
     // Функция обновления позиции students-container
     const updatePosition = () => {
         const containerRect = baseContainer.getBoundingClientRect(); // Размеры ограничивающего контейнера
@@ -29,8 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Обновляем позицию на скролле
-    window.addEventListener('scroll', updatePosition);
+    // Проверка ширины окна при загрузке страницы
+    checkWindowWidth();
+
+    // Обновляем проверку при изменении размера окна
+    window.addEventListener('resize', checkWindowWidth);
 
     console.log("Скрипт успешно загружен и работает.");
 });

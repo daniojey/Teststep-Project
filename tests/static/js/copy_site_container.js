@@ -9,8 +9,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Функция для синхронизации высоты
     const syncHeight = () => {
-        const testContainerHeight = mainTestContainer.offsetHeight;
-        baseStudentsContainer.style.height = `${testContainerHeight}px`;
+        console.log("Ширина окна: ", window.innerWidth); // Логируем ширину окна
+        if (window.innerWidth <= 1000) {
+            console.log("Устанавливаем фиксированную высоту 200px");
+            baseStudentsContainer.style.height = '200px';
+            baseStudentsContainer.style.minHeight = '0'; // Убираем min-height
+        } else {
+            const testContainerHeight = mainTestContainer.offsetHeight;
+            console.log("Синхронизируем высоту с mainTestContainer: ", testContainerHeight);
+            baseStudentsContainer.style.height = `${testContainerHeight}px`;
+            baseStudentsContainer.style.minHeight = '794'; // Восстанавливаем min-height, если нужно
+        }
     };
 
     // Вызываем при загрузке
@@ -19,4 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Если содержимое динамическое, следим за изменением высоты
     const observer = new ResizeObserver(syncHeight);
     observer.observe(mainTestContainer);
+
+    // Обновляем высоту при изменении размера окна
+    window.addEventListener('resize', syncHeight);
 });

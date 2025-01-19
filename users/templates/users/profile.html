@@ -31,7 +31,9 @@
                                     {% endif %}
                                 
                                     <!-- Иконка для загрузки фото -->
-                                    <label for="id_image" class="upload-icon">
+                                    <label for="id_image" class="upload-icon" 
+                                        data-upload-url="{% url 'users:profile_image_upload' %}"
+                                        data-csrf-token="{{ csrf_token }}">
                                         <img src="{% static 'icons/camera_icon.svg' %}" alt="Upload">
                                     </label>
                                     

@@ -496,3 +496,77 @@ input[type="checkbox"]:checked::after {
     display: none;
     z-index: 1000;
 }
+
+@media (max-width: 1000px){
+    .test-and-students{
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .students-base-container {
+        position: static;
+        flex-direction: row; 
+        display: flex;
+        overflow: hidden; /* Ограничение движения внутри контейнера */
+        height: 250px !important;
+        max-width: 630px;
+        padding-bottom: 10px;
+        box-sizing: border-box;
+
+    }
+
+    .students-container {
+        max-width: 630px;
+        position: relative; /* Убираем absolute */
+        padding: 25px; 
+        height: 250px !important;
+        box-sizing: border-box;
+        margin-bottom: 20px; /* Добавляем отступ снизу */
+        overflow-y: auto; /* Добавляем вертикальный скролл */
+        -webkit-overflow-scrolling: touch; /* Поддержка плавного скролла на мобильных устройствах */
+    } 
+
+    .students-container form {
+        margin-bottom: 15px;
+    }
+
+    /* Или можно добавить отступ к последнему элементу внутри формы */
+    #id_students {
+        padding-bottom: 24px;
+    }
+}
+
+@media (max-width: 550px){
+    .question-field {
+        flex-direction: column;
+        padding: 5px 2px;
+        border: 1px solid #7260F5;
+        border-radius: 12px;
+        gap: 15px;
+    }
+
+    .question-field p{
+        font-size: 16px;
+    }
+
+    .button-container {
+        flex-direction: column;
+        gap: 15px;
+
+    }
+
+    .save-test-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .delete-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .delete-test-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+}

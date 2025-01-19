@@ -246,24 +246,28 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
 
 #     return render(request, 'users/profile.html', context=context)
 
-@login_required
-@csrf_exempt  # Для AJAX запросов без формы
+login_required
 def profile_image_upload(request):
     if request.method == 'POST' and request.FILES.get('image'):
-        user_profile = request.user  # Достаем профиль пользователя
-        user_profile.image = request.FILES['image']
-        user_profile.save()
+        try:
+            user_profile = request.user
+            user_profile.image = request.FILES['image']
+            user_profile.save()
 
-        # Отправляем обратно URL нового изображения
-        return JsonResponse({
-            'success': True,
-            'image_url': user_profile.image.url
-        })
+            return JsonResponse({
+                'success': True,
+                'image_url': user_profile.image.url
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
 
     return JsonResponse({
         'success': False,
         'error': 'Не удалось загрузить изображение'
-    })
+    }, status=400)
 
 
 @login_required
