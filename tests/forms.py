@@ -143,7 +143,10 @@ class QuestionForm(forms.ModelForm):
         #     self.fields.pop('answer_type', None)
 
         if test:
-            question_groups = [('','Группа питання')] + [(item.id, item.name) for item in QuestionGroup.objects.filter(test=test)]
+            question_groups = [('','Группа питання')] + list(
+                QuestionGroup.objects.filter(test=test).values_list('id', 'name')
+            )
+
             self.fields['group'].choices = question_groups
 
             if question_groups:
@@ -196,20 +199,21 @@ class QuestionForm(forms.ModelForm):
             'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'})
         }
 
-class QuestionStudentsForm(forms.ModelForm):
+class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
     def __init__(self, *args, **kwargs):
         test = kwargs.pop('test', None)  # Текущий тест
         user = kwargs.pop('user', None)  # Текущий пользователь (учитель)
         super().__init__(*args, **kwargs)
 
 
-         # Получаем группу, в которой состоит учитель
-        user_group = UsersGroupMembership.objects.filter(user=user).first()
+        # Получаем группу, в которой состоит учитель
+        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
+        
         if user_group:
-            students_in_group = UsersGroupMembership.objects.filter(group=user_group.group)
+            students_in_group = UsersGroupMembership.objects.filter(group=user_group.group).prefetch_related('user').values_list('user_id', 'user__username')
 
             # Список студентов для чекбоксов
-            students = [(item.user.id, item.user.username) for item in students_in_group]
+            students = [(ids, username) for ids, username in students_in_group]
 
             # Заполняем поле с чекбоксами
             self.fields['students'] = forms.MultipleChoiceField(
@@ -218,6 +222,8 @@ class QuestionStudentsForm(forms.ModelForm):
                 label='Додати студентів до тесту',
                 required=False
             )
+        else:
+            students = []
         
 
         # Устанавливаем начальные значения для чекбоксов, если студенты уже выбраны

@@ -596,7 +596,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
 
 
         # Группы вопросов с предзагрузкой вопросов
-        question_groups = (
+        question_groups = list(
             QuestionGroup.objects.filter(test=test).prefetch_related(
                 Prefetch('questions_group', queryset=questions)
             )
@@ -609,7 +609,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
         #         print(question)
 
         # заранее фильтруем вопросы без группы
-        ungrouped_questions = [q for q in questions if q.group is None]
+        ungrouped_questions = list(questions.filter(group__isnull=True))
 
 
         # Формы
