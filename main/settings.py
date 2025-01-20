@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     # Сторонние приложения
     "debug_toolbar",
+    'imagekit',
 
     # Созданные приложения
     "app",

@@ -1,6 +1,8 @@
 from django.db import models
 from users.models import User
 from .validators import validate_image, validate_audio_file
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -33,6 +35,10 @@ class Tests(models.Model):
     date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')
     category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория", null=False)
     check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип проверки ответов")
+    image_thumbnail = ImageSpecField(source='image',
+                                      processors=[ResizeToFill(286, 184)],
+                                      format='JPEG',
+                                      options={'quality': 40})
 
     def __str__(self):
         return  self.name
