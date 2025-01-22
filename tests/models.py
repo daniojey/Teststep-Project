@@ -3,6 +3,9 @@ from users.models import User
 from .validators import validate_image, validate_audio_file
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
+from PIL import Image
+from io import BytesIO
+from django.core.files import File
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -42,6 +45,22 @@ class Tests(models.Model):
 
     def __str__(self):
         return  self.name
+    
+    def save(self, *args, **kwargs):
+        if self.image:
+            img = Image.open(self.image)
+            
+            max_size = (800, 600)
+            
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            output = BytesIO()
+            img.save(output, format='JPEG', quality=85)
+            output.seek(0)
+
+            self.image = File(output, name=self.image.name)
+            
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "tests"
@@ -104,6 +123,22 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text or f"{self.question_type} - {self.id}"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            img = Image.open(self.image)
+            
+            max_size = (800, 600)
+            
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            output = BytesIO()
+            img.save(output, format='JPEG', quality=85)
+            output.seek(0)
+
+            self.image = File(output, name=self.image.name)
+            
+        super().save(*args, **kwargs)
     
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
