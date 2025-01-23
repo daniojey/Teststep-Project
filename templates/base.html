@@ -47,18 +47,7 @@
 
 
 
-    <script>
-        {% comment %} function toggleMenu() {
-            var dropdown = document.getElementById("dropdown-menu");
-            dropdown.classList.toggle("active");
-        } {% endcomment %}
-
-        document.querySelector('.burger').addEventListener('click', function() {
-            this.classList.toggle('active');
-            document.querySelector('.nav-panel').classList.toggle('open');
-    })
-
-    </script>
+    <script src="{% static "js/burger.js" %}"></script>
     </div>
 </header>
 

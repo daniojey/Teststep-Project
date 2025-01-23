@@ -87,9 +87,9 @@
                                 <button id="logout-button" class='logout-button'>Вийти з аккаунту</button> {% endcomment %}
 
                                 <div class='button-container'>
-                                    <button id='reset-password-button'class='password-button'>Змінити парроль</button>
+                                    <button id='reset-password-button'class='password-button'  data-url="{% url 'users:reset_password' %}">Змінити парроль</button>
 
-                                    <button id="logout-button" class='logout-button'>Вийти з аккаунту</button>
+                                    <button id="logout-button" class='logout-button' data-url="{% url 'users:logout' %}">Вийти з аккаунту</button>
                                 </div>
                             </div>
                             {% comment %} <button type="submit" class="btn btn-dark">Сохранить</button> {% endcomment %}
@@ -100,19 +100,7 @@
                     <script src="{% static "js/image_upload.js" %}"></script>
                         
                     {% comment  %} Кнопка выхода {% endcomment %}
-                    <script>
-                        document.getElementById('logout-button').addEventListener('click', function(event) {
-                            event.preventDefault();  // предотвратить стандартное поведение
-                            window.location.href = "{% url 'users:logout' %}";
-                        });
-                    </script>
-
-                    <script>
-                        document.getElementById('reset-password-button').addEventListener('click', function(event) {
-                            event.preventDefault();  // предотвратить стандартное поведение
-                            window.location.href = "{% url 'users:reset_password' %}";
-                        });
-                    </script>
+                    <script src="{% static "js/change_pass_and_logout.js" %}"></script>
                 </body>
                     {% endblock content %}
                     

@@ -12,6 +12,10 @@ header {
     border: none;
 }
 
+.hidden {
+    display: none;
+}
+
 .open{
     display: flex !important;
 }

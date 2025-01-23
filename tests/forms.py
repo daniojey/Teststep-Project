@@ -29,9 +29,9 @@ class TestForm(CacheMixin,forms.ModelForm):
         widgets = {
             'name':forms.TextInput(attrs={'placeholder': 'Назва тесту'}),
             'image': forms.ClearableFileInput(attrs={
-                'class': 'custom-file-input',
+                'class': 'custom-file-input hidden',
                 'id': 'uploadImage',
-                'style': 'display: none;'  # Скрываем стандартный input
+                # 'style': 'display: none;'  # Скрываем стандартный input
             }),
             # 'duration': forms.TextInput(attrs={
             #     'placeholder': 'Введіть тривалісь тесту гг:хх:сс)',

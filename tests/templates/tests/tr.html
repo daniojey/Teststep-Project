@@ -21,7 +21,8 @@
     <div class="tests-container-items">
         {% for test in test_result %}
         <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">
-            <div class="test-item" style="background-image: url('{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}');">
+            <div class="test-item"
+            data-bg="{% if test.image %}{{ test.image_thumbnail.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
                 <div class="test-overlay-header">
                     {{ test.name }}
                 </div>
@@ -38,6 +39,6 @@
     </div>
 </div>
 
-
+<script src="{% static "js/image_lazy_loading.js" %}"></script>
 </body>
 {% endblock %}
