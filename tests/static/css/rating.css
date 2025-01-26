@@ -15,9 +15,10 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
-    padding: 24px 24px 60px 24px;
+    padding: 24px 24px 0px 24px;
     text-align: left;
     display: flex;
+    margin-bottom: 60px;
 }
 
 .tests-ratings-container {

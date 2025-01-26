@@ -29,15 +29,15 @@ class Tests(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
-    students = models.JSONField(verbose_name='Юзеры', default=list)
-    name = models.CharField(verbose_name="Ім'ям",max_length=130, unique=True)
+    students = models.JSONField(verbose_name='Студенти', default=list)
+    name = models.CharField(verbose_name="Ім'я",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True, validators=[validate_image], upload_to="test-images")
-    duration = models.DurationField(verbose_name="Продолжительность теста", null=True, blank=True)
+    duration = models.DurationField(verbose_name="Продовжуваність теста", null=True, blank=True)
     date_taken = models.DateTimeField(auto_now_add=True)
-    date_out = models.DateTimeField(auto_now_add=False, verbose_name='Будет доступный до')
-    category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категория", null=False)
-    check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип проверки ответов")
+    date_out = models.DateTimeField(auto_now_add=False, verbose_name='Буде доступний до')
+    category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категорія", null=False)
+    check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип перевірки відповідей")
     image_thumbnail = ImageSpecField(source='image',
                                       processors=[ResizeToFill(286, 184)],
                                       format='JPEG',
@@ -74,8 +74,8 @@ class QuestionGroup(models.Model):
 
     class Meta:
         db_table = 'question_group'
-        verbose_name = 'Группа для вопросов'
-        verbose_name_plural = 'Группы для вопросовё'
+        verbose_name = 'Группа для питань'
+        verbose_name_plural = 'Группы для питань'
     
     def __str__(self):
         return f"Группа - {self.name}: Тест - {self.test}"
@@ -109,20 +109,24 @@ class Question(models.Model):
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
-    text = models.TextField(verbose_name="Текст вопроса", blank=True, null=True)
+    text = models.TextField(verbose_name="Текст питання", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
-    image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Картинка", validators=[validate_image])
+    image = models.ImageField(upload_to='questions/images/', blank=True, null=True, verbose_name="Фото", validators=[validate_image])
     audio = models.FileField(upload_to='questions/audios/', blank=True, null=True, verbose_name="Аудио", validators=[validate_audio_file])
 
 
     class Meta:
         db_table = "questions"
-        verbose_name = "Вопрос"
-        verbose_name_plural = "Вопросы"
+        verbose_name = "Питання"
+        verbose_name_plural = "Питання"
+
+    @property
+    def question_info(self):
+        return self.text or f"{self.question_type} - {self.id}"
 
     def __str__(self):
-        return self.text or f"{self.question_type} - {self.id}"
+        return f"Дата та назва тесту: {self.test.date_taken.date()} - {self.test.name}|  Питання: {self.text}" or f"Дата та назва тесту: {self.test.date_taken.date()} - {self.test.name}| Питання: {self.question_type} - {self.id}"
 
     def save(self, *args, **kwargs):
         if self.image:
@@ -142,32 +146,31 @@ class Question(models.Model):
     
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
-    left_item = models.CharField(max_length=255, verbose_name='Левая часть')
-    right_item = models.CharField(max_length=255, verbose_name='Правая часть')
+    left_item = models.CharField(max_length=255, verbose_name='Ліва частина')
+    right_item = models.CharField(max_length=255, verbose_name='Права частина')
 
     class Meta:
         db_table = "matching_pairs"
-        verbose_name = "Пара для соответствия"
-        verbose_name_plural = "Пари для соответствий"
+        verbose_name = "Пара для відповідності"
+        verbose_name_plural = "Пари для відповідності"
 
     def __str__(self) -> str:
-        return f"{self.left_item} - {self.right_item}"
+        return f"Питання: {self.question.question_info}| Відповідність: {self.left_item} - {self.right_item}"
 
 
 class Answer(models.Model):
-    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Вопрос")
-    text = models.CharField(verbose_name="Текст ответа", max_length=255)
-    is_correct = models.BooleanField(default=False, verbose_name="Правильный ответ")
-    audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосовой ответ")
+    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Питання")
+    text = models.CharField(verbose_name="Текст відповіді", max_length=255)
+    is_correct = models.BooleanField(default=False, verbose_name="Правильна відповідь")
+    audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосова відповідь")
 
     class Meta:
         db_table = "answers"
-        verbose_name = "Ответ"
-        verbose_name_plural = "Ответы"
+        verbose_name = "Відповідь"
+        verbose_name_plural = "Відповіді"
 
     def __str__(self):
-        return self.text
-
+        return f"Питання: {self.question.question_info}| Відповідь: {self.text}"
 
 
 
@@ -184,7 +187,7 @@ class TestResult(models.Model):
     class Meta:
         db_table = 'test_results'
         verbose_name = 'Результат теста'
-        verbose_name_plural = 'Результаты тестов'
+        verbose_name_plural = 'Результати тестів'
 
     
     def __str__(self):
@@ -208,8 +211,8 @@ class TestsReviews(models.Model):
 
     class Meta:
         db_table = "test_reviews"
-        verbose_name = 'Тест на проверку'
-        verbose_name_plural = 'Тесты на проверку'
+        verbose_name = 'Тест на перевірку'
+        verbose_name_plural = 'Тесты на перевірку'
 
     def __str__(self):
-        return f"Проверка по  {self.test.name}: проходил тест {self.user.username}"
+        return f"Перевірка по  {self.test.name}: пройшов тест {self.user.username}"

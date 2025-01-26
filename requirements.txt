@@ -12,6 +12,7 @@ django-debug-toolbar==5.0.1
 django-imagekit==5.0.0
 django-ratelimit==4.1.0
 django-storages==1.14.4
+django-unfold==0.45.0
 django_csp==3.8
 ffmpeg-python==0.2.0
 future==1.0.0

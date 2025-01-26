@@ -9,8 +9,8 @@ class User(AbstractUser):
 
     class Meta:
         db_table = "user"
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
+        verbose_name = "Користувач"
+        verbose_name_plural = "Користувачі"
 
 
 class UsersGroup(models.Model):
@@ -21,22 +21,22 @@ class UsersGroup(models.Model):
 
     class Meta:
         db_table = 'users_group'
-        verbose_name = 'Группа'
-        verbose_name_plural = 'Группы'
+        verbose_name = 'Група'
+        verbose_name_plural = 'Групи'
 
 
 class UsersGroupMembership(models.Model):
     user = models.OneToOneField(User ,on_delete=models.CASCADE , related_name='Учистник')
     group = models.ForeignKey(UsersGroup, on_delete=models.CASCADE, related_name='Участники')
-    owner = models.BooleanField(default=False, verbose_name="Учитель группи")
+    owner = models.BooleanField(default=False, verbose_name="Вчитель групи")
 
     def __str__(self):
         return f"{self.user} - {self.group}"
 
     class Meta:
         db_table = 'user_group_membership'
-        verbose_name = 'Членство пользователя в группе'
-        verbose_name_plural = 'Членства пользователей в группах'
+        verbose_name = 'Членство користувача в групі'
+        verbose_name_plural = 'Членство користувача в групах'
 
 
 class LoginAttempt(models.Model):
@@ -51,5 +51,5 @@ class LoginAttempt(models.Model):
 
     class Meta:
         db_table = 'loginattempt'
-        verbose_name = 'Попытки логина'
-        verbose_name_plural = 'Попытки логинов'
+        verbose_name = 'Спроба входу'
+        verbose_name_plural = 'Спроби входу'

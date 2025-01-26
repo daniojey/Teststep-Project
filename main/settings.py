@@ -17,6 +17,7 @@ import sys
 import dj_database_url
 from django.conf.global_settings import AUTH_USER_MODEL
 from decouple import config
+from django.templatetags.static import static
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +38,9 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",  # before django.contrib.admin
+    "unfold.contrib.filters",  # optional, if special filters are needed
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -275,4 +279,67 @@ MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
     'ContentDisposition': 'inline',
+}
+
+
+UNFOLD = {
+    "SITE_HEADER": "Teststep",
+    "TEXT": {
+        "HEADER": "text-primary-500", # Молочный цвет для заголовков
+        "PARAGRAPH": "text-gray-200",  # Светло-серый для основного текста
+        "SECONDARY": "text-gray-400",  # Серый для второстепенного текста
+    },
+    "ELEMENTS": {
+        "CARD": "bg-dark-400 border-dark-300", # Чуть светлее фон для карточек
+        "TABLE": {
+            "HEADER": "bg-dark-300",           # Фон заголовка таблицы
+            "ROW": "hover:bg-dark-200",        # Подсветка строк при наведении
+        }
+    },
+    "COLORS": {
+        "primary": {
+            "50": "250 245 255",
+            "100": "243 232 255",
+            "200": "233 213 255",
+            "300": "216 180 254",
+            "400": "192 132 252",
+            "500": "114 96 245",
+            "600": "35 35 35",
+            "700": "126 34 206",
+            "800": "107 33 168",
+            "900": "114 96 245",
+            "950": "59 7 100",
+        }, 
+        "font": {
+            "subtle-light": "107 114 128",
+            "subtle-dark": "156 163 175",
+            "default-light": "75 85 99",
+            "default-dark": "209 213 219",
+            "important-light": "17 24 39",
+            "important-dark": "243 244 246",
+        },
+    },
+
+    "STYLES": [
+        lambda request: static("css/unfold.css"),
+    ],
+
+
+    "SITE_TITLE": 'Teststep',  # Название панели
+
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "href": lambda request: static("icons/favicon.svg"),
+        },
+    ],
+
+    "SIDEBAR": {
+        "show_search": True,  # Search in applications and models names
+        "show_all_applications": True,  # Dropdown with all applications and models
+    },
+
+    
 }
