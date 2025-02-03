@@ -49,10 +49,39 @@ class CustomUserFilter(TextFilter):
             return queryset.filter(Q(user__first_name__icontains=self.value()) | Q(user__last_name__icontains=self.value()) | Q(user__username__icontains=self.value()))
 
         return queryset
+    
 
+@admin.display(description="Назва тесту")
+def test_name(obj):
+    text = obj.test.name
+    return text[:40]
+
+@admin.display(description="Текст питання")
+def question_text(obj):
+    if obj.text:
+        return str(obj.text)[:35]
+    else:
+        return f"{obj.question_type}"
+
+@admin.display(description="Группа питань")
+def question_group_name(obj):
+    if obj.group:
+        return f"{obj.group.name}"
+    else:
+        return "Без группы"
 
 @admin.register(Question)
 class QuestionAdmin(ModelAdmin):
+    list_select_related = True
+    list_display = [test_name,  question_text, question_group_name, "question_type", "answer_type"]
+    search_fields = [
+        "test__name",
+        "group__name",
+        "text",
+        "question_type",
+        "answer_type",
+        ]
+    
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomTestFilter,
@@ -60,13 +89,33 @@ class QuestionAdmin(ModelAdmin):
 
 @admin.register(QuestionGroup)
 class QuestionGroupAdmin(ModelAdmin):
+    list_display = [test_name, "name"]
+    search_fields = ["test__name", "name"]
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomTestFilter,
     ]
 
+@admin.display(description="Текст питання")
+def question_text_answer(obj):
+    if obj.question.text:
+        return str(obj.question.text)[:35]
+    else:
+        return f"{obj.question.question_type}"
+    
+
+@admin.display(description="Текст відповіді")
+def question_text(obj):
+    if obj.text:
+        return str(obj.text)[:35]
+    else:
+        return f"{obj.question_type}"
+
 @admin.register(Answer)
 class AnswerAdmin(ModelAdmin):
+    list_select_related = True
+    list_display = [question_text_answer, question_text, "is_correct"]
+    search_fields = ["question", "text", "is_correct"]
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomQuestionFilter,
@@ -75,14 +124,31 @@ class AnswerAdmin(ModelAdmin):
 
 @admin.register(MatchingPair)
 class MatchingPairAdmin(ModelAdmin):
+    list_select_related = True
+    list_display = ["question", "left_item", "right_item"]
+    search_fields = ["question__text", "left_item", "right_item"]
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomQuestionFilter,
 
     ]
 
+@admin.display(description="Бали")
+def test_score(obj):
+    return f"{int(obj.score)}%"
+
 @admin.register(TestResult)
 class TestResultAdmin(ModelAdmin):
+    list_select_related = True
+    list_display = [
+        "user",
+        test_name,
+        test_score,
+        "date_taken",
+        "duration",
+        ]
+    
+    search_fields = ["user__username","user__first_name","user__last_name", 'test__name', 'score']
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomTestFilter,
@@ -92,6 +158,9 @@ class TestResultAdmin(ModelAdmin):
 
 @admin.register(TestsReviews)
 class TestReviewsAdmin(ModelAdmin):
+    list_select_related = True
+    list_display = [test_name, "user", "date_taken", "duration"]
+    search_fields = ["test__name", "user__username", "user_first_name", "user__last_name", "date_taken", "duration"]
     list_filter_submit = True  # Submit button at the bottom of the filter
     list_filter = [
         CustomTestFilter,
@@ -104,9 +173,12 @@ class TestReviewsAdmin(ModelAdmin):
 class CategoriesAdmin(ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
-
+@admin.display(description="Доступний до")
+def date_out(obj):
+    return f"{obj.date_out.date()}"
 
 class TestsAdmin(ModelAdmin):
+    list_display = ["user","name","duration","date_taken",date_out, 'category', "check_type"]
     form = TestsAdminForm  # Подключаем кастомную форму к админке
     list_filter = [
         ("name", FieldTextFilter),

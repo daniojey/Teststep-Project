@@ -11,15 +11,18 @@ from unfold.admin import ModelAdmin
 
 @admin.register(User)
 class UserAdmin(ModelAdmin):
-    pass
+    list_display = ["first_name","last_name", "username", "email"]
+    search_fields = ["first_name","last_name", "username", "email"]
 
 @admin.register(UsersGroup)
 class UserGroupAdmin(ModelAdmin):
-    pass
+    search_fields = ['name']
 
 @admin.register(UsersGroupMembership)
 class UserGroupMembershipAdmin(ModelAdmin):
-    pass
+    list_select_related = True
+    list_display  = ["user", "group", "owner"]
+    search_fields = ["user__first_name", "user__last_name", "user__username", "group__name", "owner"]
 
 @admin.register(LoginAttempt)
 class LoginAttemptAdmin(ModelAdmin):
