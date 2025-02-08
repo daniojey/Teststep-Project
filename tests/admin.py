@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.utils.timezone import localtime
 from tests.forms import TestsAdminForm
 from tests.models import Categories, MatchingPair, Tests, Question, Answer, TestResult, TestsReviews, QuestionGroup
 from users.models import User
@@ -147,6 +148,7 @@ class TestResultAdmin(ModelAdmin):
         "date_taken",
         "duration",
         ]
+    list_display_links = [test_name]
     
     search_fields = ["user__username","user__first_name","user__last_name", 'test__name', 'score']
     list_filter_submit = True  # Submit button at the bottom of the filter
@@ -175,10 +177,11 @@ class CategoriesAdmin(ModelAdmin):
 
 @admin.display(description="Доступний до")
 def date_out(obj):
-    return f"{obj.date_out.date()}"
+    return f"{localtime(obj.date_out).date()}"
 
 class TestsAdmin(ModelAdmin):
     list_display = ["user","name","duration","date_taken",date_out, 'category', "check_type"]
+    list_display_links = ('name',)
     form = TestsAdminForm  # Подключаем кастомную форму к админке
     list_filter = [
         ("name", FieldTextFilter),

@@ -327,11 +327,6 @@ class CreateTestView(LoginRequiredMixin, FormView):
         test = form.save(commit=False)
         test.user = self.request.user
 
-        # Обработка студентов
-        selected_students = form.cleaned_data.get('students')
-        test.students = {'students': selected_students}
-
-
         # Обработка длительности
         test.duration = form.cleaned_data.get('raw_duration')
         test.save()
