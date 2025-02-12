@@ -14,6 +14,8 @@ django-ratelimit==4.1.0
 django-storages==1.14.4
 django-unfold==0.45.0
 django_csp==3.8
+factory_boy==3.3.3
+Faker==36.1.0
 ffmpeg-python==0.2.0
 future==1.0.0
 gunicorn==23.0.0
@@ -29,6 +31,7 @@ pilkit==3.0
 pillow==11.0.0
 psycopg==3.2.1
 psycopg-binary==3.2.1
+pydub==0.25.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.0.1

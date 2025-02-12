@@ -597,11 +597,6 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
             )
         )
         
-        # print(question_groups)
-        # for group in question_groups:
-        #     print(group)
-        #     for question in group.questions_group.all():
-        #         print(question)
 
         # заранее фильтруем вопросы без группы
         ungrouped_questions = list(questions.filter(group__isnull=True))

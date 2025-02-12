@@ -261,8 +261,11 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 # Указываем, что файлы должны быть публичными
 AWS_DEFAULT_ACL = 'public-read'
 
-# Настройки для хранения медиа файлов на S3
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# Настройки для хранения медиа файлов на S3 и для тестов исполбьзуем локальное хранилище
+if "test" in sys.argv:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+else:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Настройки для статических файлов (если нужно)
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

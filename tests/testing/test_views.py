@@ -1,13 +1,17 @@
 from ast import arg
+from email.mime import image
+from tkinter.messagebox import QUESTION
 from urllib import response
 from django.contrib.auth import get_user_model
 from django.db import DataError, IntegrityError, transaction
+from django.template.defaultfilters import first
 from django.test import TestCase
 from datetime import date, timedelta, timezone
 
 from django.urls import reverse
 from django.utils import duration
 from django.utils.timezone import localtime
+from tests.factories import AudioFactory, ImageFactory
 from tests.forms import AnswerForm, MatchingPairForm, QuestionGroupForm, TestForm
 
 
@@ -338,7 +342,6 @@ class CreateTestViewTest(TestCase):
         self.assertEqual(localtime(created_test.date_out).date(), date(year=2024, month=9, day=25))
 
         self.assertEqual(created_test.duration, timedelta(hours=1))
-        
 
         expected_url = reverse('tests:add_questions', kwargs={"test_id": created_test.id})
         self.assertRedirects(response, expected_url)
@@ -367,12 +370,20 @@ class CreateTestViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'tests/create_test.html')
 
+    def tearDown(self):
+        self.group_membership.delete()
+        self.group.delete()
+        self.category.delete()
+        if self.user:
+            self.user.delete()
 
+# TODO Продолжить переделку
 class DeleteTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        logid_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(logid_in, "Login failed during setup for DeleteTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -393,18 +404,24 @@ class DeleteTest(TestCase):
         response = self.client.get(reverse('tests:delete_test', args=[self.test_id]))
         self.assertFalse(Tests.objects.filter(name='Sample Test').exists())
 
-
         self.assertEqual(response.status_code, 302)
         
         expected_url = reverse('app:index')
         self.assertRedirects(response, expected_url)
+
+    def tearDown(self):
+        self.test.delete()
+        self.category.delete()
+        if self.user:
+            self.user.delete()
 
 
 class AddQuestionGroupViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in ,"Login failed during setup for AddQuestionGroupViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -415,7 +432,7 @@ class AddQuestionGroupViewTest(TestCase):
             category=self.category,
             check_type='auto',
             date_out=date(year=2024, month=10, day=25),
-            students={'students': ""},
+            students={'students': [str(self.user.id)]},
             duration=timedelta(seconds=35)
         )
 
@@ -444,6 +461,7 @@ class AddQuestionGroupViewTest(TestCase):
         question_group = QuestionGroup.objects.filter(name='Sample test group').first()
 
         self.assertEqual(form_data['test'], question_group.test)
+        self.assertEqual(form_data['name'], question_group.name)
 
         expected_url = reverse('tests:add_questions', kwargs={"test_id": self.test_id})
         self.assertRedirects(response, expected_url)
@@ -464,13 +482,20 @@ class AddQuestionGroupViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertTemplateUsed(response, "tests/adq.html")
+    
+    def tearDown(self):
+        self.test.delete()
+        self.category.delete()
+        if self.user:
+            self.user.delete()
 
 
 class AddQuestionViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for AddQuestionViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -504,18 +529,22 @@ class AddQuestionViewTest(TestCase):
 
     
     def test_form_submission_valid(self):
+        # TODO после того как будет реализовано ограничение переделать эту часть тестов
+        # TODO Сделать проверку в модели чтобы при AUD типе вопроса добавление аудио было обязательным
 
         form_data_question_no_group = {
-            'text': "question_text",
+            'text': "question_text", # Является необязательным параметром
             'question_type': 'TXT',
-            'form_type': 'form_question'
+            'form_type': 'form_question',
+            'answer_type': "SC", # На данный момент не обязательное поле
         }
 
         form_data_question_group = {
-            'text': "question_text_group",
+            'text': "question_text_group", # Является необязательным параметром
             'question_type': 'AUD',
             'form_type': 'form_question',
-            'group': self.question_group.pk
+            'group': self.question_group.pk,
+            'answer_type': "MC", # На данный момент не обязательное поле
         }
 
         form_data_students = {
@@ -527,16 +556,38 @@ class AddQuestionViewTest(TestCase):
         response_question_no_group = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_question_no_group)
         response_question_group = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_question_group)
         response_question_students = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data_students)
-        print(f"Response status code: {response_question_students.status_code}")
-        print(f"Response content: {response_question_students.content}")
 
         self.assertEqual(response_question_no_group.status_code, 302)
         self.assertEqual(response_question_group.status_code, 302)
-        self.assertEqual(response_question_students.status_code, 200)
+        self.assertEqual(response_question_students.status_code, 200) # Переадресации происходить не должно
 
         self.assertTrue(Question.objects.filter(text='question_text').exists())
         self.assertTrue(Question.objects.filter(text='question_text_group').exists())
 
+        question_no_group = Question.objects.filter(text='question_text').first()
+        question_add_group = Question.objects.filter(text='question_text_group').first()
+
+        # Проверяем question_no_group
+        self.assertEqual(question_no_group.test, self.test)
+        self.assertEqual(question_no_group.text, form_data_question_no_group['text'])
+        self.assertEqual(question_no_group.question_type, Question.TEXT)
+        self.assertEqual(question_no_group.answer_type, Question.SINGLE_CHOICE)
+        
+        self.assertFalse(question_no_group.group)
+        self.assertFalse(question_no_group.image)
+        self.assertFalse(question_no_group.audio)
+
+        # Проверяем question_add_group
+        self.assertEqual(question_add_group.test, self.test)
+        self.assertEqual(question_add_group.text, form_data_question_group['text'])
+        self.assertEqual(question_add_group.question_type, Question.AUDIO)
+        self.assertEqual(question_add_group.answer_type, Question.MULTIPLE_CHOICE)
+        self.assertEqual(question_add_group.group, self.question_group)
+
+        self.assertFalse(question_add_group.image)
+        self.assertFalse(question_add_group.audio)
+
+        # Проверяем наличие добавление студентов после отправки формы
         self.test.refresh_from_db()
 
         self.assertIn(str(self.user.pk), self.test.students['students'])
@@ -545,26 +596,39 @@ class AddQuestionViewTest(TestCase):
 
         self.assertRedirects(response_question_no_group, expected_url)
         self.assertRedirects(response_question_group, expected_url)
-
+        
 
     def test_add_question_context(self):
         # Создаем неупорядоченный вопрос и вопрос в группе для теста
+        image = ImageFactory.create_image('def.jpeg')
+        image.name = "def.jpeg"  # Принудительно указываем имя
+        # TODO разобратся почему при сохнарении image появляется приставка _<suffix>
+
         ungrouped_question = Question.objects.create(
             text="question_text",
-            question_type="SC",
+            question_type="TXT",
+            answer_type="SC",
             test=self.test
         )
 
         group_question = Question.objects.create(
             text="question_text_group",
-            question_type="MC",
+            question_type="IMG",
+            answer_type="MC",
             test=self.test,
-            group=self.question_group
+            group=self.question_group,
+            image=image #Создаём изображение в 3мб
         )
 
+        audio_question = Question.objects.create(
+            text="question_audio",
+            question_type="TXT",
+            answer_type="AUD",
+            test=self.test,
+            audio=AudioFactory.create_audio(filename="aud.mp3")
+        )
 
         response = self.client.get(reverse('tests:add_questions', args=[self.test_id]))
-
         self.assertIn('test', response.context)
         self.assertIn('question_groups', response.context)
         self.assertIn('ungrouped_questions', response.context)
@@ -573,6 +637,43 @@ class AddQuestionViewTest(TestCase):
 
         ungrouped_question = Question.objects.filter(text="question_text").first()
         group_question = Question.objects.filter(text="question_text_group").first()
+        aud_question = Question.objects.filter(text="question_audio").first()
+
+        # Проверяем ungrouped_question
+        self.assertEqual(ungrouped_question.text, 'question_text')
+        self.assertEqual(ungrouped_question.question_type, Question.TEXT)
+        self.assertEqual(ungrouped_question.answer_type, Question.SINGLE_CHOICE)
+        self.assertEqual(ungrouped_question.test, self.test)
+        self.assertFalse(ungrouped_question.image)
+        self.assertFalse(ungrouped_question.audio)
+        self.assertFalse(ungrouped_question.group)
+
+        # Проверяем group_question
+        self.assertEqual(group_question.text, 'question_text_group')
+        self.assertEqual(group_question.question_type, Question.IMAGE)
+        self.assertEqual(group_question.answer_type, Question.MULTIPLE_CHOICE)
+        self.assertEqual(group_question.test, self.test)
+        self.assertEqual(group_question.group, self.question_group)
+
+        self.assertTrue(group_question.image)
+        image_name = group_question.image.name.split('/')[-1].split('_')[0]
+        self.assertEqual(image_name, 'def')
+
+        self.assertFalse(group_question.audio)
+
+        # Проверяем aud_question
+        self.assertEqual(aud_question.text, 'question_audio')
+        self.assertEqual(aud_question.question_type, Question.TEXT)
+        self.assertEqual(aud_question.answer_type, Question.ANSWER_AUDIO)
+        self.assertEqual(aud_question.test, self.test)
+
+        self.assertTrue(aud_question.audio)
+        aud_name = aud_question.audio.name.split('/')[-1].split('_')[0]
+        self.assertEqual(aud_name, 'aud')
+
+        self.assertFalse(aud_question.image)
+        self.assertFalse(aud_question.group)
+
 
         test = response.context['test']
         question_groups = response.context['question_groups']
@@ -582,6 +683,7 @@ class AddQuestionViewTest(TestCase):
 
         self.assertIn(self.question_group, question_groups)
         self.assertIn(ungrouped_question, ungrouped_questions)
+        self.assertIn(self.question_group, question_groups)
 
 
     def tearDown(self) -> None:
@@ -592,7 +694,7 @@ class AddQuestionViewTest(TestCase):
         self.category.delete()
         self.user.delete()
 
-
+# Next change tests
 class DeleteQuestionViewTest(TestCase):
 
     def setUp(self) -> None:
