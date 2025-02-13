@@ -2,7 +2,7 @@ from ast import arg
 from email.mime import image
 from tkinter.messagebox import QUESTION
 from urllib import response
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.db import DataError, IntegrityError, transaction
 from django.template.defaultfilters import first
 from django.test import TestCase
@@ -11,8 +11,8 @@ from datetime import date, timedelta, timezone
 from django.urls import reverse
 from django.utils import duration
 from django.utils.timezone import localtime
-from tests.factories import AudioFactory, ImageFactory
-from tests.forms import AnswerForm, MatchingPairForm, QuestionGroupForm, TestForm
+from tests.factories import AudioFactory, ImageFactory, TestFactory
+from tests.forms import AnswerForm, MatchingPairForm, QuestionForm, QuestionGroupForm, TestForm
 
 
 from tests.models import Answer, Categories, MatchingPair, Question, QuestionGroup, TestResult, Tests, TestsReviews
@@ -684,6 +684,32 @@ class AddQuestionViewTest(TestCase):
         self.assertIn(self.question_group, question_groups)
         self.assertIn(ungrouped_question, ungrouped_questions)
         self.assertIn(self.question_group, question_groups)
+    
+    def test_add_question_form_invalid(self):
+        form_data = {
+            'text': "question_text", # Является необязательным параметром
+            'form_type': 'form_question',
+            'answer_type': "SC", # На данный момент не обязательное поле
+        }
+
+        form = QuestionForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("question_type", form.errors)
+
+        response = self.client.post(reverse('tests:add_questions', args=[self.test_id]), data=form_data)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_question_logout(self):
+        self.client.logout()
+        add_question_url = reverse('tests:add_questions', args=[self.test_id])
+        response = self.client.get(add_question_url)
+
+        self.assertEqual(response.status_code, 302)
+
+        expected_url= f"{reverse('users:login')}?next={add_question_url}"
+        
+        self.assertRedirects(response, expected_url)
 
 
     def tearDown(self) -> None:
@@ -699,19 +725,29 @@ class DeleteQuestionViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for DeleteQuestionViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
-        self.test = Tests.objects.create(
-            user=self.user,
+        self.test = TestFactory(
+            user=self.user, 
+            category=self.category,
             name='Sample Test',
             description='Test description',
-            category=self.category,
-            check_type='auto',
             date_out=date(year=2024, month=10, day=25),
             duration=timedelta(seconds=35)
         )
+
+        # self.test = Tests.objects.create(
+        #     user=self.user,
+        #     name='Sample Test',
+        #     description='Test description',
+        #     category=self.category,
+        #     check_type='auto',
+        #     date_out=date(year=2024, month=10, day=25),
+        #     duration=timedelta(seconds=35)
+        # )
 
         self.test_id = self.test.pk
 
@@ -742,7 +778,8 @@ class AddAnswerViewTest(TestCase):
     
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for AddAnswerViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -840,7 +877,8 @@ class AddAnswerViewTest(TestCase):
 class DeleteAnswerViewTest(TestCase):
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for DeleteAnswerViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -890,7 +928,8 @@ class MatchingPairViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for MatchingPairViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -909,7 +948,7 @@ class MatchingPairViewTest(TestCase):
         self.question = Question.objects.create(
             test=self.test,
             text='Question text',
-            question_type='MC',
+            question_type='MTCH',
         )
 
     def test_matching_form_valid(self):
@@ -926,6 +965,8 @@ class MatchingPairViewTest(TestCase):
 
         matching_pair = MatchingPair.objects.filter(left_item='left_test_item').first()
         self.assertEqual(self.question.pk, matching_pair.question.pk)
+        self.assertEqual(matching_pair.left_item, "left_test_item")
+        self.assertEqual(matching_pair.right_item, "right_test_item")
 
         expected_url = reverse('tests:add_matching_pair', args=[self.question.pk])
         self.assertRedirects(response, expected_url)
@@ -953,7 +994,6 @@ class MatchingPairViewTest(TestCase):
 
         self.assertIn('test', response.context)
         self.assertIn('question', response.context)
-        self.assertIn('questions', response.context)
         self.assertIn('form_type', response.context)
         self.assertIn('action_url', response.context)
 
@@ -962,7 +1002,15 @@ class MatchingPairViewTest(TestCase):
         self.assertEqual('Соотвецтвие', response.context['form_type'])
         self.assertEqual('tests:add_matching_pair', response.context['action_url'])
 
-        self.assertIn(self.question, response.context['questions'])
+    def test_matching_pair_logout(self):
+        self.client.logout()
+        matching_pair_url = reverse('tests:add_matching_pair', args=[self.question.pk])
+        response = self.client.get(matching_pair_url)
+
+        self.assertEqual(response.status_code, 302)
+
+        expected_url = f"{reverse('users:login')}?next={matching_pair_url}"
+        self.assertRedirects(response, expected_url)
 
     def tearDown(self) -> None:
         self.question.delete()
@@ -975,7 +1023,8 @@ class TestPreviewViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in =  self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for TestPreviewViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -1009,7 +1058,7 @@ class TestPreviewViewTest(TestCase):
             duration=timedelta(seconds=30)
         )
 
-    
+        self.url = reverse('tests:test_preview', args=[self.test_id])
     def test_preview_context(self):
         response = self.client.get(reverse('tests:test_preview', args=[self.test_id]))
 
@@ -1019,17 +1068,24 @@ class TestPreviewViewTest(TestCase):
 
         self.assertIn('test', response.context)
         self.assertIn('test_results',  response.context)
-        self.assertIn('required_attemps', response.context)
         self.assertIn('test_review', response.context)
 
 
         self.assertEqual(self.test, response.context['test'])
-        self.assertEqual(True, response.context['required_attemps'])
         self.assertEqual(self.completed_test, response.context['test_results'])
 
         self.assertIn(self.test_review_default, response.context['test_review'])
+    
+    def test_test_preview_logout(self):
+        self.client.logout()
+        response = self.client.get(self.url)
 
-    def tearDown(self) -> None:
+        self.assertEqual(response.status_code, 302)
+
+        expected_url =  f"{reverse('users:login')}?next={self.url}"
+        self.assertRedirects(response, expected_url)
+
+    def tearDown(self):
         self.test_review_default.delete()
         self.completed_test.delete()
         self.test.delete()
@@ -1037,13 +1093,12 @@ class TestPreviewViewTest(TestCase):
         self.user.delete()
 
 
-
-
 class TakeTestViewTest(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
+        login_in = self.client.login(username='testuser', password='testpass')
+        self.assertTrue(login_in, "Login failed during setup for TakeTestViewTest")
 
         self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
@@ -1084,14 +1139,23 @@ class TakeTestViewTest(TestCase):
         session = self.client.session
         
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed("tests/question.html")
         self.assertIn('test_id', session)
         self.assertEqual(session['test_id'], self.test.id)
         self.assertIn('question_order', session)
         self.assertIn(self.question.id, session['question_order'])
         self.assertIn(self.question_2.id, session['question_order'])
 
-    def test_display_question(self):
+    def test_display_question_and_context(self):
         response = self.client.get(self.url)
+
+        self.assertEqual(response.context['test'], self.test)
+        self.assertEqual(response.context['question'], self.question)
+        self.assertEqual(response.context['all_questions']['current'], 1)
+        self.assertEqual(response.context['all_questions']['all'], 2)
+        self.assertEqual(response.context['test_btn']['text_btn'], 'Далі')
+        self.assertEqual(response.context['current_question_group'], self.question_group)
+        self.assertTrue(response.context['remaining_time'])
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Question text')
 
@@ -1115,6 +1179,14 @@ class TakeTestViewTest(TestCase):
         session = self.client.session
         question_id_key = f'question_{self.question.id}'
         self.assertIn(question_id_key, session['test_responses'])
+        response_two = self.client.get(self.url)
+        self.assertEqual(response_two.context['test'], self.test)
+        self.assertEqual(response_two.context['question'], self.question_2)
+        self.assertEqual(response_two.context['all_questions']['current'], 2)
+        self.assertEqual(response_two.context['all_questions']['all'], 2)
+        self.assertEqual(response_two.context['test_btn']['text_btn'], 'Завершити')
+        self.assertFalse(response_two.context['current_question_group'])
+        self.assertTrue(response_two.context['remaining_time'])
 
     def test_submit_multiple_choice_answer(self):
         self.choice_1 = Answer.objects.create(
@@ -1185,4 +1257,23 @@ class TakeTestViewTest(TestCase):
             'remaining_time': 1700,
         })
 
+        self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('tests:test_results', kwargs={'test_id': self.test.id}))
+
+    def test_take_test_logout(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 302)
+
+        expected_url =  f"{reverse('users:login')}?next={self.url}"
+        self.assertRedirects(response, expected_url)
+
+    def tearDown(self):
+        self.question_2.delete()
+        self.question.delete()
+        self.question_group.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+

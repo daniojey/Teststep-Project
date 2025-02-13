@@ -908,27 +908,18 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         question_id = self.kwargs.get('question_id')
 
         question = get_object_or_404(
-            Question.objects.select_related('test').prefetch_related('test__questions'),
+            Question.objects.select_related('test').prefetch_related('test__questions', 'answers', 'matching_pairs'),
             id=question_id
         )
 
         test = question.test
-        questions = test.questions.all()
         matching_pairs = MatchingPair.objects.filter(question=question)
-        # print(matching_pairs)
-        # print(question.matching_pairs.all())
 
-        # context['test'] = test
-        # context['question'] = question
-        # context['questions'] = questions
-        # context['form_type'] = 'Соотвецтвие'
-        # context['action_url'] = 'tests:add_matching_pair'
 
         context.update({
             'test': test,
             'question': question,
             'group': question.group,
-            'questions': questions,
             'form_type': 'Соотвецтвие',
             'action_url': 'tests:add_matching_pair'
         })
@@ -975,7 +966,7 @@ def delete_matching_pair(request, pair_id):
 #         "action_url":'tests:add_matching_pair',
 #     })
 
-class TestPreviewView(TemplateView):
+class TestPreviewView(LoginRequiredMixin,TemplateView):
     template_name = 'tests/test_preview.html'
 
     def get_context_data(self, **kwargs):
@@ -988,24 +979,13 @@ class TestPreviewView(TemplateView):
             test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
             test_results = TestResult.objects.filter(test=test, user=user).select_related('test', 'user').first()
             test_review = TestsReviews.objects.filter(user=user, test=test).select_related('test', 'user')
-            user_test = TestResult.objects.filter(user=user).select_related('test')
-            if len(user_test) > 0:
-                if user_test[0].remaining_atemps > 0:
-                    test_required = True
-                else:
-                    test_required = False
-            else:
-                test_required = True
-        else:
-            test_results = ['Для того чтобы пройти тест зарегестрируйтесь :D']
-            test_review = ['None']
+
         
         test = get_object_or_404(Tests, id=test_id)
 
         context.update({
             'test': test,
             'test_results': test_results,
-            'required_attemps': test_required,
             'test_review': test_review,
         })
 
@@ -1039,7 +1019,7 @@ class TestPreviewView(TemplateView):
 #     return render(request, 'tests/test_preview.html', context=context)
 
 
-class TakeTestView(FormView):
+class TakeTestView(LoginRequiredMixin ,FormView):
     template_name = 'tests/question.html'
     form_class = TestTakeForm
 
@@ -1047,9 +1027,9 @@ class TakeTestView(FormView):
         # Сохраняем test_id в сессию
         self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
 
-        # Очищаем сессию перед созданием новой для теста
-        print(self.test.id, "ID теста который Был запущен")
-        print(request.session.get('test_id'), "ID теста который уже в сессии")
+        # # Очищаем сессию перед созданием новой для теста
+        # print(self.test.id, "ID теста который Был запущен")
+        # print(request.session.get('test_id'), "ID теста который уже в сессии")
 
         session_test_id = request.session.get('test_id')
         if self.test.id != session_test_id and session_test_id != None:
@@ -1076,7 +1056,7 @@ class TakeTestView(FormView):
 
     def clear_test_session(self, request):
         """Очищает данные теста из сессии."""
-        print("Очистка сессии в представлении")
+        # print("Очистка сессии в представлении")
         keys_to_clear = ['test_id', 'question_order', 'question_index', 'test_responses', 'remaining_time', 'test_start_time']
         for key in keys_to_clear:
             if key in request.session:
@@ -1143,8 +1123,8 @@ class TakeTestView(FormView):
         if self.current_question.question_type == 'AUD' or self.current_question.question_type == 'IMG' or self.current_question.question_type == 'TXT':
             if self.current_question.answer_type == 'AUD':
                 audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
-                print(f"AUDIO_ANSWER_GET:{audio_answer}")
-                print(f"POST:{self.request.POST}")
+                # print(f"AUDIO_ANSWER_GET:{audio_answer}")
+                # print(f"POST:{self.request.POST}")
                 if audio_answer is not None:
                     self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
             else:
@@ -1859,7 +1839,7 @@ class TakeTestReviewView(FormView):
         required_keys = ['teacher_answers', 'test_review_session', 'question_index', 'teacher_responses', 'test_student_responses_id']
         
         missing_keys = [key for key in required_keys if key not in request.session]
-        print(missing_keys)
+        # print(missing_keys)
         
         if missing_keys:
             # Если какие-то ключи отсутствуют, пересоздаем сессию
@@ -2257,7 +2237,7 @@ class TestReviewResults(View):
         
 
             score = round((correct_answers / questions) * 100) if questions > 0 else 0
-            print(score)
+            # print(score)
             test_result = TestResult.objects.create(
                 user=user,
                 test=test,

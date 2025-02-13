@@ -125,7 +125,7 @@
             </div>
             {% elif question.question_type == 'MTCH' %}
             <div class='question-field'>
-                <p>{{ question|truncatechars:70 }}</p>
+                <p>{{ question.question_info|truncatechars:70 }}</p>
 
                 <div class='add-and-delete'>    
                     <label><a href="{% url "tests:add_matching_pair" question.id %}">Додати відповідь</a></label>
