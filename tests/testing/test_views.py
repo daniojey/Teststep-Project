@@ -1,9 +1,7 @@
-from ast import arg
-from email.mime import image
+from decimal import Decimal
+from django.utils.timezone import localtime, now
 from tkinter.messagebox import QUESTION
-from urllib import response
 from django.contrib.auth import get_user_model, login
-from django.db import DataError, IntegrityError, transaction
 from django.template.defaultfilters import first
 from django.test import TestCase
 from datetime import date, timedelta, timezone
@@ -1276,4 +1274,135 @@ class TakeTestViewTest(TestCase):
         self.test.delete()
         self.category.delete()
         self.user.delete()
+
+        if self.client.session:
+            self.client.session.clear()
+
+
+class TestResultsViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        login_in = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_in, "Login failed during setup for TestResultsViewTest")
+
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = TestFactory(
+            user=self.user,
+            category=self.category,
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(minutes=30)
+            # click TestFactory and press F12 addition info 
+        )
+
+        self.question_group = QuestionGroup.objects.create(name='Sample group', test=self.test)
+
+        self.question = Question.objects.create(
+            test=self.test,
+            group=self.question_group,
+            text='Question text',
+            question_type='TXT',
+            answer_type='SC'
+        )
+
+        self.question_2 = Question.objects.create(
+            test=self.test,
+            text='Question text two',
+            question_type='TXT',
+            answer_type='MC'
+        )
+
+        self.question_3 = Question.objects.create(
+            test=self.test,
+            text='Question text three',
+            question_type='TXT',
+            answer_type='INP'
+
+        )
+
+        # question
+        self.answer_1_1 = Answer.objects.create(
+            question=self.question,
+            text="question answer 1",
+            is_correct=True,
+        )
+
+        self.answer_1_2 = Answer.objects.create(
+            question=self.question,
+            text="question answer 2",
+            # is_correct default False
+        )
+
+        # question_2
+        self.answer_2_1 = Answer.objects.create(
+            question=self.question_2,
+            text="question_2 answer 1",
+            is_correct=True,
+        )
+
+        self.answer_2_2 = Answer.objects.create(
+            question=self.question_2,
+            text="question_2 answer 2",
+            is_correct=True,
+        )
+
+        self.answer_2_3 = Answer.objects.create(
+            question=self.question_2,
+            text="question_2 answer 3",
+            # is_correct default False
+        )
+
+        # question_3
+        self.answer_3_1 = Answer.objects.create(
+            question=self.question_3,
+            text="Success",
+            is_correct=True,
+        )
+
+        # # Добавляем в сессию необходимые данные
+        # self.client.session['test_responses'] = {
+        #     f"question_{self.question.id}": str(self.answer_1_1.id),
+        #     f"question_{self.question_2.id}": [str(self.answer_2_1.id), str(self.answer_2_2.id)],
+        #     f"question_{self.question_3.id}": "Success",
+        # }
+
+        # self.client.session['remaining_time'] = 900
+
+        # self.client.session.save()
+
+        self.url = reverse("tests:test_results", kwargs={'test_id': self.test.id})
+
+    def test_create_results_in_test(self):
+        # Явное сохранение сессии
+        session = self.client.session
+        session['test_responses'] = {
+            f"question_{self.question.id}": str(self.answer_1_1.id),
+            f"question_{self.question_2.id}": [str(self.answer_2_1.id), str(self.answer_2_2.id)],
+            f"question_{self.question_3.id}": "Success",
+        }
+        session['remaining_time'] = 900
+        session.save()  # Сохраняем сессию
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "tests/test_results.html")
+
+        result = TestResult.objects.get(user=self.user, test=self.test)
+
+        self.assertEqual(result.user, self.user)
+        self.assertEqual(result.test, self.test)
+        self.assertEqual(result.score, Decimal(100.00))
+        self.assertEqual(localtime(result.date_taken).date(), now().date())
+        self.assertEqual(result.duration, timedelta(minutes=15))
+        self.assertEqual(result.attempts, 1)
+        self.assertEqual(result.max_attempts, 2)
+        self.assertEqual(result.extra_attempts, 0)
+
+        try_response = self.client.get(self.url)
+        self.assertEqual(try_response.status_code, 302)
+        self.assertRedirects(try_response, reverse('app:index'))
+
+
 

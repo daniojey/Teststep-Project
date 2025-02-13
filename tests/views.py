@@ -1352,7 +1352,7 @@ class TestsResultsView(View):
             self.clear_test_session(request)
             context = self.get_context_data(test, score, correct_answers, total_questions)
             return render(request, self.template_name, context)
-        
+    
     def save_audio_responses(self, request, responses, audio_answers):
         """Сохраняем аудио ответы из сессии"""
         for key, value in responses.items():
@@ -1413,8 +1413,10 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
-                if str(correct_answer).strip().lower() == str(value).strip().lower():
-                    correct_answers += 1.0
+                if correct_answer:
+                    correct_answer = correct_answer.text
+                    if str(correct_answer).strip().lower() == str(value).strip().lower():
+                        correct_answers += 1.0
 
         # if question.question_type == 'SC':
         #     correct_answer = question.answers.filter(is_correct=True).first()
@@ -1443,8 +1445,10 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
-                if str(correct_answer).strip().lower() == str(value).strip().lower():
-                    correct_answers += 1.0
+                if correct_answer:
+                    correct_answer = correct_answer.text
+                    if str(correct_answer).strip().lower() == str(value).strip().lower():
+                        correct_answers += 1.0
 
         elif question.question_type == 'AUD':
             if question.answer_type == 'SC':
@@ -1462,8 +1466,10 @@ class TestsResultsView(View):
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
-                if str(correct_answer).strip().lower() == str(value).strip().lower():
-                    correct_answers += 1.0
+                if correct_answer:
+                    correct_answer = correct_answer.text
+                    if str(correct_answer).strip().lower() == str(value).strip().lower():
+                        correct_answers += 1.0
         # elif question.question_type == "INP":
         #     correct_answer = question.answers.filter(is_correct=True).first()
         #     if str(correct_answer).strip().lower() == str(value).strip().lower():
@@ -1491,7 +1497,7 @@ class TestsResultsView(View):
                 test_result.duration = test_duration
                 test_result.score = max(test_result.score, score)
                 test_result.save()
-
+                
     def clear_test_session(self, request):
         """Очищаем данные теста из сессии"""
         session_keys = ['question_order','question_index','test_responses','remaining_time', 'test_id']
