@@ -1329,7 +1329,7 @@ class TestsResultsView(View):
             self.clear_test_session(request)
 
             # На случай если пользователь перезагрузил страницу при ручном тесте
-            if not test_time:
+            if not test_time or not responses:
                 return redirect('app:index')
             
             test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
@@ -1664,7 +1664,14 @@ def success_manual_test(request):
     return render(request, 'tests/success_page_manual_test.html')
 
 class TestsForReviewView(CacheMixin ,TemplateView):
-    template_name = 'tests/tr.html'
+    template_name = 'tests/test_for_reviews.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user= request.user
+        if not user.is_superuser or not user.is_staff:
+            return redirect(reverse("app:index"))
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

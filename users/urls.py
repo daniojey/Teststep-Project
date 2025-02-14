@@ -7,9 +7,9 @@ from django.views.decorators.cache import cache_page
 app_name = "users"
 
 urlpatterns = [
-    path('login/', cache_page(60 * 5)(views.UserLoginView.as_view()) , name="login"),
+    path('login/', views.UserLoginView.as_view() , name="login"),
     path('registration/', views.UserRegistrationView.as_view() , name="registration"),
-    path('profile/', cache_page(60 * 5)(views.UserProfileView.as_view()) , name="profile"),
+    path('profile/', views.UserProfileView.as_view() , name="profile"),
     path('logout/', views.logout, name='logout'),
     path('profile_image_upload/', views.profile_image_upload, name='profile_image_upload'),
 

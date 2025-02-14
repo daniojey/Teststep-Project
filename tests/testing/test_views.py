@@ -1360,18 +1360,38 @@ class TestResultsViewTest(TestCase):
             is_correct=True,
         )
 
-        # # Добавляем в сессию необходимые данные
-        # self.client.session['test_responses'] = {
-        #     f"question_{self.question.id}": str(self.answer_1_1.id),
-        #     f"question_{self.question_2.id}": [str(self.answer_2_1.id), str(self.answer_2_2.id)],
-        #     f"question_{self.question_3.id}": "Success",
-        # }
+        self.test_manual = TestFactory(
+            name="Manual test",
+            user=self.user,
+            category=self.category,
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(minutes=40),
+            check_type=Tests.MANUAL_CHECK,
+            # click TestFactory and press F12 addition info 
+        )
 
-        # self.client.session['remaining_time'] = 900
+        self.question_manual = Question.objects.create(
+            test=self.test_manual,
+            text='Question text',
+            question_type='TXT',
+            answer_type='SC'
+        )
 
-        # self.client.session.save()
+        self.asnwer_manual_1 = Answer.objects.create(
+            question=self.question_manual,
+            text="answer_manual 1",
+            is_correct=True,
+        )
+
+        self.asnwer_manual_2 = Answer.objects.create(
+            question=self.question_manual,
+            text="answer_manual 2",
+        )
+
 
         self.url = reverse("tests:test_results", kwargs={'test_id': self.test.id})
+
+        self.url_manual = reverse("tests:test_results", kwargs={'test_id': self.test_manual.id})
 
     def test_create_results_in_test(self):
         # Явное сохранение сессии
@@ -1403,6 +1423,86 @@ class TestResultsViewTest(TestCase):
         try_response = self.client.get(self.url)
         self.assertEqual(try_response.status_code, 302)
         self.assertRedirects(try_response, reverse('app:index'))
+
+
+    def test_null_data_results(self):
+        session = self.client.session
+        session['test_responses'] = {
+        }
+        session['remaining_time'] = 900
+        
+        session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+
+        obj = TestResult.objects.get(user=self.user, test=self.test)
+
+        self.assertEqual(obj.user, self.user)
+        self.assertEqual(obj.test, self.test)
+        self.assertEqual(obj.score, Decimal(0))
+        self.assertEqual(obj.duration, timedelta(minutes=15))
+
+        try_response = self.client.get(self.url)
+        self.assertEqual(try_response.status_code, 302)
+        self.assertRedirects(try_response, reverse('app:index'))
+
+    def test_null_remaining_time_results(self):
+        session = self.client.session
+        session['test_responses'] = {
+        }
+        session['remaining_time'] = False
+        
+        session.save()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("app:index"))
+
+    def test_create_test_reviews(self):
+        # Явное сохранение сессии
+        session = self.client.session
+        session['test_responses'] = {
+            f"question_{self.question_manual.id}": str(self.asnwer_manual_2.id) 
+        }
+        session['remaining_time'] = 900
+        session.save()  # Сохраняем сессию
+
+        response = self.client.get(self.url_manual)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tests/success_page_manual_test.html')
+
+        obj = TestsReviews.objects.get(test=self.test_manual, user=self.user)
+
+        self.assertEqual(obj.test, self.test_manual)
+        self.assertEqual(obj.user, self.user)
+        self.assertEqual(obj.duration, timedelta(minutes=25))
+        self.assertEqual(obj.answers, {f"question_{self.question_manual.id}": str(self.asnwer_manual_2.id)})
+        self.assertFalse(obj.audio_answers)
+
+        try_response = self.client.get(self.url_manual)
+        self.assertEqual(try_response.status_code, 302)
+        self.assertRedirects(try_response, reverse("app:index"))
+
+    def test_null_data_reviews(self):
+        """Так как нам нужно не допускать пустое поле answers в экземплярах TestReviews
+        мы при отсуцтвии либо времени либо ответов перенаправляем пользователя на начальную страницу"""
+        session = self.client.session
+        session['test_responses'] = {
+             
+        }
+        session['remaining_time'] = 900
+        session.save()  # Сохраняем сессию
+
+        response = self.client.get(self.url_manual)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("app:index"))
+
+
+
 
 
 
