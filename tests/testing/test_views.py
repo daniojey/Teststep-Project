@@ -1,4 +1,6 @@
 from decimal import Decimal
+from tokenize import group
+from django.shortcuts import redirect
 from django.utils.timezone import localtime, now
 from tkinter.messagebox import QUESTION
 from django.contrib.auth import get_user_model, login
@@ -1500,9 +1502,104 @@ class TestResultsViewTest(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("app:index"))
+    
+    def tearDown(self):
+        self.asnwer_manual_1.delete()
+        self.asnwer_manual_2.delete()
+        self.question_manual.delete()
+        self.test_manual.delete()
+        self.answer_3_1.delete()
+        self.answer_2_3.delete()
+        self.answer_2_2.delete()
+        self.answer_2_1.delete()
+        self.answer_1_2.delete()
+        self.answer_1_1.delete()
+        self.question_3.delete()
+        self.question_2.delete()
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
 
 
+class TestsForReviewVIewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_superuser(username="testuser", password="testpass123")
+        login_in = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_in, "Login failed during setup for TestResultsViewTest")
 
+        self.user_test_1 = User.objects.create_user(username="testuser1", password="testpass123")
+        self.user_test_2 = User.objects.create_user(username="testuser2", password="testpass123")
 
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
 
+        self.test = TestFactory(
+            user=self.user,
+            category=self.category,
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(minutes=30),
+            check_type=Tests.MANUAL_CHECK,
+            # click TestFactory and press F12 addition info 
+        )
 
+        self.group = UsersGroup.objects.create(name='Test_group')
+        # Сохраняем членство в группе
+        self.group_membership = UsersGroupMembership.objects.create(user=self.user, group=self.group)
+        UsersGroupMembership.objects.create(user=self.user_test_1, group=self.group)
+        UsersGroupMembership.objects.create(user=self.user_test_2, group=self.group)
+
+        self.user_no_group = User.objects.create_superuser(username="testuser3", password="testpass123")
+
+        self.user_no_valid = User.objects.create_user(username="testuser4", password="testpass123")
+
+        self.url = reverse("tests:tests_for_review")
+    def test_view_status_code(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "tests/test_for_reviews.html")
+
+        # self.assertRedirects(response, reverse("app:index"))
+
+    def test_view_context_response(self):
+        response = self.client.get(self.url)
+
+        self.assertIn("test_result", response.context)
+        self.assertIn("active_tab", response.context)
+
+        test_result = response.context['test_result']
+        active_tab = response.context['active_tab']
+
+        self.assertIn(self.test, test_result)
+        self.assertEqual('my_tests', active_tab)
+
+    def test_user_no_group(self):
+        self.client.logout()
+
+        self.client.login(username="testuser3", password="testpass123")
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_no_valid(self):
+        self.client.logout()
+
+        self.client.login(username='testuser4', password='testpass123')
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("app:index"))
+
+    def tearDown(self):
+        self.user_no_valid.delete()
+        self.user_no_group.delete()
+        self.group_membership.delete()
+        self.group.delete()
+        self.test.delete()
+        self.category.delete()
+        self.user.delete()
+
+class TestGroupReviewsViewTest(TestCase):
+    pass
