@@ -362,7 +362,7 @@ class CreateTestView(LoginRequiredMixin, FormView):
           - 'active_link':sed to highlight the active link in the navigation menu (affects link styling in `base.html`).
         """
         context = super().get_context_data(**kwargs)
-        context['active_link'] = 'create'
+        context['active_tab'] = 'create'
         return context
     
         

@@ -22,18 +22,18 @@
         <ul>
             <li><a class="custom-link {% if active_tab == 'rating' %}active{% endif %}" href="{% url 'tests:rating' %}">Рейтинг</a></li>
             
-            {% if user.is_admin or user.is_staff %}
+            {% if user.is_superuser or user.is_staff %}
             <li><a class="custom-link {% if active_tab == 'my_tests' %}active{% endif %}" href="{% url 'tests:all_tests' %}">Меню тестів</a></li>
             {% endif %}
             
-            {% if user.is_admin or user.is_superuser %}
+            {% if user.is_superuser %}
             <li><a class="custom-link" href="{% url 'admin:index' %}">Адмін панель</a></li>
             {% endif %}
             
             <li><a class="custom-link {% if active_tab == 'profile' %}active{% endif %}" href="{% url 'users:profile' %}">Профіль</a></li>
             
             {% if user.is_staff or user.is_admin or user.is_superuser %}
-            <li><a href="{% url "tests:create_test" %}" class="create-test-button {% if active_link == 'create' %}create{% endif %}" >
+            <li><a href="{% url "tests:create_test" %}" class="create-test-button {% if active_tab == 'create' %}create{% endif %}" >
                 <span class="icon">+</span> Створити тест
             </a></li>
             {% endif %}

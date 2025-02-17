@@ -18,6 +18,7 @@ import dj_database_url
 from django.conf.global_settings import AUTH_USER_MODEL
 from decouple import config
 from django.templatetags.static import static
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -345,4 +346,84 @@ UNFOLD = {
     },
 
     
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters" : {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{"
+        },
+        'simple': {
+            "format": "{levelname} {message}",
+            "style": "{"
+        },
+        "detailed": {
+            "format": "{levelname}|{asctime}|{pathname}:{lineno}| {message} {exc_info}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "sql_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs"/ "sql.log",
+            "formatter": "verbose"
+        },
+
+        "debug_log": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs"/ "debug.log",
+            "formatter": "verbose"
+        },
+
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs"/ "errors.log",
+            "formatter": "detailed",
+        },
+        "warning_file": {
+            "level": "WARNING",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs"/ "warnings.log",
+            "formatter": "detailed"
+        },
+        "critical_errors": {
+            "level": "CRITICAL",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "critical.log",
+            "formatter": "detailed",
+            "maxBytes": 5 * 1024 * 1024,  # 5MB
+            "backupCount": 3,  # Хранить 3 старых файла
+        },
+
+        "console_log": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        }
+
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["sql_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+
+        "django": {
+            "handlers": ["debug_log", "error_file", "warning_file", "critical_errors", "console_log"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["error_file", "critical_errors"],
+            "level": "ERROR",
+
+        }
+    },
 }
