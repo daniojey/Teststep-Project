@@ -11,6 +11,7 @@ from datetime import date, timedelta, timezone
 from django.urls import reverse
 from django.utils import duration
 from django.utils.timezone import localtime
+from httpx import delete
 from tests.factories import AudioFactory, ImageFactory, TestFactory
 from tests.forms import AnswerForm, MatchingPairForm, QuestionForm, QuestionGroupForm, TestForm
 
@@ -1602,4 +1603,96 @@ class TestsForReviewVIewTest(TestCase):
         self.user.delete()
 
 class TestGroupReviewsViewTest(TestCase):
-    pass
+    
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        login_in = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_in, "Login failed during setup for TestResultsViewTest")
+
+        self.test_user = User.objects.create(username="testuser1", password='testpass123')
+
+        self.category = Categories.objects.create(name='Test_Cat', slug='test_cat')
+
+        self.test = TestFactory(
+            user=self.user,
+            category=self.category,
+            date_out=date(year=2024, month=10, day=25),
+            duration=timedelta(minutes=30)
+            # click TestFactory and press F12 addition info 
+        )
+
+        self.question = Question.objects.create(
+            test=self.test,
+            text='Question text',
+            question_type='TXT',
+            answer_type='SC'
+        )
+
+        self.answer = Answer.objects.create(
+            question=self.question,
+            text="Answer 1",
+            is_correct=True,
+        )
+
+        self.group =  UsersGroup.objects.create(
+            name="Test group"
+        )
+
+        self.group_membership = UsersGroupMembership.objects.create(
+            user=self.user,
+            group=self.group,
+            owner=True,
+        )
+
+        UsersGroupMembership.objects.create(
+            user=self.test_user,
+            group=self.group,
+            owner=True,
+        )
+
+        self.test_review = TestsReviews.objects.create(
+            test=self.test,
+            user=self.user,
+            duration=timedelta(minutes=10),
+            answers={f"question_{self.question.id}": str(self.answer.id)},
+        )
+
+        self.test_review_2 = TestsReviews.objects.create(
+            test=self.test,
+            user=self.test_user,
+            duration=timedelta(minutes=5),
+            answers={f"question_{self.question.id}": str(self.answer.id)},
+        )
+
+
+        self.url = reverse("tests:test_group_reviews", args=[self.test.id])
+    def test_get_url_status_code_and_template(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "tests/test_group_reviews.html")
+
+    def test_get_context_data(self):
+        response = self.client.get(self.url)
+
+        self.assertIn("test", response.context)
+        self.assertIn("user_reviews", response.context)
+
+        test = response.context['test']
+        user_reviews = response.context['user_reviews']
+
+        self.assertEqual(self.test, test)
+        self.assertIn(self.test_review, user_reviews)
+        self.assertIn(self.test_review_2, user_reviews)
+
+    def tearDown(self):
+        self.test_review_2.delete()
+        self.test_review.delete()
+        self.answer.delete()
+        self.question.delete()
+        self.test.delete()
+        self.category.delete()
+        self.group_membership.delete()
+        self.group.delete()
+        self.test_user.delete()
+        self.user.delete()
