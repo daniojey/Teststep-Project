@@ -405,6 +405,12 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "verbose"
+        },
+
+        "logtail": {
+            "class": "logtail.LogtailHandler",
+            "source_token": config("BETTERSTACK_SOURCE_TOKEN"),
+            "host": config("INGESTING_HOST"),
         }
 
     },
@@ -412,7 +418,7 @@ LOGGING = {
         "django.db.backends": {
             "handlers": ["sql_file"],
             "level": "DEBUG",
-            "propagate": False,
+            "propagate": True,
         },
 
         "django": {
@@ -421,7 +427,7 @@ LOGGING = {
             "propagate": False,
         },
         "django.request": {
-            "handlers": ["error_file", "critical_errors"],
+            "handlers": [ "logtail", "error_file", "critical_errors",],
             "level": "ERROR",
 
         }
