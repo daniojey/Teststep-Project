@@ -669,7 +669,7 @@ class AddQuestionViewTest(TestCase):
         self.assertEqual(aud_question.test, self.test)
 
         self.assertTrue(aud_question.audio)
-        aud_name = aud_question.audio.name.split('/')[-1].split('_')[0]
+        aud_name = aud_question.audio.name.split('/')[-1].split('_')[0].split('.')[0]
         self.assertEqual(aud_name, 'aud')
 
         self.assertFalse(aud_question.image)
