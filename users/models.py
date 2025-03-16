@@ -1,11 +1,30 @@
+from django.core.files import File
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from PIL import Image
+from io import BytesIO
 
 class User(AbstractUser):
     image = models.ImageField(upload_to='users_images', blank=True, null=True)
 
     def __str__(self):
         return  self.username
+    
+    def save(self, *args, **kwargs):
+        if self.image:
+            img = Image.open(self.image)
+            
+            max_size = (800, 600)
+            
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            output = BytesIO()
+            img.save(output, format='JPEG', quality=85)
+            output.seek(0)
+
+            self.image = File(output, name=self.image.name)
+            
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "user"
