@@ -2,6 +2,8 @@
     display: flex;
 }
 
+
+
 .profile-container {
     max-width: 630px;
     display: inline-flex;
@@ -223,4 +225,40 @@
     .password-button {
         width: 100%;
     }
+}
+
+
+#notification{
+    display: none;
+    position: absolute;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    padding: 15px 25px;
+    border-radius: 12px;
+    opacity: 0;
+    top: 10px;
+    left: 50%; /* Сдвигаем элемент на 50% вправо */
+    transform:translateX(-50%); 
+    transition: opacity 0.5s ease-in-out;
+    animation: slideIn 0.7s ease-out;
+    z-index: 1000;
+}
+
+.show-message{
+    color: white;
+    background-color: #4caf50;
+}
+
+.show-error-message {
+    color: white;
+    background-color: #f44336;
+}
+
+/* Анимация появления уведомления */
+@keyframes slideIn {
+    from { opacity: 0; transform:translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform:translateX(-50%) translateY(0); }
 }
