@@ -1,6 +1,7 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 import requests
 
 from tests.models import TestResult, Tests, TestsReviews
@@ -153,3 +154,15 @@ class AboutDevView(TemplateView):
 #         "group": group
 #     }
 #     return render(request, "app/index.html", context=context)
+
+
+class CspReports(TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        print('CSP report received')
+        return HttpResponse(status=200)
+    
+    def post(self, request, *args, **kwargs):
+        print('CSP report received')
+        return HttpResponse(status=200)
+    
