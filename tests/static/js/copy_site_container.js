@@ -9,16 +9,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Функция для синхронизации высоты
     const syncHeight = () => {
-        console.log("Ширина окна: ", window.innerWidth); // Логируем ширину окна
+        // console.log("Ширина окна: ", window.innerWidth); // Логируем ширину окна
         if (window.innerWidth <= 1000) {
-            console.log("Устанавливаем фиксированную высоту 200px");
+            // console.log("Устанавливаем фиксированную высоту 200px");
             baseStudentsContainer.style.height = '200px';
             baseStudentsContainer.style.minHeight = '0'; // Убираем min-height
         } else {
             const testContainerHeight = mainTestContainer.offsetHeight;
-            console.log("Синхронизируем высоту с mainTestContainer: ", testContainerHeight);
-            baseStudentsContainer.style.height = `${testContainerHeight}px`;
-            baseStudentsContainer.style.minHeight = '794'; // Восстанавливаем min-height, если нужно
+            // console.log("Синхронизируем высоту с mainTestContainer: ", testContainerHeight);
+            baseStudentsContainer.style.minHeight = `${testContainerHeight}px`; // Восстанавливаем min-height, если нужно
         }
     };
 

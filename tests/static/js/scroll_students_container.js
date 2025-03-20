@@ -10,13 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Функция для проверки и активации скрипта в зависимости от ширины окна
     const checkWindowWidth = () => {
         if (window.innerWidth <= 1000) {
-            console.log("Скрипт отключен для ширины окна <= 1000px.");
+            // console.log("Скрипт отключен для ширины окна <= 1000px.");
             window.removeEventListener('scroll', updatePosition); // Отключаем обработчик скролла
             // Возвращаем элемент в обычное положение
             students.style.position = 'static'; // Сбрасываем позицию
             students.style.top = ''; // Сбрасываем отступы
         } else {
-            console.log("Скрипт активирован для ширины окна > 1000px.");
+            // console.log("Скрипт активирован для ширины окна > 1000px.");
+            updatePosition();
             window.addEventListener('scroll', updatePosition); // Включаем обработчик скролла
         }
     };
@@ -40,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Устанавливаем положение на нижней границе
             students.style.position = 'absolute';
             students.style.top = `${baseContainer.offsetHeight - students.offsetHeight}px`;
+        } else {
+            students.style.position = 'absolute';
         }
     };
 
