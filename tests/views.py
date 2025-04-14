@@ -487,7 +487,7 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(
-            Question.objects.select_related('test').prefetch_related('answers'),
+            Question.objects.select_related('test', 'group').prefetch_related('answers'),
             id=question_id)
         
         answers = question.answers.all()
@@ -593,12 +593,10 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
             id=question_id
         )
 
-        test = question.test
-        matching_pairs = MatchingPair.objects.filter(question=question)
+        # matching_pairs = MatchingPair.objects.filter(question=question)
 
 
         context.update({
-            'test': test,
             'question': question,
             'group': question.group,
             'form_type': 'Соотвецтвие',
