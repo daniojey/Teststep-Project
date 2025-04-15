@@ -215,16 +215,19 @@ class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
             # Список студентов для чекбоксов
             students = [(ids, username) for ids, username in students_in_group]
 
-            # Заполняем поле с чекбоксами
-            self.fields['students'] = forms.MultipleChoiceField(
-                choices=students,  # Список студентов в формате (id, имя)
-                widget=forms.CheckboxSelectMultiple,
-                label='Додати студентів до тесту',
-                required=False
-            )
+            
         else:
-            students = []
+            students = [(user.id, user.username)]
         
+
+        # Заполняем поле с чекбоксами
+        self.fields['students'] = forms.MultipleChoiceField(
+           choices=students,  # Список студентов в формате (id, имя)
+           widget=forms.CheckboxSelectMultiple,
+           label='Додати студентів до тесту',
+           required=False
+          )
+
 
         # Устанавливаем начальные значения для чекбоксов, если студенты уже выбраны
         if test and test.students:
