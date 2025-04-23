@@ -77,10 +77,11 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
         test_id = self.kwargs.get('test_id')
 
 
+        # Получаем тест и группу пользователя
         test = get_object_or_404(Tests, id=test_id)
         user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
 
-
+        # Если группа существует возвращаем результаты по тестам всех группы, иначе пустой список
         if user_group:
             group_members = UsersGroupMembership.objects.filter(group=user_group.group).select_related('user')
             results = TestResult.objects.filter(
@@ -141,6 +142,7 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Если админ то отображаем все тесты, иначе только тесты текущего пользователя
         if self.request.user.is_superuser:
             tests = Tests.objects.all()
         else:
@@ -175,9 +177,11 @@ class CreateTestView(LoginRequiredMixin, FormView):
         return kwargs
     
     def form_valid(self, form):
+        # Связываем форму с переменной но без сохранения в БД
         test = form.save(commit=False)
         test.user = self.request.user
 
+        # Получаем время на прохождение из кастомного поля формы
         test.duration = form.cleaned_data.get('raw_duration')
         test.save()
 
@@ -185,6 +189,7 @@ class CreateTestView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        """ Если форма не валидна то собераем все ошибки и рендерим их в шаблон """
         errors = []
 
         if form.non_field_errors():
@@ -198,6 +203,8 @@ class CreateTestView(LoginRequiredMixin, FormView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Доабвление active_tab необходимо для правильной работы стилей ссылок в header 
         context['active_tab'] = 'create'
         return context
     
@@ -225,9 +232,19 @@ class EditTestView(UpdateView):
 
         return context
     
-    def get_form(self, form_class = None): 
+    def get_form(self, form_class = None):
+        """Что делаем:
+        1. Получаем форму
+        2. Делаем необходимое количество строк в поле description через attrs
+        3. Убираем картинку из предзаполнения формы
+        4. Добавляем класс, id, и текст для поля image
+        5. Добавляем список категорий исключая базовый пустой вариант виджета
+        6. Добавляем класс и тип для виджета date_out
+        7. Присваиваем date-out локальное отображение даты сервера
+        """
+
         form = super().get_form(form_class)
-        
+
         form.fields['description'].widget = Textarea(attrs={'rows': 4})
         form.initial['image'] = None
         form.fields['image'].widget = ClearableFileInput(attrs={
@@ -291,6 +308,7 @@ class AddQuestionGroupView(LoginRequiredMixin, FormView):
         test_id = self.kwargs.get('test_id')
         test = get_object_or_404(Tests, id=test_id)
 
+        # Присваеваем группу вопросов к тесту
         question_group = form.save(commit=False)
         question_group.test = test
         question_group.save()
@@ -326,24 +344,24 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         test_id = self.kwargs.get('test_id')
 
-        
+        # Получаем тест и пользователя
         test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
         user = self.request.user
 
-        
+        # Получаем все вопросы теста и связанные с ними группы
         questions = Question.objects.filter(test=test).select_related('group')
 
-
+        # Получаем все группы вопросов, связанные с тестом, и предзагружаем их вопросы
         question_groups = list(
             QuestionGroup.objects.filter(test=test).prefetch_related(
                 Prefetch('questions_group', queryset=questions)
             )
         )
         
-
+        # Получаем все вопросы, которые не пренадлежат ни одной из груп
         ungrouped_questions = list(questions.filter(group__isnull=True))
 
-
+        # Инициализируем формы
         question_form = QuestionForm(test=test)
         form_student = QuestionStudentsForm(test=test, user=user)
 
@@ -363,11 +381,14 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
         test = get_object_or_404(Tests, id=test_id)
         user = request.user
 
+        # Получаем тип формы из POST-запроса
         form_type = request.POST.get('form_type')
 
+        # Получаем формы и передаем в них тест, пользователя и данные запроса
         question_form = QuestionForm(request.POST, request.FILES, test=test)
         students_form = QuestionStudentsForm(request.POST, request.FILES, test=test, user=user)
 
+        # Если в запросе попытка добавить вопрос то обрабатываем его
         if form_type == 'form_question':
             if question_form.is_valid():
                 question = question_form.save(commit=False)
@@ -375,6 +396,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 question.save()
                 return redirect('tests:add_questions', test_id=test.id)
             else:
+                # Если форма не валидна, собираем ошибки и рендерим их в шаблон
                 errors = []
 
                 if question_form.non_field_errors():
@@ -389,8 +411,11 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
                 context['errors'] = errors
             
                 return self.render_to_response(context)
-            
+        
+        # Если в запросе попытка добавить студентов то обрабатываем его
         elif form_type == 'form_student':
+
+            # Если форма валидна, то получаем спасок всех студентов и сохраняем в одноименнованное поле в модели Tests
             if students_form.is_valid():
                 test.students = {'students': students_form.cleaned_data.get('students')}
                 test.save()
@@ -478,12 +503,14 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(Question, id=question_id)
 
+        # Связываем форму с переменной но без сохранения в БД после чего присваиваем ответ к вопросу
         answer = form.save(commit=False)
         answer.question = question
         answer.save()
         return redirect('tests:add_answers', question_id=question.id)
     
     def get_context_data(self, **kwargs):
+        """ Получаем вопрос а также все его ответы и его группу"""
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(
@@ -537,28 +564,33 @@ class AddAnswersView(LoginRequiredMixin, FormView):
 
 class SaveCorrectView(View):
     def post(self, request, *args, **kwargs):
+        # Получаем ID вопроса из URL и для вопроса предзагружаем все ответы
         question = get_object_or_404(Question.objects.prefetch_related('answers'), id=self.kwargs['question_id'])
 
+        # Получаем список ID для сохранения ответов из запроса
         correct_answers_ids = request.POST.getlist('correct_answers')
+
+        # Обрабатываем лишь случаи вопросов с одиночным выбором и множественным выбором, остальные не изменяем
         if question.answer_type == 'SC':
-            question.answers.all().update(is_correct=False)
+
             if correct_answers_ids:
+
+                # Все ответі делаем не верными
+                question.answers.all().update(is_correct=False)
+
+                # Получаем ID первого ответа из списка и сохраняем его как верный
                 id_answer = correct_answers_ids[0]
                 answer = Answer.objects.filter(id=id_answer).update(is_correct=True)
             
         elif question.answer_type == 'MC':
-            question.answers.all().update(is_correct=False)
-            answers = Answer.objects.filter(id__in=correct_answers_ids).update(is_correct=True)
+             
+             if correct_answers_ids:
+                # Все ответі делаем не верными после чего делаем верными только те которые которых ID совпадают с ID из списка
+                question.answers.all().update(is_correct=False)
+                answers = Answer.objects.filter(id__in=correct_answers_ids).update(is_correct=True)
         else:
-            # INP и MTCH не трогаем так как сохраняется всё коректно по умолчанию
+            # Остальные случаи игнорируем
             ...
-        # answer = Answer.objects.get(id=correct_answers_ids[0])
-        # print(answer)
-        # print(answer.is_correct)
-
-        # for item_id in correct_answers_ids:
-        #     print(f"Type{type(item_id)} and id {item_id}")
-        #     print(get_object_or_404(Answer, id=item_id))
 
         return redirect(reverse('tests:add_questions', args=[question.test.id]))
 
@@ -578,6 +610,7 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         question_id = self.kwargs.get('question_id')
         question = get_object_or_404(Question, id=question_id)
 
+        # Присваиваем форму переменной но без сохранения в БД после чего присваиваем ответ к вопросу
         answer = form.save(commit=False)
         answer.question = question
         answer.save()
@@ -588,6 +621,7 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         question_id = self.kwargs.get('question_id')
 
+        # Получаем вопрос а также все его ответы и его группу
         question = get_object_or_404(
             Question.objects.select_related('test').prefetch_related('test__questions', 'answers', 'matching_pairs'),
             id=question_id
@@ -650,13 +684,11 @@ class TestPreviewView(LoginRequiredMixin,TemplateView):
         user = self.request.user
         test_id = self.kwargs.get('test_id')
 
-        if self.request.user.is_authenticated:
-            # test_results = user.test_results.all()
-            test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
-            test_results = TestResult.objects.filter(test=test, user=user).select_related('test', 'user').first()
-            test_review = TestsReviews.objects.filter(user=user, test=test).select_related('test', 'user')
 
-        test = get_object_or_404(Tests, id=test_id)
+        # Получаем тест и результат по тесту либо то что тест находится на ожидании проверки, необходимо для отображения стилей
+        test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
+        test_results = TestResult.objects.filter(test=test, user=user).select_related('test', 'user').first()
+        test_review = TestsReviews.objects.filter(user=user, test=test).select_related('test', 'user')
 
         context.update({
             'test': test,
@@ -701,19 +733,23 @@ class TakeTestView(LoginRequiredMixin ,FormView):
     def dispatch(self, request, *args, **kwargs):
         self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
 
+        # При неверном ID теста в сессии очищаем сессию
         session_test_id = request.session.get('test_id')
         if self.test.id != session_test_id and session_test_id != None:
             self.clear_test_session(request=request)
 
+        # Снова добавляем ID теста к сессии
         request.session['test_id'] = self.test.id
 
-
+        # Если время начала теста не установленио то добавляем его в сессию
         if 'test_start_time' not in request.session:
             request.session['test_start_time'] = now().timestamp()  # Сохраняем метку времени
 
+        # Если не установлено оставшееся время(от теста) то добавляем его в сессию
         if 'remaining_time' not in request.session:
             request.session['remaining_time'] = self.test.duration.total_seconds()
 
+        # Если сессия для теста не была созданна тогда иничиализируем сессию теста
         if 'question_order' not in request.session:
             response = self.initialize_test_session()
             if isinstance(response, HttpResponse):
@@ -722,6 +758,7 @@ class TakeTestView(LoginRequiredMixin ,FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def clear_test_session(self, request):
+        # Очищаем все возможные ключи из сессии
         keys_to_clear = ['test_id', 'question_order', 'question_index', 'test_responses', 'remaining_time', 'test_start_time']
         for key in keys_to_clear:
             if key in request.session:
@@ -729,33 +766,31 @@ class TakeTestView(LoginRequiredMixin ,FormView):
 
     def initialize_test_session(self):
         questions_by_group = {}
+
+        # Проходим по группе вопросов и все вопросы для каждой из них после сохраняем в виде словаря Группа:[Вопросы]
         for group in QuestionGroup.objects.filter(test=self.test).prefetch_related('questions_group'):
             questions_by_group[group.name] = list(group.questions_group.all())
 
+        # Проходим по словарю questions_by_group и перемещиваем все вопросы для каждой группы
         for group_name, questions in questions_by_group.items():
             random.shuffle(questions)
 
+        # Обединяем все перемешанные вопросы в один список
         all_questions = []
         for questions in questions_by_group.values():
             all_questions.extend(questions)
 
+        # Выбираем оставшиеся вопросы которые не предналежат ни одной из групп после чего перемешиваем их и добавляем в список
         questions_not_group = list(Question.objects.filter(test=self.test, group=None))
         random.shuffle(questions_not_group)
         all_questions.extend(questions_not_group)
 
         if len(all_questions) == 0:
-            if 'test_id' in self.request.session:
-                del self.request.session['test_id']
-
-            if 'remaining_time' in self.request.session:
-                del self.request.session['remaining_time']
-
-            if 'test_start_time' in self.request.session:
-                del self.request.session['test_start_time']
-
-
+            # Если нет вопросов, то очищаем сессию и перенаправляем на главную страницу
+            self.clear_test_session(request=self.request)
             return redirect('app:index')
         else:
+            # Иначе инициализируем начальные данные для прохождения теста
             self.request.session['question_order'] = [q.id for q in all_questions]
             self.request.session['question_index'] = 0  # Начинаем с первого вопроса
             self.request.session['test_responses'] = {}  # Для хранения ответов
