@@ -206,7 +206,7 @@ AUTHENTICATION_BACKENDS = (
 # Включаем поддержку отправки писем в Django
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = config('EMAIL_HOST')  # Пример для Gmail
+EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
 EMAIL_PORT = config('EMAIL_PORT', cast=int) # Используем порт для TLS
 
 # Данные для авторизации
