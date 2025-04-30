@@ -420,7 +420,7 @@ LOGGING = {
     },
     "loggers": {
         "django.db.backends": {
-            "handlers": ["sql_file"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": True,
         },
