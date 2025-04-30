@@ -366,6 +366,10 @@ LOGGING = {
         }
     },
     "handlers": {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        
         "sql_file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
@@ -422,12 +426,12 @@ LOGGING = {
         },
 
         "django": {
-            "handlers": ["debug_log", "error_file", "warning_file", "critical_errors", "console_log"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False,
         },
         "django.request": {
-            "handlers": [ "logtail", "error_file", "critical_errors",],
+            "handlers": [ "logtail", "console",],
             "level": "ERROR",
 
         }
