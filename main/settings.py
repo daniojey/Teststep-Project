@@ -369,47 +369,47 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-        
-        "sql_file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs"/ "sql.log",
-            "formatter": "verbose"
-        },
 
-        "debug_log": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs"/ "debug.log",
-            "formatter": "verbose"
-        },
+        # "sql_file": {
+        #     "level": "DEBUG",
+        #     "class": "logging.FileHandler",
+        #     "filename": BASE_DIR / "logs"/ "sql.log",
+        #     "formatter": "verbose"
+        # },
 
-        "error_file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs"/ "errors.log",
-            "formatter": "detailed",
-        },
-        "warning_file": {
-            "level": "WARNING",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs"/ "warnings.log",
-            "formatter": "detailed"
-        },
-        "critical_errors": {
-            "level": "CRITICAL",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "critical.log",
-            "formatter": "detailed",
-            "maxBytes": 5 * 1024 * 1024,  # 5MB
-            "backupCount": 3,  # Хранить 3 старых файла
-        },
+        # "debug_log": {
+        #     "level": "DEBUG",
+        #     "class": "logging.FileHandler",
+        #     "filename": BASE_DIR / "logs"/ "debug.log",
+        #     "formatter": "verbose"
+        # },
 
-        "console_log": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose"
-        },
+        # "error_file": {
+        #     "level": "ERROR",
+        #     "class": "logging.FileHandler",
+        #     "filename": BASE_DIR / "logs"/ "errors.log",
+        #     "formatter": "detailed",
+        # },
+        # "warning_file": {
+        #     "level": "WARNING",
+        #     "class": "logging.FileHandler",
+        #     "filename": BASE_DIR / "logs"/ "warnings.log",
+        #     "formatter": "detailed"
+        # },
+        # "critical_errors": {
+        #     "level": "CRITICAL",
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": BASE_DIR / "logs" / "critical.log",
+        #     "formatter": "detailed",
+        #     "maxBytes": 5 * 1024 * 1024,  # 5MB
+        #     "backupCount": 3,  # Хранить 3 старых файла
+        # },
+
+        # "console_log": {
+        #     "level": "INFO",
+        #     "class": "logging.StreamHandler",
+        #     "formatter": "verbose"
+        # },
 
         "logtail": {
             "class": "logtail.LogtailHandler",
