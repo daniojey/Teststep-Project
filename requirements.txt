@@ -31,8 +31,8 @@ msgpack==1.1.0
 packaging==24.2
 pilkit==3.0
 pillow==11.0.0
-psycopg==3.2.1
-psycopg-binary==3.2.1
+psycopg==3.2.4
+psycopg-binary==3.2.4
 pydub==0.25.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
