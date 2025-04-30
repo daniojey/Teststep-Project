@@ -2,7 +2,7 @@ from .settings import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://teststep-4842fd9b5f81.herokuapp.com/' "teststep-4842fd9b5f81.herokuapp.com", 'localhost', '*']
+ALLOWED_HOSTS = ['https://teststep-b12b84e165a7.herokuapp.com/' "teststep-b12b84e165a7.herokuapp.com", 'localhost', '*']
 ALLOWED_HOSTS += [os.environ.get('HEROKU_APP_NAME', '') + '.herokuapp.com']
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
