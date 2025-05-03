@@ -29,7 +29,7 @@ class Tests(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
-    students = models.JSONField(verbose_name='Студенти', default=list)
+    students = models.JSONField(verbose_name='Студенти', default=list, blank=True, null=True)
     name = models.CharField(verbose_name="Ім'я",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True, validators=[validate_image], upload_to="test-images")
