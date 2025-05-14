@@ -73,7 +73,7 @@ class Tests(models.Model):
             
         super().save(*args, **kwargs)
 
-     def clean(self):
+    def clean(self):
         super().clean()
 
         valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
