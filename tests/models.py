@@ -152,18 +152,38 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         if self.image:
             img = Image.open(self.image)
+
+            ext = os.path.splitext(self.image.name)[1].lower().lstrip('.')
+
+            ext_map = {
+            'jpg': 'JPEG',
+            'jpeg': 'JPEG',
+            'png': 'PNG',
+            'webp': 'WEBP',
+            }
+
             
             max_size = (800, 600)
             
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
             
             output = BytesIO()
-            img.save(output, format='JPEG', quality=85)
+            img.save(output, format=ext_map[ext], quality=85)
             output.seek(0)
 
             self.image = File(output, name=self.image.name)
             
         super().save(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+
+        valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+        ext = os.path.splitext(self.image.name)[1].lower()
+        if ext not in valid_extensions:
+            raise ValidationError({
+                'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
+            })
     
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
