@@ -111,7 +111,7 @@ body {
 
 /* Стили для placeholder в input */
 .custom-form input::placeholder {
-    color: #b0b0b09d; 
+    color: #ff00009d; 
     opacity: 1; 
     border-radius: 8px;
     font-size: 16px;
