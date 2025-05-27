@@ -14,7 +14,7 @@
             {% if question.question_type == "IMG" and question.text != "" %}
                 <p class='question-text'>{{ question.text }}</p>
             {% else %}
-                <p class='question-text'>{{ question }}</p>
+                <p class='question-text'>{{ question.text }}</p>
             {% endif %}
         </div>
 

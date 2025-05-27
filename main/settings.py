@@ -67,7 +67,7 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -348,92 +348,92 @@ UNFOLD = {
     
 }
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters" : {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{"
-        },
-        'simple': {
-            "format": "{levelname} {message}",
-            "style": "{"
-        },
-        "detailed": {
-            "format": "{levelname}|{asctime}|{pathname}:{lineno}| {message} {exc_info}",
-            "style": "{",
-        }
-    },
-    "handlers": {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters" : {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {message}",
+#             "style": "{"
+#         },
+#         'simple': {
+#             "format": "{levelname} {message}",
+#             "style": "{"
+#         },
+#         "detailed": {
+#             "format": "{levelname}|{asctime}|{pathname}:{lineno}| {message} {exc_info}",
+#             "style": "{",
+#         }
+#     },
+#     "handlers": {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
 
-        # "sql_file": {
-        #     "level": "DEBUG",
-        #     "class": "logging.FileHandler",
-        #     "filename": BASE_DIR / "logs"/ "sql.log",
-        #     "formatter": "verbose"
-        # },
+#         # "sql_file": {
+#         #     "level": "DEBUG",
+#         #     "class": "logging.FileHandler",
+#         #     "filename": BASE_DIR / "logs"/ "sql.log",
+#         #     "formatter": "verbose"
+#         # },
 
-        # "debug_log": {
-        #     "level": "DEBUG",
-        #     "class": "logging.FileHandler",
-        #     "filename": BASE_DIR / "logs"/ "debug.log",
-        #     "formatter": "verbose"
-        # },
+#         # "debug_log": {
+#         #     "level": "DEBUG",
+#         #     "class": "logging.FileHandler",
+#         #     "filename": BASE_DIR / "logs"/ "debug.log",
+#         #     "formatter": "verbose"
+#         # },
 
-        # "error_file": {
-        #     "level": "ERROR",
-        #     "class": "logging.FileHandler",
-        #     "filename": BASE_DIR / "logs"/ "errors.log",
-        #     "formatter": "detailed",
-        # },
-        # "warning_file": {
-        #     "level": "WARNING",
-        #     "class": "logging.FileHandler",
-        #     "filename": BASE_DIR / "logs"/ "warnings.log",
-        #     "formatter": "detailed"
-        # },
-        # "critical_errors": {
-        #     "level": "CRITICAL",
-        #     "class": "logging.handlers.RotatingFileHandler",
-        #     "filename": BASE_DIR / "logs" / "critical.log",
-        #     "formatter": "detailed",
-        #     "maxBytes": 5 * 1024 * 1024,  # 5MB
-        #     "backupCount": 3,  # Хранить 3 старых файла
-        # },
+#         # "error_file": {
+#         #     "level": "ERROR",
+#         #     "class": "logging.FileHandler",
+#         #     "filename": BASE_DIR / "logs"/ "errors.log",
+#         #     "formatter": "detailed",
+#         # },
+#         # "warning_file": {
+#         #     "level": "WARNING",
+#         #     "class": "logging.FileHandler",
+#         #     "filename": BASE_DIR / "logs"/ "warnings.log",
+#         #     "formatter": "detailed"
+#         # },
+#         # "critical_errors": {
+#         #     "level": "CRITICAL",
+#         #     "class": "logging.handlers.RotatingFileHandler",
+#         #     "filename": BASE_DIR / "logs" / "critical.log",
+#         #     "formatter": "detailed",
+#         #     "maxBytes": 5 * 1024 * 1024,  # 5MB
+#         #     "backupCount": 3,  # Хранить 3 старых файла
+#         # },
 
-        # "console_log": {
-        #     "level": "INFO",
-        #     "class": "logging.StreamHandler",
-        #     "formatter": "verbose"
-        # },
+#         # "console_log": {
+#         #     "level": "INFO",
+#         #     "class": "logging.StreamHandler",
+#         #     "formatter": "verbose"
+#         # },
 
-        "logtail": {
-            "class": "logtail.LogtailHandler",
-            "source_token": config("BETTERSTACK_SOURCE_TOKEN"),
-            "host": config("INGESTING_HOST"),
-        }
+#         "logtail": {
+#             "class": "logtail.LogtailHandler",
+#             "source_token": config("BETTERSTACK_SOURCE_TOKEN"),
+#             "host": config("INGESTING_HOST"),
+#         }
 
-    },
-    "loggers": {
-        "django.db.backends": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": True,
-        },
+#     },
+#     "loggers": {
+#         "django.db.backends": {
+#             "handlers": ["console"],
+#             "level": "DEBUG",
+#             "propagate": True,
+#         },
 
-        "django": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": [ "logtail", "console",],
-            "level": "ERROR",
+#         "django": {
+#             "handlers": ["console"],
+#             "level": "DEBUG",
+#             "propagate": False,
+#         },
+#         "django.request": {
+#             "handlers": [ "logtail", "console",],
+#             "level": "ERROR",
 
-        }
-    },
-}
+#         }
+#     },
+# }

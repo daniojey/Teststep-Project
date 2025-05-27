@@ -1,4 +1,6 @@
 import os
+from uuid import uuid4
+from pathlib import Path
 from django.db import models
 from django.forms import ValidationError
 from users.models import User
@@ -49,40 +51,35 @@ class Tests(models.Model):
         return  self.name
     
     def save(self, *args, **kwargs):
-        if self.image:
+        # если файла нет или он не изменился — просто сохраняем
+        if self.image and getattr(self.image, 'file', None):
             img = Image.open(self.image)
 
-            ext = os.path.splitext(self.image.name)[1].lower().lstrip('.')
+            ext = Path(self.image.name).suffix.lower().lstrip('.')
+            ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
 
-            ext_map = {
-            'jpg': 'JPEG',
-            'jpeg': 'JPEG',
-            'png': 'PNG',
-            'webp': 'WEBP',
-            }
+            img.thumbnail((800, 600), Image.Resampling.LANCZOS)
 
-            
-            max_size = (800, 600)
-            
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
             output = BytesIO()
-            img.save(output, format=ext_map[ext], quality=85)
+            img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
             output.seek(0)
 
-            self.image = File(output, name=self.image.name)
-            
+            # >>> важная строка: только базовое имя, без «test-images/»
+            filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
+            self.image.save(filename, File(output), save=False)
+
         super().save(*args, **kwargs)
 
     def clean(self):
         super().clean()
 
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
-        ext = os.path.splitext(self.image.name)[1].lower()
-        if ext not in valid_extensions:
-            raise ValidationError({
-                'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
-            })
+        if self.image or getattr(self.image, 'name', None):
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            ext = os.path.splitext(self.image.name)[1].lower()
+            if ext not in valid_extensions:
+                raise ValidationError({
+                    'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
+                })
 
     class Meta:
         db_table = "tests"
@@ -151,40 +148,35 @@ class Question(models.Model):
         return f"Дата та назва тесту: {self.test.date_taken.date()} - {self.test.name}|  Питання: {self.text}" or f"Дата та назва тесту: {self.test.date_taken.date()} - {self.test.name}| Питання: {self.question_type} - {self.id}"
 
     def save(self, *args, **kwargs):
-        if self.image:
+        # если файла нет или он не изменился — просто сохраняем
+        if self.image and getattr(self.image, 'file', None):
             img = Image.open(self.image)
 
-            ext = os.path.splitext(self.image.name)[1].lower().lstrip('.')
+            ext = Path(self.image.name).suffix.lower().lstrip('.')
+            ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
 
-            ext_map = {
-            'jpg': 'JPEG',
-            'jpeg': 'JPEG',
-            'png': 'PNG',
-            'webp': 'WEBP',
-            }
+            img.thumbnail((800, 600), Image.Resampling.LANCZOS)
 
-            
-            max_size = (800, 600)
-            
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
             output = BytesIO()
-            img.save(output, format=ext_map[ext], quality=85)
+            img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
             output.seek(0)
 
-            self.image = File(output, name=self.image.name)
-            
+            # >>> важная строка: только базовое имя, без «test-images/»
+            filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
+            self.image.save(filename, File(output), save=False)
+
         super().save(*args, **kwargs)
 
     def clean(self):
         super().clean()
 
-        valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
-        ext = os.path.splitext(self.image.name)[1].lower()
-        if ext not in valid_extensions:
-            raise ValidationError({
-                'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
-            })
+        if self.image or getattr(self.image, 'name', None):
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            ext = os.path.splitext(self.image.name)[1].lower()
+            if ext not in valid_extensions:
+                raise ValidationError({
+                    'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
+                })
     
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)

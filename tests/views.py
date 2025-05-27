@@ -1066,13 +1066,26 @@ class TestsResultsView(View):
             if question.answer_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
+                    print("КОРРЕКТНий",correct_answer)
+                    print("КОРРЕКТНий",correct_answer.id)
+                    print("ПОИНТ 1.0")
                     correct_answers += 1.0
+
+                print(question)
+                print(value)
 
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+                point = 1 / len(correct_answers_list)
+
+                print(value)
+
+                for v in value:
+                    if int(v) in correct_answers_list:
+                        correct_answers += point
             
-                if set(map(int, value)) == set(correct_answers_list):
-                    correct_answers += 1.0
+                # if set(map(int, value)) == set(correct_answers_list):
+                #     correct_answers += 1.0
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
@@ -1098,11 +1111,18 @@ class TestsResultsView(View):
                 if correct_answer and correct_answer.id == int(value):
                     correct_answers += 1.0
 
+                print(value)
+
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
+                point = 1 / len(correct_answers_list)
 
-                if set(map(int, value)) == set(correct_answers_list):
-                    correct_answers += 1.0
+                print(value)
+                print(point)
+
+                for v in value:
+                    if int(v) in correct_answers_list:
+                        correct_answers += point
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
@@ -1114,14 +1134,21 @@ class TestsResultsView(View):
         elif question.question_type == 'AUD':
             if question.answer_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
+                print("КОРРЕКТНий",correct_answer)
+                print("КОРРЕКТНий",correct_answer.id)
                 if correct_answer and correct_answer.id == int(value):
+                    print("ПОИНТ 1.0")
                     correct_answers += 1.0
+
+                print(value)
 
             elif question.answer_type == 'MC':
                 correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-            
-                if set(map(int, value)) == set(correct_answers_list):
-                    correct_answers += 1.0
+                point = 1 / len(correct_answers_list)
+
+                for v in value:
+                    if int(v) in correct_answers_list:
+                        correct_answers += point
 
             elif question.answer_type == 'INP':
                 correct_answer = question.answers.filter(is_correct=True).first()
@@ -1136,10 +1163,14 @@ class TestsResultsView(View):
         elif question.question_type == 'MTCH':
                 questions_count = MatchingPair.objects.filter(question=question).count()
                 points = 1 / questions_count
+
+                print(value.items())
                 for left, right in value.items():
                     if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
+                        print("ПОИНТ", points)
                         correct_answers += points
 
+        print(correct_answers)
         return correct_answers
     
     def save_test_results(self, request, test, score, test_duration):
