@@ -39,7 +39,8 @@ class Tests(models.Model):
     image = models.ImageField(verbose_name="Превью",null=True, blank=True, validators=[validate_image], upload_to="test-images")
     duration = models.DurationField(verbose_name="Продовжуваність теста", null=True, blank=True)
     date_taken = models.DateTimeField(auto_now_add=True)
-    date_out = models.DateTimeField(auto_now_add=False, verbose_name='Буде доступний до')
+    date_in = models.DateTimeField(auto_now_add=False, verbose_name='c')
+    date_out = models.DateTimeField(auto_now_add=False, verbose_name='до')
     category = models.ForeignKey(Categories, related_name='tests', on_delete=models.CASCADE, verbose_name="Категорія", null=False)
     check_type = models.CharField(max_length=10, choices=CHECK_CHOICES, default=AUTO_CHECK, verbose_name="Тип перевірки відповідей")
     image_thumbnail = ImageSpecField(source='image',

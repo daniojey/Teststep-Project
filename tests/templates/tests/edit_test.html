@@ -41,8 +41,16 @@
                 {{ form.check_type }}
             </div>
             
-            <div class='form-group'>
-                {{ form.date_out }}
+            <div class="date-wrapper">
+                <div class='date-wrapper-block'>
+                    <label class='date-wrapper-label'>Доступний с</label>
+                    {{ form.date_in }}
+                </div>
+
+                <div class="date-wrapper-block">
+                    <label class='date-wrapper-label'>Доступний до</label>
+                    {{ form.date_out}}
+                </div>
             </div>
             
         </form>

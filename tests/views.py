@@ -10,7 +10,7 @@ from django.views.generic import FormView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.db.models import F, ExpressionWrapper, Prefetch, fields
-from django.forms import ClearableFileInput, DateInput, Textarea
+from django.forms import ClearableFileInput, DateInput, DateTimeInput, Textarea
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import localtime, now
@@ -215,7 +215,7 @@ class CreateTestView(LoginRequiredMixin, FormView):
 class EditTestView(UpdateView):
     model=Tests
     template_name = "tests/edit_test.html"
-    fields = ['name', 'description','image', 'date_out', 'category', 'check_type']
+    fields = ['name', 'description','image', 'date_in','date_out', 'category', 'check_type']
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -255,13 +255,30 @@ class EditTestView(UpdateView):
 
         form.fields['category'].choices = [(item.id, item.name) for item in Categories.objects.all()]
 
-        form.fields['date_out'].widget = DateInput(
-            attrs={'type': 'date', 'class': 'date-wrapper'}
+        form.fields['date_in'].widget = DateTimeInput(
+            attrs={
+                'type': 'datetime-local',
+                'class': 'form-control'  # опционально (для стилизации)
+            },
+            format='%Y-%m-%dT%H:%M'     # обязательный формат
         )
 
+        form.fields['date_out'].widget = DateTimeInput(
+            attrs={
+                'type': 'datetime-local',
+                'class': 'form-control'  # опционально (для стилизации)
+            },
+            format='%Y-%m-%dT%H:%M'     # обязательный формат
+        )
+
+        if self.object.date_in:
+            local_date = localtime(self.object.date_in)
+            form.initial['date_in'] = local_date.strftime('%Y-%m-%dT%H:%M')
+
         if self.object.date_out:
-            local_date = localtime(self.object.date_out).date()
-            form.initial['date_out'] = local_date.strftime('%Y-%m-%d')
+            local_date = localtime(self.object.date_out)
+            print("LOCAL DATETIME",local_date)
+            form.initial['date_out'] = local_date.strftime('%Y-%m-%dT%H:%M')
         return form
     
     def get_success_url(self):
