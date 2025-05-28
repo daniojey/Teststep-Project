@@ -10,7 +10,11 @@
 <body>
     
     <div class="group-container">
-        <h2>{{ group }} (Рейтинг)</h2>
+        {% if group %}
+            <h2>{{ group }} (Рейтинг)</h2>
+        {% else %}
+            <h2>Без групи (Рейтинг)</h2>
+        {% endif %}
 
         <div class="tests-ratings-container">
             {% for test in tests %}
