@@ -33,7 +33,7 @@ class User(AbstractUser):
 
 
 class UsersGroup(models.Model):
-    name = models.CharField(verbose_name="Назва группи", max_length=100,unique=True)
+    name = models.CharField(verbose_name="Назва групи", max_length=100,unique=True)
 
     def __str__(self):
         return f"{self.name}"
