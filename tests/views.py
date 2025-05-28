@@ -1088,8 +1088,8 @@ class TestsResultsView(View):
                 #     correct_answers += 1.0
 
             elif question.answer_type == 'INP':
-                correct_answers = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answers]
+                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
+                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
                 if correct_answers_strip:
                     if str(value).strip().lower() in correct_answers_strip:
                         correct_answers += 1.0
@@ -1126,11 +1126,12 @@ class TestsResultsView(View):
                         correct_answers += point
 
             elif question.answer_type == 'INP':
-                correct_answers = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answers]
+                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
+                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
                 if correct_answers_strip:
                     if str(value).strip().lower() in correct_answers_strip:
                         correct_answers += 1.0
+                        
 
         elif question.question_type == 'AUD':
             if question.answer_type == 'SC':
@@ -1152,11 +1153,12 @@ class TestsResultsView(View):
                         correct_answers += point
 
             elif question.answer_type == 'INP':
-                correct_answers = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answers]
+                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
+                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
                 if correct_answers_strip:
                     if str(value).strip().lower() in correct_answers_strip:
                         correct_answers += 1.0
+                        
                         
         # elif question.question_type == "INP":
         #     correct_answer = question.answers.filter(is_correct=True).first()
