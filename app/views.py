@@ -57,7 +57,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         # Получаем группу одним запросом с select_related
         group_membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
-        group = group_membership.group if group_membership else "Без группы"
+        group = group_membership.group if group_membership else "Без групи"
 
         # Получаем все нужные test_id одним запросом
         completed_test_ids = set(TestResult.objects.filter(user=user).values_list('test_id', flat=True))
