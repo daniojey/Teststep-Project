@@ -201,6 +201,29 @@ input[type="text"] {
     position: relative;
     display: flex;
     align-items: center;
+    gap: 6px;
+}
+
+.date-wrapper-block {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    .date-wrapper-label{
+        display: flex;
+        max-height: 20px !important;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin: 0px;
+        margin-bottom: 10px !important;
+        font-family: Roboto;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 146%; 
+    }
 }
 
 .date-wrapper input {
@@ -291,6 +314,10 @@ input:-webkit-autofill:focus {
 
     .submit-btn {
         width: 95%;
+    }
+
+    .date-wrapper {
+        flex-direction: column;
     }
     /* .form-group-upload-image {
         flex-direction: column;

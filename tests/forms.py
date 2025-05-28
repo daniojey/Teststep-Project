@@ -1,4 +1,5 @@
 from datetime import timedelta
+from queue import PriorityQueue
 import random
 import re
 from django import forms
@@ -11,7 +12,7 @@ class TestForm(CacheMixin,forms.ModelForm):
     raw_duration = forms.CharField(
         required=False, 
         widget=forms.TextInput(attrs={
-            'placeholder': 'Введіть тривалість тесту (наприклад, 1г, 30хв, 45сек)'
+            'placeholder': 'Введіть тривалість тесту в хвилинах'
         })
     )
 
@@ -19,13 +20,13 @@ class TestForm(CacheMixin,forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        query = self.set_get_cache(Categories.objects.all(), "category_cache", 45)
+        query = self.set_get_cache(Categories.objects.all(), "category_cache", 15)
         self.fields['category'].choices = [(item.id, item.name) for item in query]
 
 
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image','category', 'check_type', 'date_out']
+        fields = ['name', 'description', 'image','category', 'check_type', 'date_in','date_out']
         widgets = {
             'name':forms.TextInput(attrs={'placeholder': 'Назва тесту'}),
             'image': forms.ClearableFileInput(attrs={
@@ -38,7 +39,21 @@ class TestForm(CacheMixin,forms.ModelForm):
             # }),
             'category': forms.Select(attrs={'class': 'custom-select'}),
             'check_type': forms.Select(attrs={'class': 'custom-select'}),
-            'date_out': forms.DateInput(attrs={'type': 'date'}),
+            'date_in': forms.DateTimeInput(
+                attrs={
+                    'type': 'datetime-local',
+                    'class': 'form-control'  # опционально (для стилизации)
+                },
+                format='%Y-%m-%dT%H:%M'     # обязательный формат
+            ),
+            'date_out': forms.DateTimeInput(
+                attrs={
+                    'type': 'datetime-local',
+                    'class': 'form-control'  # опционально (для стилизации)
+                },
+                format='%Y-%m-%dT%H:%M'     # обязательный формат
+            )
+
         }
 
         name = forms.CharField(required=True)
@@ -53,25 +68,37 @@ class TestForm(CacheMixin,forms.ModelForm):
         if isinstance(data, timedelta):
             return data
 
+        try:
+            value = int(data)
+        except ValueError:
+            raise forms.ValidationError('Помилка, перевірте поле на правильність введеного часу')
 
-        pattern = r'(\d+)(г|хв|сек)'
-        match = re.match(pattern, data)
-        if not match:
-            raise forms.ValidationError("Невірний формат часу, вкажіть вірний формат часу г|хв|сек")
-        
-        value, unit = match.groups()
-        value = int(value)
-
-        if unit == 'г':
-            result = timedelta(hours=value)
-        elif unit == 'хв':
+        if value:
             result = timedelta(minutes=value)
-        elif unit == 'сек':
-            result = timedelta(seconds=value)
-        else:
-            raise forms.ValidationError("Невідома одиниця виміру")
         
-        return result
+            return result
+        
+        raise forms.ValidationError('Невідома помилка, перевірте поле')
+        
+        
+        # pattern = r'(\d+)(г|хв|сек)'
+        # match = re.match(pattern, data)
+        # if not match:
+        #     raise forms.ValidationError("Невірний формат часу, вкажіть вірний формат часу г|хв|сек")
+        
+        # value, unit = match.groups()
+        # value = int(value)
+
+        # if unit == 'г':
+        #     result = timedelta(hours=value)
+        # elif unit == 'хв':
+        #     result = timedelta(minutes=value)
+        # elif unit == 'сек':
+        #     result = timedelta(seconds=value)
+        # else:
+        #     raise forms.ValidationError("Невідома одиниця виміру")
+        
+        # return result
     
     def clean_date_out(self):
         data = self.cleaned_data.get('date_out')

@@ -38,7 +38,7 @@
                     </div>
 
                     <div class='form-group'>
-                        <input type="text" name='raw_duration' id='id_raw_duration' placeholder='Тривалість тесту гг.хв.с'>
+                        <input type="text" name='raw_duration' id='id_raw_duration' placeholder='Тривалість тесту в хвилинах'>
                     </div>
 
                     <!-- Категорія -->
@@ -69,7 +69,16 @@
                     </div> {% endcomment %}
 
                     <div class="date-wrapper">
-                        <input type="date" name="date_out" id="date-input" placeholder="Оберіть дату">
+                        <div class='date-wrapper-block'>
+                            <label class='date-wrapper-label'>Доступний с</label>
+                            {{ form.date_in }}
+                        </div>
+
+                        <div class="date-wrapper-block">
+                            <label class='date-wrapper-label'>Доступний до</label>
+                            {{ form.date_out}}
+                        </div>
+                        {% comment %} <input type="date" name="date_out" id="date-input" placeholder="Оберіть дату"> {% endcomment %}
                     </div>
 
                     
