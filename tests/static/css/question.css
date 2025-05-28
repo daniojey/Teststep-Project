@@ -345,6 +345,13 @@
     justify-content: start;
 }
 
+.audio-form h3 label {
+    color: #FFF;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin-bottom: 40px;
+}
 
 .question-audio-container {
     display: flex;
