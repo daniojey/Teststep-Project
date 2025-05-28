@@ -213,6 +213,8 @@
                     </div> {% endcomment %}
                 {% elif question.question_type == 'AUD' %}
                     <div class='audion-form'>
+                        <h3>{{ field.label_tag }}</h3>
+                        
                         <div class="question-audio-container">
                             <div class='question-audio' onclick="toggleAudio()">
                                 <img src="{% static "icons/play_icon.svg" %}" alt="Play" id="playIcon">
