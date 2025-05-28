@@ -246,7 +246,7 @@ class TestsReviews(models.Model):
     class Meta:
         db_table = "test_reviews"
         verbose_name = 'Тест на перевірку'
-        verbose_name_plural = 'Тесты на перевірку'
+        verbose_name_plural = 'Тести на перевірку'
 
     def __str__(self):
         return f"Перевірка по  {self.test.name}: пройшов тест {self.user.username}"
