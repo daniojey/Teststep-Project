@@ -19,14 +19,7 @@
     </div>
     
     <form method="post" class='readonly'>
-        {% csrf_token %}
-
-        {% if question.image %}
-        <div class='question-image-container'>
-            <img src="{{ question.image.url }}">
-        </div>
-        {% endif %}
-        
+        {% csrf_token %} 
         {% for field in form %}
             {% if question.text and question.question_type != 'MTCH' %}
                     <div class='text-question'>    
@@ -57,6 +50,11 @@
                     <audio id="audioPlayer" src="{{ field.value }}" onloadedmetadata="displayDuration()" ontimeupdate="updateProgress()"></audio>
                 {% endif %}
             {% elif question.answer_type == 'SC' %}
+                            {% if question.image %}
+                                <div class='question-image-container'>
+                                    <img src="{{ question.image.url }}">
+                                </div>
+                            {% endif %}
                             <!-- Радио-кнопки, рендерим через цикл -->
                             <div class="radio-answers">
                                 {% for radio in field %}
@@ -72,6 +70,12 @@
                             </div>
 
                         {% elif question.answer_type == 'MC' %}
+                            {% if question.image %}
+                                <div class='question-image-container'>
+                                    <img src="{{ question.image.url }}">
+                                </div>
+                            {% endif %}
+            
                             <div class='checkbox-answers'>
                                 {% for choice in field %}
                                     <label class="custom-checkbox">
@@ -83,6 +87,12 @@
                             </div>
 
                         {% elif question.answer_type == 'INP' %}
+                            {% if question.image %}
+                                <div class='question-image-container'>
+                                    <img src="{{ question.image.url }}">
+                                </div>
+                            {% endif %}
+                
                             <div class='input-answer'>
                                 {{ field|addattr:"placeholder:input" }}
                             </div>
