@@ -64,7 +64,7 @@ def question_text(obj):
     else:
         return f"{obj.question_type}"
 
-@admin.display(description="Группа питань")
+@admin.display(description="Група питань")
 def question_group_name(obj):
     if obj.group:
         return f"{obj.group.name}"
@@ -118,6 +118,7 @@ class AnswerAdmin(ModelAdmin):
     list_display = [question_text_answer, question_text, "is_correct"]
     search_fields = ["question", "text", "is_correct"]
     list_filter_submit = True  # Submit button at the bottom of the filter
+    search_fields = ["question__text", "text"]
     list_filter = [
         CustomQuestionFilter,
 
