@@ -35,9 +35,14 @@
                             </div>
                         </div>
                         
-
-                        <div class='delete-container'>
-                            <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ pair.id }}')">
+                        <div class="delete-and-score-container">
+                            <div class='score-container'>
+                                <p>{{ pair.score }}</p>
+                            </div>
+                            
+                            <div class='delete-container'>
+                                <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ pair.id }}')">
+                            </div>
                         </div>
                         
                     </div>
@@ -71,8 +76,14 @@
                             
                     
                     {% endif %}
-                    <div class='delete-container'>
-                        <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ answer.id }}')">
+                    <div class="delete-and-score-container">
+                        <div class='score-container'>
+                            <p>{{ answer.score }}</p>
+                        </div>
+
+                        <div class='delete-container'>
+                            <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ answer.id }}')">
+                        </div>
                     </div>
                         
                 </div>
@@ -122,22 +133,40 @@
             <div class="row">          
                 {% if question.question_type == "MTCH" %}
                     <div class='matching-form'>
-                        <div class='matching-form-label'>
-                            {{ form.left_item }}
+                        <div class="custom-number-input">
+                            <input name="score" id="id_score" type="number" class="number-input" value="1" required>
+                            <div class="arrows">
+                                <button class="arrow up">▲</button>
+                                <button class="arrow down">▼</button>
+                            </div>  
                         </div>
-                        <div class='matching-form-label'>
-                            {{ form.right_item }}
+
+                        <div class="matching-answer-input-container">
+                            <div class='matching-form-label'>
+                                {{ form.left_item }}
+                            </div>
+                            <div class='matching-form-label'>
+                                {{ form.right_item }}
+                            </div>
                         </div>
                     </div>
                 {% else %}
-                        <div class="col-md-12 mb-3">
-                        {% comment %} <label for="id_text" class="form-label"></label> {% endcomment %}
-                        <input type="text" class="form-control" id="id_text"
-                        name="text"
-                        placeholder="Відповідь ({% if question.answer_type == 'SC' %}Одиночний вибір{% elif question.answer_type == 'MC' %}Множинний вибір{% elif question.answer_type == 'INP' %}Текстова відповідь{% endif %})"
-                        value="" 
-                        required>
-                    </div>
+                        <div class="answer-input-container">
+                            {% comment %} <label for="id_text" class="form-label"></label> {% endcomment %}
+                            <input type="text" class="form-control" id="id_text"
+                            name="text"
+                            placeholder="Відповідь ({% if question.answer_type == 'SC' %}Одиночний вибір{% elif question.answer_type == 'MC' %}Множинний вибір{% elif question.answer_type == 'INP' %}Текстова відповідь{% endif %})"
+                            value="" 
+                            required>
+
+                            <div class="custom-number-input">
+                                <input name="score" id="id_score" type="number" class="number-input" value="1" required>
+                                <div class="arrows">
+                                    <button class="arrow up">▲</button>
+                                    <button class="arrow down">▼</button>
+                                </div>
+                            </div>
+                        </div>
                 {% endif %}
 
                 {% if question.answer_type == "INP" %}
@@ -172,7 +201,7 @@
         
         </div>  
     </div>
-
+    <script src="{% static "js/custom_arrow_number_input.js" %}"></script>
     <script src="{% static "js/selection_limiter.js" %}"></script>
     <!-- JavaScript для управления модальным окном -->
     <script src="{% static "js/open_delete_window.js" %}"></script>

@@ -139,6 +139,29 @@
     line-height: 146%; /* 26.28px */
 }
 
+.delete-and-score-container {
+    display: flex;
+    gap: 15px;
+}
+
+.score-container {
+    display: flex;
+    color: #ffffff;
+    padding: 5px 10px;
+    border: 1px solid #7260F5;
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    p{
+        font-family: Roboto;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 146%;
+    }
+}
 
 .delete-container {
     display: flex;
@@ -204,6 +227,14 @@ input[type="checkbox"]:checked::after {
     gap: 40px;
 }
 
+.answer-input-container {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
 .form-control {
     padding: 16px 12px;
     background-color: #363242;
@@ -213,7 +244,6 @@ input[type="checkbox"]:checked::after {
     font-size: 18px;
     width: 100%;
     height: 57px;
-    margin-bottom: 40px;
 }
 
 .form-control::placeholder {
@@ -225,11 +255,93 @@ input[type="checkbox"]:checked::after {
     line-height: 146%; /* 26.28px */
 }
 
+/* Кастомные стрелки */
+.custom-number-input{
+    position: relative;
+    display: inline-block;
+    max-width: 250px;
+}
+
+.number-input {
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    width: 100%;
+    height: 57px;
+}
+
+.number-input-container::after {
+    content: "▲▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1;
+    letter-spacing: 2px; /* Отступ между стрелками */
+}
+
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button {
+    appearance: none;
+    -moz-appearance: textfield;
+    margin: 0;
+}
+
+/* Кастомные стрелки */
+.arrows {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 30px;
+}
+
+.arrow {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    text-align: center;
+    color: #fff;
+    transition: color 0.2s;
+}
+
+.arrow:hover {
+    color: #7260F5;
+    background-color: #363242;
+}
+
+.up {
+    margin-bottom: 3px; /* Отступ между стрелками */
+}
+
+.down {
+    margin-top: 3px; /* Отступ между стрелками */
+}
+
 .matching-form {
     width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     margin-bottom: 40px;
+    gap: 15px;
+}
+
+.matching-answer-input-container {
+    display: flex;
+    width: 100%;
     gap: 40px;
 }
 
@@ -249,7 +361,6 @@ input[type="checkbox"]:checked::after {
     border-radius: 12px;
     font-size: 18px;
     height: 57px;
-    margin-bottom: 40px;
 }
 
 .matching-form-label input::placeholder {
@@ -319,3 +430,44 @@ input:-webkit-autofill:focus {
     transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
 }
 
+@media (max-width: 550px) {
+    .matching-answer-input-container {
+        flex-direction: column;
+        min-width: 100%;
+        gap: 20px;
+
+        input{
+            min-width: 100%;
+        }
+    }
+
+    .matching-form-label {
+        width: 100%;
+    }
+
+    .custom-number-input{
+        max-width: 100%;
+        min-width: 100%;
+    }
+
+    .answer-input-container {
+        flex-direction: column;
+
+        input{
+            min-width: 100%;
+        }
+    }
+
+    .button-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .save-answers-btn {
+        max-width: 100%;
+    }
+
+    .add-answer-btn {
+        max-width: 100%;
+    }
+}

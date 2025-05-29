@@ -292,20 +292,36 @@ class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
 class MatchingPairForm(forms.ModelForm):
     class Meta:
         model = MatchingPair
-        fields = ['left_item', 'right_item']
+        fields = ['left_item', 'right_item', 'score']
         widgets = {
             'left_item': forms.TextInput(attrs={'placeholder': 'Ліва частина (Відповідність)'}),
             'right_item': forms.TextInput(attrs={'placeholder': 'Права частина (Відповідність)'}),
         }
 
+    def clean_score(self):
+        score = self.cleaned_data.get('score')
+
+        if score <= 0:
+            raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
+        
+        return score
+
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ['text', 'is_correct']
+        fields = ['text','score', 'is_correct']
         widgets = {
             'text': forms.TextInput(attrs={'class': 'form-control'}),
             'is_correct': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def clean_score(self):
+        score = self.cleaned_data.get('score')
+
+        if score <= 0:
+            raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
+        
+        return score
 
 
 
