@@ -53,21 +53,24 @@ class Tests(models.Model):
     
     def save(self, *args, **kwargs):
         # если файла нет или он не изменился — просто сохраняем
-        if self.image and getattr(self.image, 'file', None):
-            img = Image.open(self.image)
+        try:
+            if self.image and getattr(self.image, 'file', None):
+                    img = Image.open(self.image)
 
-            ext = Path(self.image.name).suffix.lower().lstrip('.')
-            ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
+                    ext = Path(self.image.name).suffix.lower().lstrip('.')
+                    ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
 
-            img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+                    img.thumbnail((800, 600), Image.Resampling.LANCZOS)
 
-            output = BytesIO()
-            img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
-            output.seek(0)
+                    output = BytesIO()
+                    img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
+                    output.seek(0)
 
-            # >>> важная строка: только базовое имя, без «test-images/»
-            filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
-            self.image.save(filename, File(output), save=False)
+                    # >>> важная строка: только базовое имя, без «test-images/»
+                    filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
+                    self.image.save(filename, File(output), save=False)
+        except FileNotFoundError:
+            pass
 
         super().save(*args, **kwargs)
 
@@ -129,6 +132,7 @@ class Question(models.Model):
 
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
+    scores = models.IntegerField(default=1, verbose_name="Бали за питання")
     text = models.TextField(verbose_name="Текст питання", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
@@ -150,21 +154,24 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         # если файла нет или он не изменился — просто сохраняем
-        if self.image and getattr(self.image, 'file', None):
-            img = Image.open(self.image)
+        try:
+            if self.image and getattr(self.image, 'file', None):
+                    img = Image.open(self.image)
 
-            ext = Path(self.image.name).suffix.lower().lstrip('.')
-            ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
+                    ext = Path(self.image.name).suffix.lower().lstrip('.')
+                    ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
 
-            img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+                    img.thumbnail((800, 600), Image.Resampling.LANCZOS)
 
-            output = BytesIO()
-            img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
-            output.seek(0)
+                    output = BytesIO()
+                    img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
+                    output.seek(0)
 
-            # >>> важная строка: только базовое имя, без «test-images/»
-            filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
-            self.image.save(filename, File(output), save=False)
+                    # >>> важная строка: только базовое имя, без «test-images/»
+                    filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
+                    self.image.save(filename, File(output), save=False)
+        except:
+            pass
 
         super().save(*args, **kwargs)
 
@@ -179,8 +186,10 @@ class Question(models.Model):
                     'image': f"Недопустимый формат изображения: {ext}. Поддерживаются: {', '.join(valid_extensions)}."
                 })
     
+
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
+    score = models.IntegerField(default=1, verbose_name="Бали за відповідність")
     left_item = models.CharField(max_length=255, verbose_name='Ліва частина')
     right_item = models.CharField(max_length=255, verbose_name='Права частина')
 
@@ -195,6 +204,7 @@ class MatchingPair(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Питання")
+    score = models.IntegerField(default=1, verbose_name="Бали за відповідь")
     text = models.CharField(verbose_name="Текст відповіді", max_length=255)
     is_correct = models.BooleanField(default=False, verbose_name="Правильна відповідь")
     audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосова відповідь")
