@@ -1,0 +1,302 @@
+.main-test-container {
+    display: flex;
+    min-width: 300px; /* Минимальная ширина */
+    max-width: 630px; /* Максимальная ширина */
+    width: 100%;   
+    flex-direction: column;
+    padding: 24px;
+    background: #363242;
+    border-radius: 12px;
+    margin: 40px auto;
+}
+
+.main-test-container h2 {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 40px;
+}
+
+/* Стили для описания к тесту */
+.form-group textarea {
+    display: flex;
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    max-width: 582px;
+    min-width: 200px;
+    width: 100%;
+    min-height: 60px;
+    max-height: 350px;
+    height: 130px;
+}
+
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.test-image {
+    display: flex;
+    max-width: 410px;
+    max-height: 240px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.test-image img{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    object-fit: cover;
+    object-position: 0 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.form-content {
+    display: flex-inline;
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    color: #ffffff;
+}
+
+
+.form-content p {
+    height: 55px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-content p label{
+    display: none;
+}
+
+.form-content input[type=text]{
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 16px;
+    width: 100%;
+    height: 57px;
+}
+
+.form-content input::placeholder{
+    color: rgba(255, 255, 255, 0.40);
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+}
+
+.form-content input[type=checkbox] {
+    display: none;
+}
+
+.form-group select{
+    height: 57px;
+    width: 100%;
+    padding: 10px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    background: #363242;
+    border: 1px solid #FFF;
+    border-radius: 12px;
+    appearance: none; /* Убираем стандартную стрелочку */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 24px; /* Размер стрелки */
+}
+
+
+.form-image-field{
+    display: none;
+}
+
+.form-group-upload-image {
+    display: flex;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.btn-upload {
+    display: inline-block;
+    min-width: 139px;
+    background-color: #363242;
+    padding: 7px 12px;
+    color: #7260F5;
+    border: 1.5px solid #7260F5;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.btn-upload:hover {
+    background-color: #553399; /* Темнее при наведении */
+}
+
+/* Контейнер с именем файла */
+.file-name {
+    display: flex;
+    max-width: 400px;
+    justify-content: start;
+    align-items: center;
+    display: inline-block;
+    margin-left: 15px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    text-align: start;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+}
+
+
+.save-btn {
+    width: 282px;
+    height: 55px;
+    background-color: #6f42c1;
+    border-radius: 12px;
+    margin-top: 0px;
+    margin-bottom: 30px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
+input[type="text"] {
+    appearance: none; /* Отключаем стилизацию для WebKit */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.date-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    input {
+        padding: 16px 12px;
+        background-color: #363242;
+        border: 1px solid rgba(255, 255, 255, 0.60);
+        color: #ffffff;
+        border-radius: 12px;
+        font-size: 18px;
+        width: 100%;
+        height: 57px;
+    }
+}
+
+.date-wrapper-block {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    .date-wrapper-label{
+        display: flex;
+        max-height: 20px !important;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin: 0px;
+        margin-bottom: 10px !important;
+        font-family: Roboto;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 146%; 
+    }
+}
+
+.date-wrapper input {
+    min-width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    border-radius: 12px;
+    outline: none;
+    flex: 1;
+    height: 57px;
+    font-size: 16px;
+    padding: 16px 12px 16px 12px;
+    background-color: transparent;
+    appearance: none !important; /* Убираем стандартную иконку */
+    -webkit-appearance: none; /* Для Safari/Chrome */
+    -moz-appearance: none; /* Для Firefox */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_calendar.svg'); 
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение иконки */
+    background-size: 24px; /* Размер иконки */
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    color: rgba(0, 0, 0, 0);
+    opacity: 1;
+    z-index: 1;
+    display: block;
+    background: none;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+} */
+
+
+
+/* Стиль для автозаполненных полей */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    font-size: 18px !important; /* Задаем одинаковый размер шрифта для всех состояний */
+    -webkit-text-fill-color: #ffffff !important; /* Цвет текста */
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important; /* Цвет фона */
+    caret-color: #ffffff !important; /* Цвет курсора */
+    transition: background-color 5000s ease-in-out 0s; /* Сохраняем цвет фона при автозаполнении */
+}
+
+@media (max-width: 520px) {
+    .date-wrapper {
+        flex-direction: column;
+    }
+}

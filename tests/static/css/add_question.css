@@ -228,12 +228,71 @@ html, body {
 .students-container {
     position: absolute; /* Позволяет двигаться внутри родителя */
     display: flex;
+    flex-direction: column;
     background: #363242;
     max-width: 410px;
     width: 100%;
     padding: 24px;
     border-radius: 12px;
     transition: transform 0.05s linear; /* Гладкость движения */
+}
+
+.all-students-submit-btn{
+    max-height: 35px;
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 7px 12px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    color: #7260F5; /* Синий текст */
+    background-color: rgba(255, 255, 255, 0.05); /* Темный фон */
+    border: 1.5px solid #7260F5; /* Синяя обводка */
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.7s, color 0.3s;
+    white-space: nowrap; /* Предотвращает перенос текста */
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: rgb(255, 255, 255);
+        border-color: #ffffff;
+    }
+}
+
+.all-students-delete-btn {
+    max-height: 35px;
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 7px 12px;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    color: #7260F5; /* Синий текст */
+    background-color: rgba(255, 255, 255, 0.05); /* Темный фон */
+    border: 1.5px solid #7260F5; /* Синяя обводка */
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.7s, color 0.3s;
+    white-space: nowrap; /* Предотвращает перенос текста */
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: rgb(255, 255, 255);
+        border-color: #ffffff;
+    }
 }
 
 .students-container form p{
