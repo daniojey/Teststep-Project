@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.views.generic import FormView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
-from django.db.models import F, ExpressionWrapper, Prefetch, fields
+from django.db.models import F, ExpressionWrapper, Prefetch, Sum, fields
 from django.forms import ClearableFileInput, DateInput, DateTimeInput, Textarea
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -524,6 +524,11 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         answer = form.save(commit=False)
         answer.question = question
         answer.save()
+
+        if question.answer_type == "INP":
+            question.update_question_score()
+
+        # print("КОЛ_ВО очков",total_score)
         return redirect('tests:add_answers', question_id=question.id)
     
     def get_context_data(self, **kwargs):
@@ -598,6 +603,8 @@ class SaveCorrectView(View):
                 # Получаем ID первого ответа из списка и сохраняем его как верный
                 id_answer = correct_answers_ids[0]
                 answer = Answer.objects.filter(id=id_answer).update(is_correct=True)
+
+                question.update_question_score()
             
         elif question.answer_type == 'MC':
              
@@ -605,7 +612,14 @@ class SaveCorrectView(View):
                 # Все ответі делаем не верными после чего делаем верными только те которые которых ID совпадают с ID из списка
                 question.answers.all().update(is_correct=False)
                 answers = Answer.objects.filter(id__in=correct_answers_ids).update(is_correct=True)
+
+                question.update_question_score()
+        
+        elif question.answer_type == 'INP':
+            question.update_question_score()
+
         else:
+
             # Остальные случаи игнорируем
             ...
 
@@ -616,6 +630,7 @@ def delete_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id)
     question = get_object_or_404(Question, id=answer.question.id)
     answer.delete()
+    question.update_question_score()
     return redirect('tests:add_answers', question_id=question.id)
 
 
@@ -632,6 +647,7 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
         answer.question = question
         answer.save()
 
+        question.update_question_score()
         return redirect('tests:add_matching_pair', question_id=question.id)
 
     def get_context_data(self, **kwargs):
@@ -661,6 +677,7 @@ def delete_matching_pair(request, pair_id):
     matching_pair = get_object_or_404(MatchingPair, id=pair_id)
     question = get_object_or_404(Question, id=matching_pair.question.id)
     matching_pair.delete()
+    question.update_question_score()
     return redirect('tests:add_matching_pair', question_id=question.id)
 
 

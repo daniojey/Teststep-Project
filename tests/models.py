@@ -145,6 +145,21 @@ class Question(models.Model):
         verbose_name = "Питання"
         verbose_name_plural = "Питання"
 
+    def update_question_score(self):
+        if self.question_type == 'MTCH':
+            self.scores = sum(
+                pair.score for pair in self.matching_pairs.all()
+            );
+            self.save()
+        elif self.answer_type == "INP":
+            self.scores = self.answers.filter(is_correct=True).aggregate(models.Max('score'))['score__max']
+            self.save()
+        else:
+            self.scores = sum(
+                answer.score for answer in self.answers.filter(is_correct=True)
+            )
+            self.save()
+
     @property
     def question_info(self):
         return self.text or f"{self.question_type} - {self.id}"
@@ -170,7 +185,7 @@ class Question(models.Model):
                     # >>> важная строка: только базовое имя, без «test-images/»
                     filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
                     self.image.save(filename, File(output), save=False)
-        except:
+        except FileNotFoundError:
             pass
 
         super().save(*args, **kwargs)

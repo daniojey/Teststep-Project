@@ -282,22 +282,7 @@
             showError({{ errors|safe }});
         {% endif %}
     </script>
-    <script>
-        // JavaScript для функциональности стрелок
-        document.querySelector('.arrow.up').addEventListener('click', (e) => {
-            e.preventDefault();
-            const input = document.querySelector('.number-input');
-            input.stepUp();
-        });
-
-        document.querySelector('.arrow.down').addEventListener('click', (e) => {
-            e.preventDefault();
-            const input = document.querySelector('.number-input');
-            if (input.value > 0) {
-                input.stepDown();
-            } 
-        });
-    </script>
+    <script src="{% static "js/custom_arrow_number_input.js" %}"></script>
     <script src="{% static "js/copy_site_container.js" %}"></script>
     <script src="{% static "js/scroll_students_container.js" %}"></script>
     <script src="{% static "js/add_question_custom_select_delete_none.js" %}"></script>
