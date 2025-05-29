@@ -34,21 +34,30 @@
                         {% csrf_token %}
                         {% for field in question_form %}
                         {% if field.name == 'text' %}
-                        <textarea name="text" id="id_text" rows="5" class="form-control" placeholder="Текст питання"></textarea>
+                            <textarea name="text" id="id_text" rows="5" class="form-control" placeholder="Текст питання"></textarea>
                         {% elif field.name == 'image' %}
-                        <div id="image-field" style="display: none;" class='upload-field'>
-                            {{ field }}
-                            <button type='button', id="uploadImageButton" class="btn-upload">Додати фото</button>
-                            
-                            <span id="fileName1" class="file-name"></span>
-                        </div>
+                            <div id="image-field" style="display: none;" class='upload-field'>
+                                {{ field }}
+                                <button type='button', id="uploadImageButton" class="btn-upload">Додати фото</button>
+                                
+                                <span id="fileName1" class="file-name"></span>
+                            </div>
                         {% elif field.name == 'audio' %}
-                        <div id="audio-field" style="display: none;" class='upload-field'>
-                            {{ field }}
-                            <button type='button', id="uploadAudioButton" class="btn-upload">Додати аудіо</button>
-                            
-                            <span id="fileName2" class="file-name"></span>
-                        </div>
+                            <div id="audio-field" style="display: none;" class='upload-field'>
+                                {{ field }}
+                                <button type='button', id="uploadAudioButton" class="btn-upload">Додати аудіо</button>
+                                
+                                <span id="fileName2" class="file-name"></span>
+                            </div>
+                        {% elif field.name == 'scores'%}
+                            <div class="custom-number-input">
+                                {{ field }}
+                                {% comment %} <input name="scores" id="id_scores" type="number" class="number-input" value="0"> {% endcomment %}
+                                <div class="arrows">
+                                    <button class="arrow up">▲</button>
+                                    <button class="arrow down">▼</button>
+                                </div>
+                            </div>
                         {% else %}
                         {{ field }}
                         {% endif %}
@@ -249,6 +258,22 @@
         {% if errors %}
             showError({{ errors|safe }});
         {% endif %}
+    </script>
+    <script>
+        // JavaScript для функциональности стрелок
+        document.querySelector('.arrow.up').addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = document.querySelector('.number-input');
+            input.stepUp();
+        });
+
+        document.querySelector('.arrow.down').addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = document.querySelector('.number-input');
+            if (input.value > 0) {
+                input.stepDown();
+            } 
+        });
     </script>
     <script src="{% static "js/copy_site_container.js" %}"></script>
     <script src="{% static "js/scroll_students_container.js" %}"></script>

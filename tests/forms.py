@@ -206,7 +206,7 @@ class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group']
+        fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group', 'scores']
         widgets = {
             'text': forms.TextInput(),
             'question_type': forms.Select(attrs={'class': 'custom-select', 'id': 'questionSelect'}),
@@ -223,8 +223,17 @@ class QuestionForm(forms.ModelForm):
                 'style': 'display: none;'
                 }),
             'group': forms.Select(attrs={'class': 'custom-select'}),
-            'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'})
+            'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'}),
+            'scores': forms.NumberInput(attrs={'class': 'number-input'})
         }
+
+    def clean_scores(self):
+        score = self.cleaned_data.get('scores')
+
+        if score <= 0:
+            raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
+        
+        return score
 
 class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
     def __init__(self, *args, **kwargs):
