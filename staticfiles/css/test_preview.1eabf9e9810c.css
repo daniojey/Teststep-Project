@@ -1,0 +1,160 @@
+.main-container {
+    display: flex;
+    max-width: 630px;
+    border-radius: 12px;
+    padding: 24px 24px 40px 24px;
+    background: #363242;
+    flex-direction: column;
+    margin: 0 auto ;
+    margin-top: 60px;
+}
+
+
+/* Стрелка выхода и название */
+.leaderboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin-bottom: 40px;
+}
+
+.leaderboard-header h2 {
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    max-width: 500px;
+    width: 75%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Ограничение на 3 строки */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Скрытие лишнего текста */
+    text-overflow: ellipsis; /* Добавление многоточия в конце */
+}
+
+.back-icon img {
+    width: 22px;
+    height: 24px;
+}
+
+/* Картинка */
+.test-preview-image {
+    display: flex;
+    max-width: 410px;
+    max-height: 240px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.test-preview-image img{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    object-fit: cover;
+    object-position: 0 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Текст */
+
+/* Описание и время */
+.test-text-container {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 100%;
+    text-align: left;
+}
+
+.test-description {
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%;
+    font-size: 18px;
+    color: #FFF;
+    margin-bottom: 20px;
+    word-wrap: break-word; /* Перенос длинных слов */
+    word-break: break-word; /* Разрыв длинных слов */
+    overflow-wrap: break-word; /* Дополнительный вариант для переноса */
+}
+
+.test-duration {
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    color: #ACACAC;
+}
+
+/* Кнопка */
+.start-test-btn {
+    width: 100%;
+    max-width: 260px;
+    height: 61px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFF;
+    border-radius: 12px;
+    background: #7260F5;
+    border: none;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.start-test-btn:hover {
+    background-color: #574EE0;
+}
+
+
+/* Если тест пройден используем другой стиль кнопки и также добавляем label с результатом по тесту*/
+.no-active-test-btn {
+    width: 100%;
+    height: 61px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.30);
+    border-radius: 12px;
+    background: rgba(114, 96, 245, 0.30);
+    border: none;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.no-active-test-btn:hover {
+    background-color: rgba(114, 96, 245, 0.30);
+    color: rgba(255, 255, 255, 0.30);
+}
+
+.user-test-result {
+    margin-top: 80px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    gap: auto;
+}
+
+.score-and-time {
+    padding: 0px 24px 0px 24px;
+}
+
+@media (max-width: 400px) {
+    .leaderboard-header h2 {
+        font-size: 17px;
+    }
+}
