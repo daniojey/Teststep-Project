@@ -2047,7 +2047,7 @@ class TestReviewResults(View):
             # test_review.delete()
             # print(test_result)
 
-        # test_review.delete()
+        test_review.delete()
         self.clear_test_session(request)
 
         return redirect('tests:tests_for_review')
