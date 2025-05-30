@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Сторонние приложения
-    "debug_toolbar",
+    # "debug_toolbar",
     'imagekit',
 
     # Созданные приложения
