@@ -52,6 +52,7 @@ class TestExitMiddleware(MiddlewareMixin):
             '/favicon.ico',  # Иконка сайта
             '/robots.txt',  # Файл robots.txt
             '/admin/',  # Путь к админке
+            '/.well-known/appspecific/com.chrome.devtools.json/'
         ]
         
         # Проверяем, если путь запроса совпадает с исключениями

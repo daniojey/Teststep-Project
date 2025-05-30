@@ -1078,56 +1078,80 @@ class TestsResultsView(View):
     
     def calculate_results(self, test, responses, test_time):
         total_questions = test.questions.count()
+        total_points = test.questions.aggregate(Sum('scores'))['scores__sum']
+        print('TOTAL POINTS', total_points)
         correct_answers = 0.0
+        complete_answers = 0
 
 
         for key, value in responses.items():
             if key.startswith('question_'):
                 question_id = int(key.split('_')[1])
                 question = Question.objects.get(id=question_id)
-                correct_answers += self.evaluate_question(question, value)
+                complete, correct_answer = self.evaluate_question(question, value)
+                correct_answers += correct_answer 
+                print("ОЧКИ ВОПРОСА", question.scores)
+                print("ОЧКИ ответа", int(correct_answers))
+                if complete:
+                    complete_answers += 1
 
         
-        score = round((correct_answers / total_questions) * 100) if total_questions > 0 else 0
+        score = round((correct_answers / total_points) * 100) if total_questions > 0 else 0
         test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
 
-        return score, int(correct_answers), total_questions, test_duration
+        return score, int(complete_answers), total_questions, test_duration
 
     def evaluate_question(self, question, value):
         correct_answers = 0.0
+        complete_question = False
 
         if question.question_type == 'TXT':
             if question.answer_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
-                    print("КОРРЕКТНий",correct_answer)
-                    print("КОРРЕКТНий",correct_answer.id)
-                    print("ПОИНТ 1.0")
-                    correct_answers += 1.0
+                    # print("КОРРЕКТНий",correct_answer)
+                    # print("КОРРЕКТНий",correct_answer.id)
+                    # print("ПОИНТ 1.0")
+                    correct_answers += correct_answer.score
+                    if int(correct_answers) == question.scores:
+                        complete_question = True
 
                 print(question)
                 print(value)
 
             elif question.answer_type == 'MC':
-                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                point = 1 / len(correct_answers_list)
+                correct_answers_dict = {
+                    str(answer_id): score    
+                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
+                }
 
+                print(correct_answers_dict)
                 print(value)
 
                 for v in value:
-                    if int(v) in correct_answers_list:
-                        correct_answers += point
+                    if str(v) in correct_answers_dict:
+                        correct_answers += correct_answers_dict[v]
+
+                if int(correct_answers) == question.scores:
+                        complete_question = True
             
                 # if set(map(int, value)) == set(correct_answers_list):
                 #     correct_answers += 1.0
 
             elif question.answer_type == 'INP':
-                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
-                if correct_answers_strip:
-                    if str(value).strip().lower() in correct_answers_strip:
-                        correct_answers += 1.0
-                        
+                correct_answers_dict = {
+                    str(text).strip().lower(): score
+                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
+                }
+                
+                if correct_answers_dict:
+                    if str(value).strip().lower() in correct_answers_dict:
+
+                        correct_answers += correct_answers_dict[value]
+
+                        if int(correct_answers) == question.scores:
+                                complete_question = True
+                                
 
         # if question.question_type == 'SC':
         #     correct_answer = question.answers.filter(is_correct=True).first()
@@ -1144,54 +1168,95 @@ class TestsResultsView(View):
             if question.answer_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
                 if correct_answer and correct_answer.id == int(value):
-                    correct_answers += 1.0
+                    # print("КОРРЕКТНий",correct_answer)
+                    # print("КОРРЕКТНий",correct_answer.id)
+                    # print("ПОИНТ 1.0")
+                    correct_answers += correct_answer.score
 
+                    if int(correct_answers) == question.scores:
+                        complete_question = True
+
+                print(question)
                 print(value)
 
             elif question.answer_type == 'MC':
-                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                point = 1 / len(correct_answers_list)
+                correct_answers_dict = {
+                    str(answer_id): score    
+                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
+                }
 
+                print(correct_answers_dict)
                 print(value)
-                print(point)
 
                 for v in value:
-                    if int(v) in correct_answers_list:
-                        correct_answers += point
+                    if str(v) in correct_answers_dict:
+                        correct_answers += correct_answers_dict[v]
+
+                if int(correct_answers) == question.scores:
+                        complete_question = True
+                # if set(map(int, value)) == set(correct_answers_list):
+                #     correct_answers += 1.0
 
             elif question.answer_type == 'INP':
-                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
-                if correct_answers_strip:
-                    if str(value).strip().lower() in correct_answers_strip:
-                        correct_answers += 1.0
+                correct_answers_dict = {
+                    str(text).strip().lower(): score
+                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
+                }
+                
+                if correct_answers_dict:
+                    if str(value).strip().lower() in correct_answers_dict:
+
+                        correct_answers += correct_answers_dict[value]
+
+                        if int(correct_answers) == question.scores:
+                            complete_question = True
                         
 
         elif question.question_type == 'AUD':
             if question.answer_type == 'SC':
                 correct_answer = question.answers.filter(is_correct=True).first()
-                print("КОРРЕКТНий",correct_answer)
-                print("КОРРЕКТНий",correct_answer.id)
                 if correct_answer and correct_answer.id == int(value):
-                    print("ПОИНТ 1.0")
-                    correct_answers += 1.0
+                    # print("КОРРЕКТНий",correct_answer)
+                    # print("КОРРЕКТНий",correct_answer.id)
+                    # print("ПОИНТ 1.0")
+                    correct_answers += correct_answer.score
+                    if int(correct_answers) == question.scores:
+                        complete_question = True
 
+                print(question)
                 print(value)
 
             elif question.answer_type == 'MC':
-                correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-                point = 1 / len(correct_answers_list)
+                correct_answers_dict = {
+                    str(answer_id): score    
+                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
+                }
+
+                print(correct_answers_dict)
+                print(value)
 
                 for v in value:
-                    if int(v) in correct_answers_list:
-                        correct_answers += point
+                    if str(v) in correct_answers_dict:
+                        correct_answers += correct_answers_dict[v]
+
+                if int(correct_answers) == question.scores:
+                        complete_question = True
+            
+                # if set(map(int, value)) == set(correct_answers_list):
+                #     correct_answers += 1.0
 
             elif question.answer_type == 'INP':
-                correct_answer = question.answers.filter(is_correct=True).values_list('text', flat=True)
-                correct_answers_strip = [str(value).strip().lower() for value in correct_answer]
-                if correct_answers_strip:
-                    if str(value).strip().lower() in correct_answers_strip:
-                        correct_answers += 1.0
+                correct_answers_dict = {
+                    str(text).strip().lower(): score
+                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
+                }
+                
+                if correct_answers_dict:
+                    if str(value).strip().lower() in correct_answers_dict:
+                        correct_answers += correct_answers_dict[value]
+
+                        if int(correct_answers) == question.scores:
+                            complete_question = True
                         
                         
         # elif question.question_type == "INP":
@@ -1200,16 +1265,19 @@ class TestsResultsView(View):
         #         correct_answers += 1.0
         elif question.question_type == 'MTCH':
                 questions_count = MatchingPair.objects.filter(question=question).count()
-                points = 1 / questions_count
 
-                print(value.items())
                 for left, right in value.items():
-                    if MatchingPair.objects.filter(question=question, left_item=left, right_item=right).exists():
-                        print("ПОИНТ", points)
-                        correct_answers += points
+                    match = MatchingPair.objects.filter(question=question, left_item=left, right_item=right).first()
+                    if match:
+                        print("ПОИНТ", match.score)
+                        correct_answers += match.score
+
+                
+                if int(correct_answers) == question.scores:
+                        complete_question = True
 
         print(correct_answers)
-        return correct_answers
+        return complete_question ,correct_answers
     
     def save_test_results(self, request, test, score, test_duration):
         test_result, created = TestResult.objects.get_or_create(
@@ -1607,62 +1675,97 @@ class TakeTestReviewView(FormView):
 
     def form_valid(self, form):
         if self.request.method == 'POST':
+            question = self.request.session.get('')
             action = self.request.POST.get('action')
+
             if action == 'correct':
-                self.request.session['teacher_answers'] += 1.0
+                self.request.session['teacher_answers'] += self.current_question.scores
 
             elif action == 'incorrect':
                 ...
 
             elif action == 'partial':
+                print(self.request.POST)
                 if self.current_question.question_type == 'MTCH':
-                    matching_pairs = list(self.current_question.matching_pairs.all())
+                    matching_pairs_dict = {
+                        str(pair.left_item): pair.score
+                        for pair in self.current_question.matching_pairs.all()
+                    }
 
-                    left_items = [pair.left_item for pair in matching_pairs]
-                    point = 1 / len(left_items) if len(left_items) > 0 else 0
+                    print(matching_pairs_dict)
+                    matching_pairs =  {
+                        left: right
+                        for left, right in self.current_question.matching_pairs.all().values_list('left_item', 'right_item')
+                    }
 
-                    for left_item in left_items:
-                        student_answer = self.request.POST.get(f'answer_{left_item}')
-                        if any(pair.left_item == left_item and pair.right_item == student_answer for pair in matching_pairs):
-                                self.request.session['teacher_answers'] += point
+                    print(matching_pairs)
+
+                    for key, value in self.request.POST.items():
+                        if key.startswith('answer_'):
+                            # Получаем наш левый и правый ответ
+                            left_item = key.replace('answer_', '')
+                            right_item = value
+
+                            # Проверяем наличие в словаре ответов
+                            if left_item in matching_pairs:
+                                
+                                # Если елемент найден то также проверяем что right совпадает если так то засчитываем балл
+                                expect_right = matching_pairs[left_item]
+                                if right_item == expect_right:
+                                    self.request.session['teacher_answers'] += matching_pairs_dict[left_item]
+
 
 
                 elif self.current_question.answer_type == 'SC':
-                    answer = list(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
-                    
-                    student_answer = int(self.request.POST.get('answer'))
+                    answer_dict = {
+                        str(ids): score
+                        for ids, score in self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
+                    }
 
-                    if student_answer in answer:
-                        self.request.session['teacher_answers'] += 1.0
+                    # answer = list(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
+                    
+                    student_answer = self.request.POST.get('answer')
+
+                    if str(student_answer) in answer_dict:
+                        print(answer_dict[student_answer])
+                        self.request.session['teacher_answers'] += answer_dict[student_answer]
 
 
                 elif self.current_question.answer_type == 'MC':
-                    answers_test = list(Answer.objects.filter(question=self.current_question, is_correct=True).values_list('id', flat=True))
-
-                    answers = self.current_question.answers.filter(is_correct=True).values_list('id', flat=True)
-                    point = 1 / len(answers) if len(answers) > 0 else 0
+                    answers_test_dict = {
+                        str(ids): score 
+                        for ids, score in  self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
+                    }
                     
                     students_answers = form.cleaned_data.get('answer')
 
                     for answer in students_answers:
-                        if int(answer) in answers_test:
-                            self.request.session['teacher_answers'] += point
+                        if str(answer) in answers_test_dict:
+                            print(answers_test_dict[answer])
+                            self.request.session['teacher_answers'] += answers_test_dict[answer]
 
 
                 elif self.current_question.answer_type == 'INP':
-                    answers = self.current_question.answers.filter(is_correct=True).values_list('text', flat=True)
-                    answers = [answer.lower() for answer in answers]
+                    answers_dict = {
+                        str(text).lower().strip(): score
+                        for text, score in  self.current_question.answers.filter(is_correct=True).values_list('text', 'score')
+                    }
 
-                    student_answer = form.cleaned_data.get('answer')
+                    # answers = self.current_question.answers.filter(is_correct=True).values_list('text', flat=True)
+                    # answers = [answer.lower() for answer in answers]
 
-                    if student_answer.lower() in answers:
-                        self.request.session['teacher_answers'] += 1.0
+                    get_student_answer = form.cleaned_data.get('answer')
+                    student_answer = get_student_answer.lower().strip()
+
+                    if student_answer in answers_dict:
+                        print(answers_dict[student_answer])
+                        self.request.session['teacher_answers'] += answers_dict[student_answer]
                     else:
-                        self.request.session['teacher_answers'] += 0.5
+                        self.request.session['teacher_answers'] += self.current_question.scores / 2
                                        
                                        
                 elif self.current_question.answer_type == 'AUD':
-                    self.request.session['teacher_answers'] += 0.5
+                    self.request.session['teacher_answers'] += self.current_question.scores / 2
 
 
         if self.request.session['question_index'] + 1 < len(self.request.session['test_review_session']):
@@ -1918,6 +2021,7 @@ class TestReviewResults(View):
 
     def get(self, request, *args, **kwargs):
         correct_answers = self.request.session['teacher_answers']
+        print(correct_answers)
         test_review_id = self.request.session['test_student_responses_id']
         if test_review_id:
             test_review = TestsReviews.objects.filter(id=test_review_id).select_related('user', 'test').first()
@@ -1928,10 +2032,10 @@ class TestReviewResults(View):
             user = test_review.user
             test = test_review.test
             duration = test_review.duration
-            questions = test.questions.count()
+            total_scores = test.questions.aggregate(Sum('scores'))['scores__sum']
 
         
-            score = round((correct_answers / questions) * 100) if questions > 0 else 0
+            score = round((correct_answers / total_scores) * 100) if total_scores > 0 else 0
             # print(score)
             test_result = TestResult.objects.create(
                 user=user,
@@ -1943,7 +2047,7 @@ class TestReviewResults(View):
             # test_review.delete()
             # print(test_result)
 
-        test_review.delete()
+        # test_review.delete()
         self.clear_test_session(request)
 
         return redirect('tests:tests_for_review')
