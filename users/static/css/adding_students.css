@@ -1,0 +1,105 @@
+#content {
+    display: flex;
+    position: relative;
+}
+
+.base-container {
+    display: flex;
+    position: relative;
+    min-width: 73vw;
+    min-height: 30vh;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: #363242;
+    border-radius: 12px;
+    border: 0.5px solid rgb(255, 255, 255, 0.1);
+}
+
+#dropZone {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 70vh;
+    width: 100%;
+    border: 1px;
+    border-radius: 12px;
+    background-color: #6953D9;
+    animation: fadeIn 0.4s ease;
+    animation-fill-mode: forwards;
+    opacity: 0;
+}
+
+#fileInput {
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    justify-content: start;
+    align-items: center;
+
+    h1 {
+        margin: 20px 0;
+        font-family: Roboto;
+        font-size: 32px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+    h2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 70px;
+        font-family: Roboto;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+    #uploadFile {
+        display: flex;
+        height: 55px;
+        min-width: 113px;
+        background-color: #6f42c1; /* Фиолетовый цвет */
+        padding-left: 24px;
+        padding-right: 24px;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        line-height: 55px;
+        transition: color 0.4s ease, background-color 0.3s ease;
+        white-space: nowrap;
+
+        &:hover{
+            color: #6f42c1;
+            background-color: white;
+        }
+    }
+}
+
+.students-adding-container {
+    display: none;
+}
+
+@keyframes fadeIn{
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

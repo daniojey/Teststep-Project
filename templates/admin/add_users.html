@@ -1,0 +1,32 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static "css/adding_students.css" %}">
+
+    <div class='base-container'>
+        <div id="dropZone"></div>
+
+        <div class="form-container">
+            <h1>Додавання студентів</h1>
+            <h2>Перетягніть сюди файл або натисніть кнопку нижче</h2>
+            <p id="fileName"></p>
+            <button id="uploadFile">Завантажити файл</button>
+            <form id="fileForm" action="{% url "users:adding_students" %}" method="post" enctype="multipart/form-data">
+                <input 
+                type="file" 
+                id="fileInput"
+                accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                >
+            </form>
+        </div>
+    </div>
+
+    <div class="students-adding-container">
+        <form action="">
+            <button id="student-adding-btn">Створити</button>
+        </form>
+    </div>
+
+    <script src="{% static "js/dropzone_adding_students.js" %}"></script>
+{% endblock %}

@@ -20,6 +20,9 @@ from decouple import config
 from django.templatetags.static import static
 import logging
 
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,9 +42,9 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
-    "unfold",  # before django.contrib.admin
-    "unfold.contrib.filters",  # optional, if special filters are needed
-
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -118,7 +121,7 @@ DATABASES = {
     #     'PASSWORD': 'root',
     #     'HOST': 'localhost',
     #     'PORT': '5432',
-    # }
+    # 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -162,7 +165,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 
 
 # # Дополнительные настройки для WhiteNoise
@@ -173,12 +176,13 @@ else:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
     BASE_DIR / "app/static",
     BASE_DIR / "tests/static",
+    BASE_DIR / "static", 'users'
     
 ]
 
@@ -328,7 +332,6 @@ UNFOLD = {
         lambda request: static("css/unfold.css"),
     ],
 
-
     "SITE_TITLE": 'Teststep',  # Название панели
 
     "SITE_FAVICONS": [
@@ -343,6 +346,95 @@ UNFOLD = {
     "SIDEBAR": {
         "show_search": True,  # Search in applications and models names
         "show_all_applications": True,  # Dropdown with all applications and models
+        "navigation": [
+            {
+                "title": _(""),
+                
+                "separator": False,  # Top border
+                "collapsible": False,  # Collapsible group of links
+                "items": [
+                    {
+                        "title": _("Головна панель"),
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                        "permission": lambda request: request.user.is_superuser,
+                    }
+                ]
+            },
+            {
+                "title": _("Користувачі і группи"),
+                "separator": True,  # Top border
+                "collapsible": True,  # Collapsible group of links
+                "items": [
+                    {
+                        "title": _("Користувачі"),
+                        "link": reverse_lazy("admin:users_user_changelist"),
+                    },
+                    {
+                        "title": _("Групи"),
+                        "link": reverse_lazy("admin:users_usersgroup_changelist"),
+                    },
+                    {
+                        "title": _("Членство користувача в групах"),
+                        "link": reverse_lazy("admin:users_usersgroupmembership_changelist"),
+                    },
+                    {
+                        "title": _("Спроби входу"),
+                        "link": reverse_lazy("admin:users_loginattempt_changelist"),
+                    },
+                    {
+                        "title": _("Додати студентів"),
+                        "link": reverse_lazy("admin:adding_students")
+                    }
+                ]
+            },
+            {
+                "title": _("Тести"),
+                "separator": True,  # Top border
+                "collapsible": True,  # Collapsible group of links
+                "items":[ 
+                    {
+                        "title": _("Категорії тестів"),
+                        "link": reverse_lazy("admin:tests_categories_changelist")
+                    },
+                    {
+                        "title": _("Тести"),
+                        "link": reverse_lazy("admin:tests_tests_changelist")
+                    },
+                    {
+                        "title": _("Групи для питань"),
+                        "link": reverse_lazy("admin:tests_questiongroup_changelist")
+                    },
+                    {
+                        "title": _("Питання"),
+                        "link": reverse_lazy("admin:tests_question_changelist")
+                    },
+                    {
+                        "title": _("Відповіді"),
+                        "link": reverse_lazy("admin:tests_answer_changelist")
+                    },
+                    {
+                        "title": _("Відповіді встановлення відповідності"),
+                        "link": reverse_lazy("admin:tests_matchingpair_changelist")
+                    },
+                ]
+            },
+            {
+                "title": _("Перевірка тестів і Результати"),
+                "separator": True,  # Top border
+                "collapsible": True,  # Collapsible group of links
+                "items": [
+                    {
+                        "title": _("Результати тестів"),
+                        "link": reverse_lazy("admin:tests_testresult_changelist")
+                    },
+                    {
+                        "title": _("Тести на перевірку"),
+                        "link": reverse_lazy("admin:tests_testsreviews_changelist")
+                    },
+                ]
+            }
+        ]
     },
 
     

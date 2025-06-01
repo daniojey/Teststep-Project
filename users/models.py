@@ -1,3 +1,5 @@
+from pathlib import Path
+from uuid import uuid4
 from django.core.files import File
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -11,18 +13,25 @@ class User(AbstractUser):
         return  self.username
     
     def save(self, *args, **kwargs):
-        if self.image:
-            img = Image.open(self.image)
-            
-            max_size = (800, 600)
-            
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
-            output = BytesIO()
-            img.save(output, format='JPEG', quality=85)
-            output.seek(0)
+        # если файла нет или он не изменился — просто сохраняем
+        try:
+            if self.image and getattr(self.image, 'file', None):
+                    img = Image.open(self.image)
 
-            self.image = File(output, name=self.image.name)
+                    ext = Path(self.image.name).suffix.lower().lstrip('.')
+                    ext_map = {'jpg': 'JPEG', 'jpeg': 'JPEG', 'png': 'PNG', 'webp': 'WEBP'}
+
+                    img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+
+                    output = BytesIO()
+                    img.save(output, format=ext_map.get(ext, 'JPEG'), quality=85)
+                    output.seek(0)
+
+                    # >>> важная строка: только базовое имя, без «test-images/»
+                    filename = f"{uuid4().hex}{Path(self.image.name).suffix.lower()}"
+                    self.image.save(filename, File(output), save=False)
+        except FileNotFoundError:
+            pass
             
         super().save(*args, **kwargs)
 

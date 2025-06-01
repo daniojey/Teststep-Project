@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/', views.UserProfileView.as_view() , name="profile"),
     path('logout/', views.logout, name='logout'),
     path('profile_image_upload/', views.profile_image_upload, name='profile_image_upload'),
+    path('adding_students/', views.AddUsersView.as_view(), name='adding_students'),
 
     path('reset_password/', auth_views.PasswordResetView.as_view(
         template_name='users/reset_password.html',

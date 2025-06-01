@@ -1,18 +1,23 @@
 from django.contrib import admin
+from django.shortcuts import render
+from django.urls import path
+from django.views import View
+from django.views.generic import FormView, TemplateView, View
 
 from users.models import User, UsersGroup, UsersGroupMembership, LoginAttempt
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from unfold.admin import ModelAdmin
+from unfold.views import UnfoldModelAdminViewMixin
 
 # admin.site.register(User)
 # admin.site.register(UsersGroup)
 # admin.site.register(UsersGroupMembership)
 # admin.site.register(LoginAttempt)
 
-@admin.register(User)
-class UserAdmin(ModelAdmin):
-    list_display = ["first_name","last_name", "username", "email"]
-    search_fields = ["first_name","last_name", "username", "email"]
+# @admin.register(User)
+# class UserAdmin(ModelAdmin):
+#     list_display = ["first_name","last_name", "username", "email"]
+#     search_fields = ["first_name","last_name", "username", "email"]
 
 @admin.register(UsersGroup)
 class UserGroupAdmin(ModelAdmin):
@@ -27,3 +32,32 @@ class UserGroupMembershipAdmin(ModelAdmin):
 @admin.register(LoginAttempt)
 class LoginAttemptAdmin(ModelAdmin):
     pass
+
+
+class CreateUsersView(UnfoldModelAdminViewMixin, TemplateView):
+    title="Додати студентів"
+    template_name = "admin/add_users.html"
+    permission_required = ()
+
+
+
+
+@admin.register(User)
+class UserModelAdmin(ModelAdmin):
+    list_display = ["first_name","last_name", "username", "email"]
+    search_fields = ["first_name","last_name", "username", "email"]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_view = self.admin_site.admin_view(CreateUsersView.as_view(model_admin=self))
+
+        my_urls = [
+            path(
+                'adding_students',
+                custom_view,
+                name="adding_students",
+            )
+        ]
+
+        return my_urls + urls
+    
