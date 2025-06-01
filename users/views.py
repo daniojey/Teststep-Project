@@ -3,13 +3,16 @@ from django.contrib import auth
 from django.db.models.base import Model as Model
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.views.generic import View
+import xml.etree.ElementTree as ET
 from django.views.decorators.csrf import csrf_exempt
 from tests.models import TestResult, TestsReviews
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .utils import is_blocked
+from django.db import transaction
 
 from .models import LoginAttempt, User, UsersGroupMembership
 
@@ -274,3 +277,56 @@ def profile_image_upload(request):
 def logout(request):
     auth.logout(request)
     return redirect(reverse("app:index"))
+
+
+class AddUsersView(View):
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        print(request.POST)
+        print(action)
+
+
+        file = request.FILES.get('file')
+
+        try:
+            tree = ET.parse(file)
+            root = tree.getroot()
+
+            users = []
+
+            with transaction.atomic():
+                for user_item in root.findall('user'):
+                    try:
+                        first_name = user_item.find('first_name')
+                        last_name = user_item.find('last_name')
+                        email = user_item.find('email')
+                        username = user_item.find("username")
+                        password = user_item.find('password')
+
+                        res_dict = {
+                            "first_name": first_name.text if first_name is not None else None,
+                            "last_name": last_name.text if last_name is not None else None,
+                            "email": email.text if email is not None else None,
+                            "username": username.text if username is not None else None,
+                            "password": password.text if password is not None else None,
+                        }
+
+                        users.append(res_dict)
+                        
+                        # last_name = user_item.find('last_name').text
+                        # email = user_item.find('email').text
+                        # username = user_item.find('username').text
+                        # password = user_item.find('password').text
+
+                        # print(first_name)
+                        # print(last_name)
+                        # print(email)
+                        # print(username)
+                        # print(password)
+                    except Exception as e:
+                        print(e)
+
+        except ET.ParseError as e:
+            print(e)
+
+        return JsonResponse(data={'users': users},status=200)
