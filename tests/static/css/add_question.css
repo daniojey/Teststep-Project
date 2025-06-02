@@ -195,6 +195,9 @@ html, body {
 .custom-number-input{
     position: relative;
     display: inline-block;
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+    animation-fill-mode: forwards;
 }
 
 .number-input {
@@ -682,6 +685,16 @@ input[type="checkbox"]:checked::after {
     /* Или можно добавить отступ к последнему элементу внутри формы */
     #id_students {
         padding-bottom: 24px;
+    }
+}
+
+@keyframes fadeIn{
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
     }
 }
 

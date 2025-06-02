@@ -1,5 +1,6 @@
 # tests/views.py
 # Базовые библиотеки
+from copyreg import constructor
 import os
 import random
 import base64
@@ -394,6 +395,7 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
+        print(request.POST)
         test_id = self.kwargs.get('test_id')
         test = get_object_or_404(Tests, id=test_id)
         user = request.user
@@ -1105,166 +1107,10 @@ class TestsResultsView(View):
         correct_answers = 0.0
         complete_question = False
 
-        if question.question_type == 'TXT':
-            if question.answer_type == 'SC':
-                correct_answer = question.answers.filter(is_correct=True).first()
-                if correct_answer and correct_answer.id == int(value):
-                    # print("КОРРЕКТНий",correct_answer)
-                    # print("КОРРЕКТНий",correct_answer.id)
-                    # print("ПОИНТ 1.0")
-                    correct_answers += correct_answer.score
-                    if int(correct_answers) == question.scores:
-                        complete_question = True
+        if question.question_type == 'MTCH':
 
-                print(question)
-                print(value)
-
-            elif question.answer_type == 'MC':
-                correct_answers_dict = {
-                    str(answer_id): score    
-                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
-                }
-
-                print(correct_answers_dict)
-                print(value)
-
-                for v in value:
-                    if str(v) in correct_answers_dict:
-                        correct_answers += correct_answers_dict[v]
-
-                if int(correct_answers) == question.scores:
-                        complete_question = True
-            
-                # if set(map(int, value)) == set(correct_answers_list):
-                #     correct_answers += 1.0
-
-            elif question.answer_type == 'INP':
-                correct_answers_dict = {
-                    str(text).strip().lower(): score
-                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
-                }
-                
-                if correct_answers_dict:
-                    if str(value).strip().lower() in correct_answers_dict:
-
-                        correct_answers += correct_answers_dict[value]
-
-                        if int(correct_answers) == question.scores:
-                                complete_question = True
-                                
-
-        # if question.question_type == 'SC':
-        #     correct_answer = question.answers.filter(is_correct=True).first()
-        #     if correct_answer and correct_answer.id == int(value):
-        #         correct_answers += 1.0
-        # elif question.question_type == 'MC':
-        #     correct_answers_list = list(question.answers.filter(is_correct=True).values_list('id', flat=True))
-        #     print(correct_answers_list)
-            
-        #     # # Преобразуем ответы пользователя к целым числам и сравниваем с правильным списком
-        #     if set(map(int, value)) == set(correct_answers_list):
-        #         correct_answers += 1.0
-        elif question.question_type == 'IMG':
-            if question.answer_type == 'SC':
-                correct_answer = question.answers.filter(is_correct=True).first()
-                if correct_answer and correct_answer.id == int(value):
-                    # print("КОРРЕКТНий",correct_answer)
-                    # print("КОРРЕКТНий",correct_answer.id)
-                    # print("ПОИНТ 1.0")
-                    correct_answers += correct_answer.score
-
-                    if int(correct_answers) == question.scores:
-                        complete_question = True
-
-                print(question)
-                print(value)
-
-            elif question.answer_type == 'MC':
-                correct_answers_dict = {
-                    str(answer_id): score    
-                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
-                }
-
-                print(correct_answers_dict)
-                print(value)
-
-                for v in value:
-                    if str(v) in correct_answers_dict:
-                        correct_answers += correct_answers_dict[v]
-
-                if int(correct_answers) == question.scores:
-                        complete_question = True
-                # if set(map(int, value)) == set(correct_answers_list):
-                #     correct_answers += 1.0
-
-            elif question.answer_type == 'INP':
-                correct_answers_dict = {
-                    str(text).strip().lower(): score
-                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
-                }
-                
-                if correct_answers_dict:
-                    if str(value).strip().lower() in correct_answers_dict:
-
-                        correct_answers += correct_answers_dict[value]
-
-                        if int(correct_answers) == question.scores:
-                            complete_question = True
-                        
-
-        elif question.question_type == 'AUD':
-            if question.answer_type == 'SC':
-                correct_answer = question.answers.filter(is_correct=True).first()
-                if correct_answer and correct_answer.id == int(value):
-                    # print("КОРРЕКТНий",correct_answer)
-                    # print("КОРРЕКТНий",correct_answer.id)
-                    # print("ПОИНТ 1.0")
-                    correct_answers += correct_answer.score
-                    if int(correct_answers) == question.scores:
-                        complete_question = True
-
-                print(question)
-                print(value)
-
-            elif question.answer_type == 'MC':
-                correct_answers_dict = {
-                    str(answer_id): score    
-                    for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
-                }
-
-                print(correct_answers_dict)
-                print(value)
-
-                for v in value:
-                    if str(v) in correct_answers_dict:
-                        correct_answers += correct_answers_dict[v]
-
-                if int(correct_answers) == question.scores:
-                        complete_question = True
-            
-                # if set(map(int, value)) == set(correct_answers_list):
-                #     correct_answers += 1.0
-
-            elif question.answer_type == 'INP':
-                correct_answers_dict = {
-                    str(text).strip().lower(): score
-                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
-                }
-                
-                if correct_answers_dict:
-                    if str(value).strip().lower() in correct_answers_dict:
-                        correct_answers += correct_answers_dict[value]
-
-                        if int(correct_answers) == question.scores:
-                            complete_question = True
-                        
-                        
-        # elif question.question_type == "INP":
-        #     correct_answer = question.answers.filter(is_correct=True).first()
-        #     if str(correct_answer).strip().lower() == str(value).strip().lower():
-        #         correct_answers += 1.0
-        elif question.question_type == 'MTCH':
-                questions_count = MatchingPair.objects.filter(question=question).count()
+            if question.scores_for == Question.SCORE_FOR_ANSWER:
+            # questions_count = MatchingPair.objects.filter(question=question).count()
 
                 for left, right in value.items():
                     match = MatchingPair.objects.filter(question=question, left_item=left, right_item=right).first()
@@ -1272,9 +1118,67 @@ class TestsResultsView(View):
                         print("ПОИНТ", match.score)
                         correct_answers += match.score
 
-                
-                if int(correct_answers) == question.scores:
+                    if int(correct_answers) == question.scores:
+                            complete_question = True
+
+            elif question.scores_for == Question.SCORE_FOR_QUESTION:
+                print(question.scores_fore,'ОТВЕТ SQ')
+
+        elif question.answer_type == 'SC':
+
+            if question.scores_for == Question.SCORE_FOR_ANSWER:
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += correct_answer.score
+                    if int(correct_answers) == question.scores:
                         complete_question = True
+
+                    print(question)
+                    print(value)
+                
+            elif question.scores_for == Question.SCORE_FOR_QUESTION:
+                print(question.scores_fore,'ОТВЕТ SQ')
+                                
+
+        elif question.answer_type == 'MC':
+                
+                if question.scores_for == Question.SCORE_FOR_ANSWER:
+                    correct_answers_dict = {
+                        str(answer_id): score    
+                        for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
+                    }
+
+                    print(correct_answers_dict)
+                    print(value)
+
+                    for v in value:
+                        if str(v) in correct_answers_dict:
+                            correct_answers += correct_answers_dict[v]
+
+                    if int(correct_answers) == question.scores:
+                            complete_question = True
+                elif question.scores_for == Question.SCORE_FOR_QUESTION:
+                    print(question.scores_fore,'ОТВЕТ SQ')
+
+
+        elif question.answer_type == 'INP':
+            if question.scores_for == Question.SCORE_FOR_ANSWER:
+                correct_answers_dict = {
+                    str(text).strip().lower(): score
+                    for text, score in question.answers.filter(is_correct=True).values_list('text', 'score')
+                }
+                    
+                if correct_answers_dict:
+                    if str(value).strip().lower() in correct_answers_dict:
+
+                        correct_answers += correct_answers_dict[value]
+
+                        if int(correct_answers) == question.scores:
+                                complete_question = True
+            elif question.scores_for == Question.SCORE_FOR_QUESTION:
+                print(question.scores_fore,'ОТВЕТ SQ')
+
+
 
         print(correct_answers)
         return complete_question ,correct_answers
