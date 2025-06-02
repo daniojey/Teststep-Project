@@ -25,6 +25,7 @@ class TestExitMiddleware(MiddlewareMixin):
                 # print('ПУть request', request.path)
                 # print(current_test_path)
                 if not self.is_test_path(request.path, current_test_path):
+                    print('НЕВЕРНЫЙ ПУТЬ', request.path)
                     # Сохраняем резулттат с 0 баллов для автоматического теста 
                     if request.user.is_authenticated:
                         TestResult.objects.get_or_create(
@@ -51,8 +52,8 @@ class TestExitMiddleware(MiddlewareMixin):
             '/csp-report/',  # Путь для отчётов CSP
             '/favicon.ico',  # Иконка сайта
             '/robots.txt',  # Файл robots.txt
-            '/admin/',  # Путь к админке
-            '/.well-known/appspecific/com.chrome.devtools.json/'
+            '/admin/',
+            '/.well-known/',
         ]
         
         # Проверяем, если путь запроса совпадает с исключениями
@@ -61,7 +62,6 @@ class TestExitMiddleware(MiddlewareMixin):
 
         # Проверка на путь текущего теста
         res = bool(re.match(f"^{re.escape(test_path)}", request_path))
-        # print(res,'РЕГУЛЯРНОЕ ЗНАЧЕНИЕ')
         return res
 
     def clear_test_session(self, request):

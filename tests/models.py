@@ -130,9 +130,18 @@ class Question(models.Model):
         (ANSWER_AUDIO, 'Голосова відповідь'),
     ] 
 
+    SCORE_FOR_ANSWER = "SA"
+    SCORE_FOR_QUESTION = "SQ"
+
+    SCORE_FOR_TYPES = [
+        (SCORE_FOR_ANSWER, 'Бали за відповідь'),
+        (SCORE_FOR_QUESTION, 'Бали за питання'),
+    ]
+
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
-    scores = models.IntegerField(default=1, verbose_name="Бали за питання")
+    scores_for = models.CharField(choices=SCORE_FOR_TYPES , verbose_name="Тип оцінювання")
+    scores = models.IntegerField(default=0, verbose_name="Бали за питання", blank=True, null=True)
     text = models.TextField(verbose_name="Текст питання", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
@@ -146,19 +155,22 @@ class Question(models.Model):
         verbose_name_plural = "Питання"
 
     def update_question_score(self):
-        if self.question_type == 'MTCH':
-            self.scores = sum(
-                pair.score for pair in self.matching_pairs.all()
-            );
-            self.save()
-        elif self.answer_type == "INP":
-            self.scores = self.answers.filter(is_correct=True).aggregate(models.Max('score'))['score__max']
-            self.save()
-        else:
-            self.scores = sum(
-                answer.score for answer in self.answers.filter(is_correct=True)
-            )
-            self.save()
+        if self.scores_for == "SQ":
+            pass
+        elif self.scores_for == "SA":
+            if self.question_type == 'MTCH':
+                self.scores = sum(
+                    pair.score for pair in self.matching_pairs.all()
+                );
+                self.save()
+            elif self.answer_type == "INP":
+                self.scores = self.answers.filter(is_correct=True).aggregate(models.Max('score'))['score__max']
+                self.save()
+            else:
+                self.scores = sum(
+                    answer.score for answer in self.answers.filter(is_correct=True)
+                )
+                self.save()
 
     @property
     def question_info(self):
@@ -219,7 +231,7 @@ class MatchingPair(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Питання")
-    score = models.IntegerField(default=1, verbose_name="Бали за відповідь")
+    score = models.IntegerField(default=0, verbose_name="Бали за відповідь")
     text = models.CharField(verbose_name="Текст відповіді", max_length=255)
     is_correct = models.BooleanField(default=False, verbose_name="Правильна відповідь")
     audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосова відповідь")

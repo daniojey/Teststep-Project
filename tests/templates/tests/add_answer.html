@@ -36,9 +36,11 @@
                         </div>
                         
                         <div class="delete-and-score-container">
-                            <div class='score-container'>
-                                <p>{{ pair.score }}</p>
-                            </div>
+                            {% if question.scores_for == "SA" %}
+                                <div class='score-container'>
+                                    <p>{{ pair.score }}</p>
+                                </div>
+                            {% endif %}
                             
                             <div class='delete-container'>
                                 <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ pair.id }}')">
@@ -77,9 +79,11 @@
                     
                     {% endif %}
                     <div class="delete-and-score-container">
-                        <div class='score-container'>
-                            <p>{{ answer.score }}</p>
-                        </div>
+                        {% if question.scores_for == "SA" %}
+                            <div class='score-container'>
+                                <p>{{ answer.score }}</p>
+                            </div>
+                        {% endif %}
 
                         <div class='delete-container'>
                             <img src="{% static "icons/basket.svg" %}" alt="Видалити питання" onclick="openModal('testModal{{ answer.id }}')">
@@ -133,13 +137,15 @@
             <div class="row">          
                 {% if question.question_type == "MTCH" %}
                     <div class='matching-form'>
-                        <div class="custom-number-input">
-                            <input name="score" id="id_score" type="number" class="number-input" value="1" required>
-                            <div class="arrows">
-                                <button class="arrow up">▲</button>
-                                <button class="arrow down">▼</button>
-                            </div>  
-                        </div>
+                        {% if question.scores_for == "SA" or question.scores_for == "" %}
+                            <div class="custom-number-input">
+                                <input name="score" id="id_score" type="number" class="number-input" value="1" required>
+                                <div class="arrows">
+                                    <button class="arrow up">▲</button>
+                                    <button class="arrow down">▼</button>
+                                </div>  
+                            </div>
+                        {% endif %}
 
                         <div class="matching-answer-input-container">
                             <div class='matching-form-label'>
@@ -159,13 +165,15 @@
                             value="" 
                             required>
 
-                            <div class="custom-number-input">
-                                <input name="score" id="id_score" type="number" class="number-input" value="1" required>
-                                <div class="arrows">
-                                    <button class="arrow up">▲</button>
-                                    <button class="arrow down">▼</button>
+                            {% if question.scores_for == "SA" or question.scores_for == "" %}
+                                <div class="custom-number-input">
+                                    <input name="score" id="id_score" type="number" class="number-input" value="1" required>
+                                    <div class="arrows">
+                                        <button class="arrow up">▲</button>
+                                        <button class="arrow down">▼</button>
+                                    </div>
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                 {% endif %}
 

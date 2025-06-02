@@ -189,8 +189,15 @@ class QuestionForm(forms.ModelForm):
                     (choice, label) for choice, label in Question.ANSWER_TYPES
                 ]
 
+            scores_types = [("", "Тип оцінювання")] + [
+                (choice, label) for choice, label in Question.SCORE_FOR_TYPES
+            ]
+
             self.fields['answer_type'].choices = filtered_choices
             self.fields['answer_type'].initial = filtered_choices[0]
+
+            self.fields["scores_for"].choices = scores_types
+            self.fields["scores_for"].initial = scores_types[0]
         else:
             self.fields['group'].queryset = QuestionGroup.objects.none()
 
@@ -206,7 +213,7 @@ class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group', 'scores']
+        fields = ['text', 'question_type','image', 'audio', 'answer_type', 'group', 'scores_for' , 'scores']
         widgets = {
             'text': forms.TextInput(),
             'question_type': forms.Select(attrs={'class': 'custom-select', 'id': 'questionSelect'}),
@@ -224,16 +231,28 @@ class QuestionForm(forms.ModelForm):
                 }),
             'group': forms.Select(attrs={'class': 'custom-select'}),
             'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'}),
-            'scores': forms.NumberInput(attrs={'class': 'number-input'})
+            'scores_for': forms.Select(attrs={"class": 'custom-select', 'id': 'scoresFor'}),
+            'scores': forms.NumberInput(attrs={'class': 'number-input', 'required': False})
         }
 
     def clean_scores(self):
         score = self.cleaned_data.get('scores')
+        scores_for = self.cleaned_data.get("scores_for")
+        print(scores_for)
+        print(score)
 
-        if score <= 0:
-            raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
+        if score < 0:
+            raise forms.ValidationError('Поле балів повинно бути з позитивним значенням або 0')
         
+        # if scores_for == "SA":
+        #     score = 0
+        #     print("Значение", score)
+        # else:
+        #     print("Без обновления")
+
+
         return score
+    
 
 class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
     def __init__(self, *args, **kwargs):
