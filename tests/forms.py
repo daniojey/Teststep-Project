@@ -320,7 +320,7 @@ class MatchingPairForm(forms.ModelForm):
     def clean_score(self):
         score = self.cleaned_data.get('score')
 
-        if score <= 0:
+        if score < 0:
             raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
         
         return score
@@ -337,7 +337,7 @@ class AnswerForm(forms.ModelForm):
     def clean_score(self):
         score = self.cleaned_data.get('score')
 
-        if score <= 0:
+        if score < 0:
             raise forms.ValidationError('Поле балів повинно бути з позитивним значенням')
         
         return score

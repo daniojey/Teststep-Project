@@ -22,7 +22,7 @@
         {% csrf_token %} 
         {% for field in form %}
             {% if question.text and question.question_type != 'MTCH' %}
-                    <div class='text-question'>    
+                    <div class='text-question'>      
                         <h3>{{ field.label_tag }}</h3>
                     </div>
             {% endif %}

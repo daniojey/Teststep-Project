@@ -56,6 +56,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .input-label {
@@ -65,7 +66,6 @@
     border-radius: 12px;
     padding: 18px;
     margin-right: 40px;
-    margin-bottom: 8px;
 }
 
 .checkbox-answer {
@@ -142,24 +142,35 @@
 .delete-and-score-container {
     display: flex;
     gap: 15px;
+    justify-content: end;
+    align-items: center;
+    text-align: end;
 }
 
 .score-container {
     display: flex;
+    width: 40%;
+    min-height: 100%;
     color: #ffffff;
-    padding: 5px 10px;
     border: 1px solid #7260F5;
     border-radius: 12px;
     justify-content: center;
     align-items: center;
     text-align: center;
 
-    p{
-        font-family: Roboto;
-        font-size: 18px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 146%;
+    input{
+        display: flex;
+        padding: 10px 10px;
+        border-radius: 12px;
+        
+        min-height: 100%;
+        background-color: #363242;
+        color: #ffffff;
+        font-size: 16px;
+        border: none;
+        width: 100%;
+        text-align: center;
+        justify-content: center;
     }
 }
 
@@ -418,6 +429,50 @@ input[type="checkbox"]:checked::after {
     color: #7260F5;
     background-color: #ffffff;
 }
+
+
+.message-popup {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    display: none;
+    z-index: 1000;
+}
+
+
+.message-popup.active{
+    display: flex;
+    background-color: rgb(0, 119, 0);
+    animation: fadeIn 0.4s ease;
+    animation-fill-mode: forwards;
+}
+
+
+.message-popup.error {
+    display: flex;
+    background-color: #ff4d4f;
+    animation: fadeIn 0.4s ease;
+    animation-fill-mode: forwards;
+}
+
+
+@keyframes fadein{
+    0% {
+        opacity: 0;
+    }
+    
+    100% {
+        opacity: 1;
+    }
+}
+
 
 /* Стиль для автозаполненных полей */
 input:-webkit-autofill,

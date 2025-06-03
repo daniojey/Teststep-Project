@@ -8,6 +8,7 @@
 
 
 <body>
+    <div id="message-popup" class="message-popup"></div>
     <div class='base-container'>
         <div class='container-header'>
                 <p class='category'>Категорія питання: {% if group %}{{ group.name }}{% else %}Без группы{% endif %}</p>
@@ -21,6 +22,7 @@
         <div class='answers-cotainer'>
             <form id="correctAnswersForm" method="post" action="{% url 'tests:correct_answers' question_id=question.id %}">
                 {% csrf_token %}
+                <input type="hidden" data-question="{{ question.scores_for }}" id="questionData">
                 {% if question.question_type == 'MTCH' %}    
                 <div class='delete-and-answers'>
 
@@ -38,7 +40,7 @@
                         <div class="delete-and-score-container">
                             {% if question.scores_for == "SA" %}
                                 <div class='score-container'>
-                                    <p>{{ pair.score }}</p>
+                                    <input type="text" id="answerScore" data-type="Matching" data-ids="{{ pair.id }}" value={{ pair.score }}></input>
                                 </div>
                             {% endif %}
                             
@@ -81,7 +83,7 @@
                     <div class="delete-and-score-container">
                         {% if question.scores_for == "SA" %}
                             <div class='score-container'>
-                                <p>{{ answer.score }}</p>
+                                <input type="text" id="answerScore" data-type="Answer" data-ids="{{ answer.id }}" value={{ answer.score }}></input>
                             </div>
                         {% endif %}
 
@@ -132,7 +134,7 @@
             </div>            
         </div>
         <div>
-        <form method="post" action="{% url action_url question.id %}">
+        <form method="post" action="{% url action_url question.id %}" id="addQuestionForm">
             {% csrf_token %}
             <div class="row">          
                 {% if question.question_type == "MTCH" %}
@@ -209,6 +211,8 @@
         
         </div>  
     </div>
+    <script src="{% static "js/answer_scores_fetch.js" %}"></script>
+    <script src="{% static "js/answer_form_modified.js" %}"></script>
     <script src="{% static "js/custom_arrow_number_input.js" %}"></script>
     <script src="{% static "js/selection_limiter.js" %}"></script>
     <!-- JavaScript для управления модальным окном -->
