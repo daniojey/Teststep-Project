@@ -533,6 +533,10 @@ class AddAnswersView(LoginRequiredMixin, FormView):
         # print("КОЛ_ВО очков",total_score)
         return redirect('tests:add_answers', question_id=question.id)
     
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
+    
     def get_context_data(self, **kwargs):
         """ Получаем вопрос а также все его ответы и его группу"""
         context = super().get_context_data(**kwargs)
@@ -682,6 +686,48 @@ def delete_matching_pair(request, pair_id):
     question.update_question_score()
     return redirect('tests:add_matching_pair', question_id=question.id)
 
+
+class ChangeAnswerScoreView(View):
+
+    def post(self, request, ids=None, *args, **kwargs):
+        if ids:
+            type_answer = request.POST.get('type')
+            post_scores = request.POST.get('score')
+
+            try:
+                score = int(post_scores)
+            except ValueError as e:
+                return JsonResponse({'error': 'Помилка при обробці балів', 'detail': f"{e}"}, status=400)
+
+
+            if type_answer == "Matching":
+
+                try:
+                    matching_pair = MatchingPair.objects.get(id=ids)
+                    matching_pair.score = score
+                    matching_pair.save()
+
+                    matching_pair.question.update_question_score()
+
+                    return JsonResponse({"success": f"Бали змінено на {score}"})
+                except Exception as e:
+                    return JsonResponse({'error': 'Помилка при обробці відповіді', 'detail': f"{e}"}, status=400)
+                
+
+            elif type_answer == 'Answer':
+
+                try:
+                    answer = Answer.objects.get(id=ids)
+                    answer.score = score
+                    answer.save()
+
+                    answer.question.update_question_score()
+
+                    return JsonResponse({"success": f"Бали змінено на {score}"})
+                except Exception as e:
+                    return JsonResponse({'error': 'Помилка при обробці відповіді', 'detail': f"{e}"}, status=400)
+                
+            return JsonResponse({'error': 'Помилка обробки відповіді'})
 
 #     test = question.test
 #     questions = test.questions.all()
@@ -1115,14 +1161,28 @@ class TestsResultsView(View):
                 for left, right in value.items():
                     match = MatchingPair.objects.filter(question=question, left_item=left, right_item=right).first()
                     if match:
-                        print("ПОИНТ", match.score)
                         correct_answers += match.score
 
                     if int(correct_answers) == question.scores:
                             complete_question = True
 
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
-                print(question.scores_fore,'ОТВЕТ SQ')
+                matching_pair_dict = {
+                    str(left_item): right_item
+                    for left_item, right_item in question.matching_pairs.all().values_list('left_item', 'right_item')
+                }
+
+                point = question.scores / len(matching_pair_dict)
+
+                for left, right in value.items():
+                    if str(left) in matching_pair_dict:
+                        
+                        expected_right = matching_pair_dict[left]
+                        if right == expected_right:
+                            correct_answers += point
+
+                if question.scores == correct_answers:
+                    complete_question = True
 
         elif question.answer_type == 'SC':
 
@@ -1132,12 +1192,13 @@ class TestsResultsView(View):
                     correct_answers += correct_answer.score
                     if int(correct_answers) == question.scores:
                         complete_question = True
-
-                    print(question)
-                    print(value)
                 
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
-                print(question.scores_fore,'ОТВЕТ SQ')
+                correct_answer = question.answers.filter(is_correct=True).first()
+                if correct_answer and correct_answer.id == int(value):
+                    correct_answers += question.scores
+                    complete_question = True
+
                                 
 
         elif question.answer_type == 'MC':
@@ -1148,17 +1209,23 @@ class TestsResultsView(View):
                         for answer_id, score in question.answers.filter(is_correct=True).values_list('id', 'score')
                     }
 
-                    print(correct_answers_dict)
-                    print(value)
-
                     for v in value:
                         if str(v) in correct_answers_dict:
                             correct_answers += correct_answers_dict[v]
 
                     if int(correct_answers) == question.scores:
-                            complete_question = True
+                        complete_question = True
+
                 elif question.scores_for == Question.SCORE_FOR_QUESTION:
-                    print(question.scores_fore,'ОТВЕТ SQ')
+                    correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
+                    points = question.scores / len(correct_answers_list)
+
+                    for v in value:
+                        if int(v) in correct_answers_list:
+                            correct_answers += points
+
+                    if int(correct_answers) == question.scores:
+                        complete_question = True
 
 
         elif question.answer_type == 'INP':
@@ -1175,12 +1242,19 @@ class TestsResultsView(View):
 
                         if int(correct_answers) == question.scores:
                                 complete_question = True
+
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
-                print(question.scores_fore,'ОТВЕТ SQ')
+                correct_answers_list = [
+                    str(v).lower().strip() for v in question.answers.filter(is_correct=True).values_list('text', flat=True)
+                ]
+
+                if str(value).lower().strip() in correct_answers_list:
+                    correct_answers += question.scores
+                    complete_question = True
 
 
 
-        print(correct_answers)
+        print("ОТВЕТ", question, correct_answers)
         return complete_question ,correct_answers
     
     def save_test_results(self, request, test, score, test_duration):
@@ -1590,88 +1664,139 @@ class TakeTestReviewView(FormView):
 
             elif action == 'partial':
                 print(self.request.POST)
+
                 if self.current_question.question_type == 'MTCH':
-                    matching_pairs_dict = {
-                        str(pair.left_item): pair.score
-                        for pair in self.current_question.matching_pairs.all()
-                    }
+                    if self.current_question.scores_for == Question.SCORE_FOR_ANSWER:
+                        matching_pairs_dict = {
+                            str(pair.left_item): pair.score
+                            for pair in self.current_question.matching_pairs.all()
+                        }
 
-                    print(matching_pairs_dict)
-                    matching_pairs =  {
-                        left: right
-                        for left, right in self.current_question.matching_pairs.all().values_list('left_item', 'right_item')
-                    }
+                        print(matching_pairs_dict)
+                        matching_pairs =  {
+                            left: right
+                            for left, right in self.current_question.matching_pairs.all().values_list('left_item', 'right_item')
+                        }
 
-                    print(matching_pairs)
+                        print(matching_pairs)
 
-                    for key, value in self.request.POST.items():
-                        if key.startswith('answer_'):
-                            # Получаем наш левый и правый ответ
-                            left_item = key.replace('answer_', '')
-                            right_item = value
+                        for key, value in self.request.POST.items():
+                            if key.startswith('answer_'):
+                                # Получаем наш левый и правый ответ
+                                left_item = key.replace('answer_', '')
+                                right_item = value
 
-                            # Проверяем наличие в словаре ответов
-                            if left_item in matching_pairs:
-                                
-                                # Если елемент найден то также проверяем что right совпадает если так то засчитываем балл
-                                expect_right = matching_pairs[left_item]
-                                if right_item == expect_right:
-                                    self.request.session['teacher_answers'] += matching_pairs_dict[left_item]
+                                # Проверяем наличие в словаре ответов
+                                if left_item in matching_pairs:
+                                    
+                                    # Если елемент найден то также проверяем что right совпадает если так то засчитываем балл
+                                    expect_right = matching_pairs[left_item]
+                                    if right_item == expect_right:
+                                        self.request.session['teacher_answers'] += matching_pairs_dict[left_item]
 
+                    elif self.current_question.scores_for == Question.SCORE_FOR_QUESTION:
+                        matching_pairs_dict =  {
+                            str(left): right
+                            for left, right in self.current_question.matching_pairs.all().values_list('left_item', 'right_item')
+                        }
+
+                        point = self.current_question.scores / len(matching_pairs_dict)
+
+                        for key, value in self.request.POST.items():
+                            if key.startswith('answer_'):
+                                # Получаем наш левый и правый ответ
+                                left_item = key.replace('answer_', '')
+                                right_item = value
+
+                                if left_item in matching_pairs_dict:
+                                    expect_right = matching_pairs_dict[left_item]
+                                    if right_item == expect_right:
+                                        self.request.session['teacher_answers'] += point
 
 
                 elif self.current_question.answer_type == 'SC':
-                    answer_dict = {
-                        str(ids): score
-                        for ids, score in self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
-                    }
+                    if self.current_question.scores_for == Question.SCORE_FOR_ANSWER:
+                        answer_dict = {
+                            str(ids): score
+                            for ids, score in self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
+                        }
 
-                    # answer = list(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
-                    
-                    student_answer = self.request.POST.get('answer')
+                        # answer = list(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
+                        
+                        student_answer = self.request.POST.get('answer')
 
-                    if str(student_answer) in answer_dict:
-                        print(answer_dict[student_answer])
-                        self.request.session['teacher_answers'] += answer_dict[student_answer]
+                        if str(student_answer) in answer_dict:
+                            print(answer_dict[student_answer])
+                            self.request.session['teacher_answers'] += answer_dict[student_answer]
+
+                    elif self.current_question.scores_for == Question.SCORE_FOR_QUESTION:
+                        answer = self.current_question.answers.filter(is_correct=True).values_list('id', flat=True)
+                        print(answer)
+
+                        student_answer = form.cleaned_data.get('answer')
+
+                        if int(student_answer) in answer:
+                            self.request.session['teacher_answers'] += self.current_question.scores
 
 
                 elif self.current_question.answer_type == 'MC':
-                    answers_test_dict = {
-                        str(ids): score 
-                        for ids, score in  self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
-                    }
-                    
-                    students_answers = form.cleaned_data.get('answer')
+                    if self.current_question.scores_for == Question.SCORE_FOR_ANSWER:
+                        answers_test_dict = {
+                            str(ids): score 
+                            for ids, score in  self.current_question.answers.filter(is_correct=True).values_list('id', 'score')
+                        }
+                        
+                        students_answers = form.cleaned_data.get('answer')
 
-                    for answer in students_answers:
-                        if str(answer) in answers_test_dict:
-                            print(answers_test_dict[answer])
-                            self.request.session['teacher_answers'] += answers_test_dict[answer]
+                        for answer in students_answers:
+                            if str(answer) in answers_test_dict:
+                                print(answers_test_dict[answer])
+                                self.request.session['teacher_answers'] += answers_test_dict[answer]
+
+                    elif self.current_question.scores_for == Question.SCORE_FOR_QUESTION:
+                        answers_tuple = tuple(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
+                        
+                        # answers_list = self.current_question.answers.filter(is_correct=True).values_list('id', flat=True)
+
+                        point = self.current_question.scores / len(answers_tuple)
+
+                        students_answers = form.cleaned_data.get('answer')
+
+                        for answer in students_answers:
+                            if int(answer) in answers_tuple:
+                                self.request.session['teacher_answers'] += point
 
 
                 elif self.current_question.answer_type == 'INP':
-                    answers_dict = {
-                        str(text).lower().strip(): score
-                        for text, score in  self.current_question.answers.filter(is_correct=True).values_list('text', 'score')
-                    }
+                    if self.current_question.scores_for == Question.SCORE_FOR_ANSWER:
+                        answers_dict = {
+                            str(text).lower().strip(): score
+                            for text, score in  self.current_question.answers.filter(is_correct=True).values_list('text', 'score')
+                        }
 
-                    # answers = self.current_question.answers.filter(is_correct=True).values_list('text', flat=True)
-                    # answers = [answer.lower() for answer in answers]
+                        get_student_answer = form.cleaned_data.get('answer')
+                        student_answer = get_student_answer.lower().strip()
 
-                    get_student_answer = form.cleaned_data.get('answer')
-                    student_answer = get_student_answer.lower().strip()
+                        if student_answer in answers_dict:
+                            print(answers_dict[student_answer])
+                            self.request.session['teacher_answers'] += answers_dict[student_answer]
+                        else:
+                            self.request.session['teacher_answers'] += self.current_question.scores / 2
 
-                    if student_answer in answers_dict:
-                        print(answers_dict[student_answer])
-                        self.request.session['teacher_answers'] += answers_dict[student_answer]
-                    else:
-                        self.request.session['teacher_answers'] += self.current_question.scores / 2
+                    elif self.current_question.scores_for == Question.SCORE_FOR_QUESTION:
+                        answers_tuple = tuple(
+                            str(text).lower().strip() for text in self.current_question.answers.filter(is_correct=True).values_list('text', flat=True))
+                        
+                        student_answer = str(form.cleaned_data.get('answer')).lower().strip()
+
+                        if student_answer in answers_tuple:
+                            self.request.session['teacher_answers'] += self.current_question.scores
                                        
                                        
                 elif self.current_question.answer_type == 'AUD':
                     self.request.session['teacher_answers'] += self.current_question.scores / 2
 
-
+        print(self.request.session['teacher_answers'], '/', self.current_question.scores)
         if self.request.session['question_index'] + 1 < len(self.request.session['test_review_session']):
             self.request.session['question_index'] += 1
         else:
