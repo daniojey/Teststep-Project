@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from django.db.models.base import Model as Model
@@ -11,6 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
+from users.custom_utils.parser_utils import xml_parser
 from .utils import is_blocked
 from django.db import transaction
 
@@ -281,52 +283,59 @@ def logout(request):
 
 class AddUsersView(View):
     def post(self, request, *args, **kwargs):
-        action = request.POST.get('action')
-        print(request.POST)
-        print(action)
+        action = request.META.get('X-Action') or request.POST.get('action')
+
+        if action == 'getUsers':
+            file = request.FILES.get('file')
+            
+            if not file:
+                return JsonResponse({'error': 'Файл не прикріплений'}, status=400)
+            
+            file_extension = file.name.split('.')[-1].lower()
+
+            if file_extension == 'xml':
+                result, data  = xml_parser(file=file)
+                if result == "success":
+                    users= data
+                else:
+                    return JsonResponse({'error': 'Помилка обробки документу', 'detail': f"{data}"}, status=400)
+                
+            else:
+                return JsonResponse({'error': 'Тип документу не підтримуется для обробки'}, status=400)
 
 
-        file = request.FILES.get('file')
+            return JsonResponse(data={'users': users},status=200)
+        
+        elif action == 'createUsers':
+            users = request.POST.get('users')
+            users_to_create = []
+            data = json.loads(users)
+            valid_users = [user for user in data if user['overal_valid'] == True]
 
-        try:
-            tree = ET.parse(file)
-            root = tree.getroot()
+            try:
+                for user in valid_users:
+                    first_name = user['first_name']['value']
+                    last_name = user['last_name']['value']
+                    email = user['email']['value']
+                    username = user['username']['value']
+                    password = user['password']['value']
+                    print('PASSWORD', password)
 
-            users = []
+                    u = User(
+                        username=username,
+                        first_name=first_name,
+                        last_name=last_name,
+                        email=email
+                    )
 
-            with transaction.atomic():
-                for user_item in root.findall('user'):
-                    try:
-                        first_name = user_item.find('first_name')
-                        last_name = user_item.find('last_name')
-                        email = user_item.find('email')
-                        username = user_item.find("username")
-                        password = user_item.find('password')
+                    u.set_password(password)
+                    users_to_create.append(u)
+                    
+                with transaction.atomic():
+                    User.objects.bulk_create(users_to_create)
 
-                        res_dict = {
-                            "first_name": first_name.text if first_name is not None else None,
-                            "last_name": last_name.text if last_name is not None else None,
-                            "email": email.text if email is not None else None,
-                            "username": username.text if username is not None else None,
-                            "password": password.text if password is not None else None,
-                        }
+            except Exception as e:
+                return JsonResponse(data={'error': 'Помилка при обробці', 'detail': f"{e}"}, status=400)
 
-                        users.append(res_dict)
-                        
-                        # last_name = user_item.find('last_name').text
-                        # email = user_item.find('email').text
-                        # username = user_item.find('username').text
-                        # password = user_item.find('password').text
-
-                        # print(first_name)
-                        # print(last_name)
-                        # print(email)
-                        # print(username)
-                        # print(password)
-                    except Exception as e:
-                        print(e)
-
-        except ET.ParseError as e:
-            print(e)
-
-        return JsonResponse(data={'users': users},status=200)
+            return JsonResponse(data={'result': len(users_to_create)}, status=201)
+        
