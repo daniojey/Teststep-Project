@@ -5,13 +5,14 @@ import os
 import random
 import base64
 from datetime import timedelta
+from wsgiref.util import request_uri
 
 # Импортируем библиотеки Django
 from django.views.generic import FormView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.db.models import F, ExpressionWrapper, Prefetch, Sum, fields
-from django.forms import ClearableFileInput, DateInput, DateTimeInput, Textarea
+from django.forms import ClearableFileInput, DateInput, DateTimeInput, NumberInput, TextInput, Textarea
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import localtime, now
@@ -217,9 +218,17 @@ class CreateTestView(LoginRequiredMixin, FormView):
 class EditTestView(UpdateView):
     model=Tests
     template_name = "tests/edit_test.html"
-    fields = ['name', 'description','image', 'date_in','date_out', 'category', 'check_type']
+    fields = ['name', 'description','image', 'duration', 'date_in','date_out', 'category', 'check_type']
 
     def form_valid(self, form):
+        #Модифицируем время
+        duration = form.cleaned_data.get('duration')
+        if duration is not None and isinstance(duration, timedelta):
+            form.instance.duration = timedelta(minutes=int(duration.total_seconds()))
+        else:
+            form.add_error('duration', 'Невірний формат часу на проходження тесту')
+            return super().form_invalid(form)
+            
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -254,6 +263,9 @@ class EditTestView(UpdateView):
             'data-no-file-text': 'Оберіть фото',  
             'id': 'uploadImage'
         })
+
+        form.fields['duration'].widget = TextInput(attrs={'id':'durationField', "placeholder": 'Введіть тривалість тесту в хвилинах'})
+        form.initial['duration'] = int(self.object.duration.total_seconds() / 60)
 
         form.fields['category'].choices = [(item.id, item.name) for item in Categories.objects.all()]
 

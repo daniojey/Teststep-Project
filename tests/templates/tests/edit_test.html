@@ -32,6 +32,10 @@
                 <!-- Контейнер для показа имени загруженного файла -->
                 <span id="fileName" class="file-name"></span>
             </div>
+
+            <div class='form-group'>
+                {{ form.duration }}
+            </div>
             
             <div class='form-group'>
                 {{ form.category }}
@@ -61,6 +65,7 @@
     </div>
     <button type='submit' class='save-btn' form='form-edit-test'>Зберегти зміни</button>
 
+    <script src="{% static "js/check_duration_field.js" %}"></script>
     <script src="{% static "js/create_test_add_image.js" %}"></script>    
 </body>
 {% endblock %}
