@@ -81,3 +81,16 @@ class LoginAttempt(models.Model):
         db_table = 'loginattempt'
         verbose_name = 'Спроба входу'
         verbose_name_plural = 'Спроби входу'
+
+
+class EmailTestNotyficateUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_notifyes', verbose_name="Користувач")
+    test = models.ForeignKey("tests.Tests", on_delete=models.CASCADE, related_name="notyfies", verbose_name="Тест")
+
+    def __str__(self) -> str:
+        return f"{self.user.first_name}-{self.user.last_name} - Тест: {self.test}"
+    
+    class Meta:
+        db_table = "notify_email_test"
+        verbose_name = 'Email Повідомлення по тесту'
+        verbose_name_plural = 'Email Повідомлення по тестам'

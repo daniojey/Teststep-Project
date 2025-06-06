@@ -4,7 +4,7 @@ from django.urls import path
 from django.views import View
 from django.views.generic import FormView, TemplateView, View
 
-from users.models import User, UsersGroup, UsersGroupMembership, LoginAttempt
+from users.models import EmailTestNotyficateUser, User, UsersGroup, UsersGroupMembership, LoginAttempt
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from unfold.admin import ModelAdmin
 from unfold.views import UnfoldModelAdminViewMixin
@@ -40,6 +40,9 @@ class CreateUsersView(UnfoldModelAdminViewMixin, TemplateView):
     permission_required = ()
 
 
+@admin.register(EmailTestNotyficateUser)
+class EmailTestNotifyAdmin(ModelAdmin):
+    list_display = ['test', 'user']
 
 
 @admin.register(User)

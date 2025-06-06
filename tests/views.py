@@ -21,6 +21,7 @@ from django.views import View
 
 # Библиотеки проекта
 from common.mixins import CacheMixin
+from tests.utils import send_emails_from_users
 from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
@@ -433,11 +434,12 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
         
         # Если в запросе попытка добавить студентов то обрабатываем его
         elif form_type == 'form_student':
-
             # Если форма валидна, то получаем спасок всех студентов и сохраняем в одноименнованное поле в модели Tests
             if students_form.is_valid():
+                data_users = students_form.cleaned_data.get('students')
                 test.students = {'students': students_form.cleaned_data.get('students')}
                 test.save()
+                send_emails_from_users(data_users, test)
                 return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'})
             else:
                 return JsonResponse({'status': 'error', 'message': 'Opps, помилка'})
