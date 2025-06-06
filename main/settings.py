@@ -205,10 +205,13 @@ AUTHENTICATION_BACKENDS = (
     # 'django.contrib.auth.backends.ModelBackend'
 )
 
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Для тестирования
+#  # Для тестирования
 
 # Включаем поддержку отправки писем в Django
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
 EMAIL_PORT = config('EMAIL_PORT', cast=int) # Используем порт для TLS
@@ -381,6 +384,10 @@ UNFOLD = {
                     {
                         "title": _("Спроби входу"),
                         "link": reverse_lazy("admin:users_loginattempt_changelist"),
+                    },
+                    {
+                        "title": _("Email повідомлення по тестам"),
+                        "link": reverse_lazy("admin:users_emailtestnotyficateuser_changelist"),
                     },
                     {
                         "title": _("Додати студентів"),

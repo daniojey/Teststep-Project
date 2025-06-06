@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Добро пожаловать!</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .header { background-color: #f8f9fa; padding: 20px; }
+        .content { padding: 20px; }
+        .button { 
+            background-color: #007bff; 
+            color: white; 
+            padding: 10px 20px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Добро дня, {{ user.first_name }}!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Вчителем вашої группи вам назначений тест.</p>
+        
+        <p>Детальні данні тесту:</p>
+        <ul>
+            <li>Назва:{{ test.name }}</li>
+            <li>Час на проходження: {{ test.duration }}</li>
+            <li>До якого часу доступний: {{ test.date_in|date:"d.m.Y H:i" }} - {{test.date_out|date:"d.m.Y H:i"}}</li>
+        </ul>
+    </div>
+</body>
+</html>

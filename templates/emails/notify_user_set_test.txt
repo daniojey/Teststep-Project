@@ -1,0 +1,9 @@
+<!-- templates/emails/welcome_email.txt -->
+Добро дня, {{ user.first_name }}
+
+Вчителем вашої группи вам назначений тест.
+
+Детальні данні тесту::
+- Назва:{{ test.name }}
+- Час на проходження: {{ test.duration }}
+- До якого часу доступний: {{ test.date_in|date:"d.m.Y H:i" }} - {{test.date_out|date:"d.m.Y H:i"}}
