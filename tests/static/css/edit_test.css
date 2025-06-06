@@ -204,6 +204,12 @@
     font-style: normal;
     font-weight: 500;
     line-height: 146%; /* 29.2px */
+    transition: color 0.5s ease, background-color 0.5s ease;
+
+    &:disabled {
+        background: rgba(114, 96, 245, 0.30);
+        color: rgba(255, 255, 255, 0.30);
+    }
 }
 
 input[type="text"] {

@@ -272,42 +272,50 @@
                 
                 {% if question.question_type == "MTCH" %}
                     <div class='form-matching'>
-                        <div class='left-items-container'>
-                            {% for field in form %}
-                            {% if 'matching_left' in field.name %}
-                            <div class="left-column">
-                                <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
-                                    <label>{{ field.label }}</label>  <!-- Показываем только текст -->
+                        {% if question.text %}
+                            <div class="matching-question-text">
+                                <h3>{{ question.text }}</h3>
+                            </div>
+                        {% endif %}
 
-                                    <!-- Добавляем dropzone справа от текста, чтобы он не заменял содержимое -->
-                                    <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
-                                        <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                        <div class="matching-container">
+                            <div class='left-items-container'>
+                                {% for field in form %}
+                                {% if 'matching_left' in field.name %}
+                                <div class="left-column">
+                                    <div class="left-item" id="left_{{ field.name }}" data-left-item="{{ field.label }}">
+                                        <label>{{ field.label }}</label>  <!-- Показываем только текст -->
+
+                                        <!-- Добавляем dropzone справа от текста, чтобы он не заменял содержимое -->
+                                        <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                            <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                        </div>
+                                        
                                     </div>
-                                    
+                                    {% comment %} <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
+                                        <!-- Скрытое поле для записи ответа -->
+                                        <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
+                                    </div> {% endcomment %}
                                 </div>
-                                {% comment %} <div id="dropzone_{{ field.name }}" class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-left-item="{{ field.name }}">
-                                    <!-- Скрытое поле для записи ответа -->
-                                    <input type="hidden" id="answer_{{ field.name }}" name="answer_{{ field.label }}" value="">
-                                </div> {% endcomment %}
+                                {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endif %}
-                            {% endfor %}
-                        </div>
-                        
-                        <div class='right-items-container'>  
-                            {% for field in form %}
-                            {% if 'matching_right' in field.name %}
-                            <div class="right-column" id="right-column-{{ forloop.counter }}">
-                                <div class="right-item" id="drag_{{ field.name }}" 
-                                     data-right-item="{{ field.label }}" 
-                                     data-original-parent="right-column-{{ forloop.counter }}"  
-                                     draggable="true" 
-                                     ondragstart="drag(event)">
-                                    <label>{{ field.label }}</label>
+                            
+                            <div class='right-items-container'>  
+                                {% for field in form %}
+                                {% if 'matching_right' in field.name %}
+                                <div class="right-column" id="right-column-{{ forloop.counter }}">
+                                    <div class="right-item" id="drag_{{ field.name }}" 
+                                        data-right-item="{{ field.label }}" 
+                                        data-original-parent="right-column-{{ forloop.counter }}"  
+                                        draggable="true" 
+                                        ondragstart="drag(event)">
+                                        <label>{{ field.label }}</label>
+                                    </div>
                                 </div>
+                                {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endif %}
-                            {% endfor %}
                         </div>
                     {% endif %}
                 </div>

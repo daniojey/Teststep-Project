@@ -30,7 +30,7 @@
             {% for test in tests %}
             <a href="{% url "tests:add_questions" test_id=test.id %}" class="test-item-link">
                 <div class="test-item"
-                data-bg="{% if test.image %}{{ test.image_thumbnail.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
+                data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
                     <div class="test-overlay-header">
                         {{ test.name }}
                     </div>
