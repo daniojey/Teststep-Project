@@ -17,8 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+
+        answer.addEventListener('input', (e) => {
+            console.log(answer.value);
+        })
+
+
         answer.addEventListener('change', () => {
-            if (parseInt(answer.value, 10) && isPositiveIntegerString(answer.value)) {
+
+            if (parseInt(answer.value, 10) && isPositiveIntegerString(answer.value) || parseInt(answer.value, 10) === 0){
                 console.log('ПРОВЕРКА')
 
                 if (timers.has(answer)) {
