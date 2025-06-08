@@ -12,7 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from users.custom_utils.parser_utils import xml_parser
+from users.custom_utils.parser_utils import exel_parser, xml_parser
 from .utils import is_blocked
 from django.db import transaction
 
@@ -299,12 +299,17 @@ class AddUsersView(View):
                     users= data
                 else:
                     return JsonResponse({'error': 'Помилка обробки документу', 'detail': f"{data}"}, status=400)
-                
+            elif file_extension == 'xls':
+                result, data = exel_parser(file=file)
+                if result == 'success':
+                    users = data
+            elif file_extension == "xlsx":
+                pass
             else:
                 return JsonResponse({'error': 'Тип документу не підтримуется для обробки'}, status=400)
 
 
-            return JsonResponse(data={'users': users},status=200)
+            return JsonResponse(data={'users': users if users else []},status=200)
         
         elif action == 'createUsers':
             users = request.POST.get('users')

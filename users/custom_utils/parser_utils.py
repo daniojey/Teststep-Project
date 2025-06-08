@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from users import validator
 from django.db import transaction
+import pandas as pd
 
 
 def xml_parser(file):
@@ -56,3 +57,40 @@ def xml_parser(file):
             return 'error', e
 
         
+
+def exel_parser(file):
+    try:
+        # Читаем Excel файл
+        df = pd.read_excel(file, sheet_name=0)  # первый лист
+        print(df)
+        
+        users = []
+        dublicate_data = set()
+        
+        # Проходим по каждой строке
+        for index, row in df.iterrows():
+            print(index, row)
+            try:
+                user_dict = {
+                    "first_name": row.get('first_name') if pd.notna(row.get('first_name')) else None,
+                    "last_name": row.get('last_name') if pd.notna(row.get('last_name')) else None,
+                    "email": row.get('email') if pd.notna(row.get('email')) else None,
+                    "username": row.get('username') if pd.notna(row.get('username')) else None,
+                    "password": row.get('password') if pd.notna(row.get('password')) else None,
+                }
+
+                print(user_dict)
+                    
+                status, res_dict, dublicate = validator.validate_user(user_dict, dublicate_data)
+                dublicate_data = dublicate
+                users.append(res_dict)
+                    
+            except Exception as e:
+                print("ERROR", e)
+                continue
+        
+        return 'success', users
+        
+    except Exception as e:
+        print(e)
+        return 'error', e
