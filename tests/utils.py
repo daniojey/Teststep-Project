@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.utils.timezone import localtime
 from main import settings
 from users.models import EmailTestNotyficateUser, User
 from django.core.mail import EmailMultiAlternatives
@@ -52,32 +55,13 @@ def send_emails_from_users(users_data, test):
         if sended_emails:
             EmailTestNotyficateUser.objects.bulk_create(sended_emails)
 
-        # for user in users:
-        #     try:
-        #         if user.is_staff or not EmailTestNotyficateUser.objects.filter(user=user, test=test).exists():
-        #             context = {
-        #                 "user": user,
-        #                 "test": test,
-        #             }
 
-        #             html_message = render_to_string("emails/notify_user_set_test.html", context)
-        #             plain_message = render_to_string("emails/notify_user_set_test.txt", context)
+def check_min_datetime(object_date, local_date):
+    print(object_date)
+    print(local_date)
 
-        #             msg = EmailMultiAlternatives(
-        #                 subject=subject,
-        #                 body=plain_message,
-        #                 from_email=settings.DEFAULT_FROM_EMAIL,
-        #                 to=[user.email]
-        #             )
+    if object_date < local_date:
+        return f"{object_date.date()}T{object_date.time().strftime("%H:%M")}"
+    else:
+        return f"{local_date.date()}T{local_date.time().strftime("%H:%M")}"
 
-        #             msg.attach_alternative(html_message, "text/html")
-        #             msg.send()
-
-        #             notify =EmailTestNotyficateUser.objects.create(user=user, test=test)
-        #             notify.save()
-        #         else:
-        #             print("ВЖЕ існує або адмін")
-
-        #     except Exception as e:
-        #         print(e)
-        #         continue

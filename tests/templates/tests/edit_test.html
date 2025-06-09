@@ -14,7 +14,7 @@
         </div>
         {% endif %}
         
-        <form method='post' class='form-content' enctype="multipart/form-data" id='form-edit-test'>{% csrf_token %}
+        <form method='post' class='form-content' enctype="multipart/form-data" id='testForm'>{% csrf_token %}
             <div class='form-group'>
                 {{ form.name }}
             </div>
@@ -63,8 +63,9 @@
         {{ error }}
         {% endfor %}
     </div>
-    <button type='submit' class='save-btn' form='form-edit-test'>Зберегти зміни</button>
+    <button type='submit' class='save-btn' form='testForm'>Зберегти зміни</button>
 
+    <script src="{% static "js/date_synchronization.js" %}"></script>
     <script src="{% static "js/check_duration_field.js" %}"></script>
     <script src="{% static "js/create_test_add_image.js" %}"></script>    
 </body>

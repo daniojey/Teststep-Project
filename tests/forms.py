@@ -3,6 +3,7 @@ from queue import PriorityQueue
 import random
 import re
 from django import forms
+from django.utils import timezone
 
 from common.mixins import CacheMixin
 from users.models import User, UsersGroupMembership
@@ -42,14 +43,17 @@ class TestForm(CacheMixin,forms.ModelForm):
             'date_in': forms.DateTimeInput(
                 attrs={
                     'type': 'datetime-local',
-                    'class': 'form-control'  # опционально (для стилизации)
+                    'class': 'form-control',  # опционально (для стилизации)
+                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime("%H:%M")}"
+                    # 'min': f"{timezone.now().time().strftime("%H:%M")}"
                 },
                 format='%Y-%m-%dT%H:%M'     # обязательный формат
             ),
             'date_out': forms.DateTimeInput(
                 attrs={
                     'type': 'datetime-local',
-                    'class': 'form-control'  # опционально (для стилизации)
+                    'class': 'form-control',  # опционально (для стилизации)
+                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime("%H:%M")}"
                 },
                 format='%Y-%m-%dT%H:%M'     # обязательный формат
             )

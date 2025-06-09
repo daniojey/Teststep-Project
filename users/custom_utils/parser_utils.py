@@ -58,18 +58,22 @@ def xml_parser(file):
 
         
 
-def exel_parser(file):
+def exel_parser(file, format_file: str):
     try:
-        # Читаем Excel файл
-        df = pd.read_excel(file, sheet_name=0)  # первый лист
-        print(df)
+        if format_file == 'xls':
+            df = pd.read_excel(file, sheet_name=0, engine="xlrd")
+        
+        elif format_file == 'xlsx':
+            df = pd.read_excel(file, sheet_name=0, engine="openpyxl")
+
+        else:
+            return 'error', "Невірний тип документу"
         
         users = []
         dublicate_data = set()
         
         # Проходим по каждой строке
         for index, row in df.iterrows():
-            print(index, row)
             try:
                 user_dict = {
                     "first_name": row.get('first_name') if pd.notna(row.get('first_name')) else None,
@@ -78,8 +82,6 @@ def exel_parser(file):
                     "username": row.get('username') if pd.notna(row.get('username')) else None,
                     "password": row.get('password') if pd.notna(row.get('password')) else None,
                 }
-
-                print(user_dict)
                     
                 status, res_dict, dublicate = validator.validate_user(user_dict, dublicate_data)
                 dublicate_data = dublicate
@@ -93,4 +95,4 @@ def exel_parser(file):
         
     except Exception as e:
         print(e)
-        return 'error', e
+        return 'error', "Помилка при обробці документу"

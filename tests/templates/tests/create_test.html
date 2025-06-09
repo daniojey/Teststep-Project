@@ -12,7 +12,7 @@
         <!-- Всплывашка -->
         <div id="error-popup" class="error-popup"></div>
         
-        <form method="post" enctype="multipart/form-data" class='custom-form'>
+        <form method="post" enctype="multipart/form-data" class='custom-form' id='testForm'>
             {% csrf_token %}
             <div class='base-container'>
                     <h2 class='test-header'>Створення тесту</h2>
@@ -141,6 +141,7 @@
             </script> {% endcomment %}
             {% comment %} <script src="{% static "js/create_test_date_add.js" %}"></script> {% endcomment %}
             <script src="{% static "js/create_test_add_image.js" %}"></script>
+            <script src="{% static "js/date_synchronization.js" %}"></script>
             <script>
                 // Функция для отображения всплывашки
                 function showError(messages) {

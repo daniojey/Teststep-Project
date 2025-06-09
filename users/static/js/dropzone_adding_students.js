@@ -1,4 +1,5 @@
 let currentUsersData = null;
+const MAX_SIZE_BYTES = 40 * 1024 * 1024;
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -22,8 +23,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     fileInput.addEventListener('change', async (e) => {
-        const data = await fetchData(e, "formSubmit")
-        predViewUsers(data['users'])
+        const file = e.target.files[0]
+        if (file) {
+
+            if (file.size < MAX_SIZE_BYTES) {
+                const data = await fetchData(e, "formSubmit")
+                predViewUsers(data['users'])
+            } else {
+                popupOpen(`Максимальний розмір файлу 40мб, ваш файл ${file.size}`)
+            };
+
+        } else {
+            popupOpen('Не вказаний файл')
+        }
     });
 
 
@@ -47,8 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
     dropZone.addEventListener('drop', async (e) => {
         e.preventDefault();
 
-        const data = await fetchData(e, 'dropFile')
-        predViewUsers(data['users'])
+        const file = e.dataTransfer.files[0];
+        if (file) {
+
+            if (file.size < MAX_SIZE_BYTES) {
+                const data = await fetchData(e, 'dropFile')
+                predViewUsers(data['users'])
+            } else {
+                popupOpen(`Максимальний розмір файлу 40мб, ваш файл ${file.size}`)
+            };
+
+        } else {
+            popupOpen('Не вказаний файл')
+        };
     });
 
 
