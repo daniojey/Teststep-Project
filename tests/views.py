@@ -1,6 +1,7 @@
 # tests/views.py
 # Базовые библиотеки
 from copyreg import constructor
+from multiprocessing import Value
 import os
 import random
 import base64
@@ -1188,7 +1189,11 @@ class TestsResultsView(View):
                     for left_item, right_item in question.matching_pairs.all().values_list('left_item', 'right_item')
                 }
 
-                point = question.scores / len(matching_pair_dict)
+                if len(matching_pair_dict) > 0:
+                    point = question.scores / len(matching_pair_dict)
+                else:
+                    # Возвращаем 0 в очках так как правильных ответов 0
+                    return complete_question, correct_answers
 
                 for left, right in value.items():
                     if str(left) in matching_pair_dict:
@@ -1204,16 +1209,24 @@ class TestsResultsView(View):
 
             if question.scores_for == Question.SCORE_FOR_ANSWER:
                 correct_answer = question.answers.filter(is_correct=True).first()
-                if correct_answer and correct_answer.id == int(value):
-                    correct_answers += correct_answer.score
-                    if int(correct_answers) == question.scores:
-                        complete_question = True
+                
+                try:
+                    if correct_answer and correct_answer.id == int(value):
+                        correct_answers += correct_answer.score
+                        if int(correct_answers) == question.scores:
+                            complete_question = True
+                except ValueError as e:
+                    print(e)
                 
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
                 correct_answer = question.answers.filter(is_correct=True).first()
-                if correct_answer and correct_answer.id == int(value):
-                    correct_answers += question.scores
-                    complete_question = True
+
+                try:
+                    if correct_answer and correct_answer.id == int(value):
+                        correct_answers += question.scores
+                        complete_question = True
+                except ValueError as e:
+                    print(e)
 
                                 
 
@@ -1234,11 +1247,18 @@ class TestsResultsView(View):
 
                 elif question.scores_for == Question.SCORE_FOR_QUESTION:
                     correct_answers_list = question.answers.filter(is_correct=True).values_list('id', flat=True)
-                    points = question.scores / len(correct_answers_list)
 
-                    for v in value:
-                        if int(v) in correct_answers_list:
-                            correct_answers += points
+                    if len(correct_answers_list) > 0:
+                        points = question.scores / len(correct_answers_list)
+                    else:
+                        return complete_question, correct_answers
+
+                    try:
+                        for v in value:
+                            if int(v) in correct_answers_list:
+                                correct_answers += points
+                    except ValueError as e:
+                        print(e)
 
                     if int(correct_answers) == question.scores:
                         complete_question = True
@@ -1716,7 +1736,10 @@ class TakeTestReviewView(FormView):
                             for left, right in self.current_question.matching_pairs.all().values_list('left_item', 'right_item')
                         }
 
-                        point = self.current_question.scores / len(matching_pairs_dict)
+                        if len(matching_pairs_dict) > 0:
+                            point = self.current_question.scores / len(matching_pairs_dict)
+                        else:
+                            point = 0
 
                         for key, value in self.request.POST.items():
                             if key.startswith('answer_'):
@@ -1751,8 +1774,11 @@ class TakeTestReviewView(FormView):
 
                         student_answer = form.cleaned_data.get('answer')
 
-                        if int(student_answer) in answer:
-                            self.request.session['teacher_answers'] += self.current_question.scores
+                        try:
+                            if int(student_answer) in answer:
+                                self.request.session['teacher_answers'] += self.current_question.scores
+                        except ValueError as e:
+                            print(e)
 
 
                 elif self.current_question.answer_type == 'MC':
@@ -1774,13 +1800,20 @@ class TakeTestReviewView(FormView):
                         
                         # answers_list = self.current_question.answers.filter(is_correct=True).values_list('id', flat=True)
 
-                        point = self.current_question.scores / len(answers_tuple)
+                        if len(answers_tuple) > 0:
+                            point = self.current_question.scores / len(answers_tuple)
+                        else:
+                            point = 0
 
                         students_answers = form.cleaned_data.get('answer')
 
                         for answer in students_answers:
-                            if int(answer) in answers_tuple:
-                                self.request.session['teacher_answers'] += point
+                            try:
+                                if int(answer) in answers_tuple:
+                                    self.request.session['teacher_answers'] += point
+                            except ValueError as e:
+                                print(e)
+                                continue
 
 
                 elif self.current_question.answer_type == 'INP':
@@ -1790,8 +1823,12 @@ class TakeTestReviewView(FormView):
                             for text, score in  self.current_question.answers.filter(is_correct=True).values_list('text', 'score')
                         }
 
-                        get_student_answer = form.cleaned_data.get('answer')
-                        student_answer = get_student_answer.lower().strip()
+                        get_student_answer = form.cleaned_data.get('answer', '')
+
+                        if isinstance(get_student_answer, str):
+                            student_answer = get_student_answer.lower().strip()
+                        else:
+                            student_answer = ''
 
                         if student_answer in answers_dict:
                             print(answers_dict[student_answer])
@@ -1803,7 +1840,12 @@ class TakeTestReviewView(FormView):
                         answers_tuple = tuple(
                             str(text).lower().strip() for text in self.current_question.answers.filter(is_correct=True).values_list('text', flat=True))
                         
-                        student_answer = str(form.cleaned_data.get('answer')).lower().strip()
+                        get_student_answer = str(form.cleaned_data.get('answer')).lower().strip()
+
+                        if isinstance(get_student_answer, str):
+                            student_answer = get_student_answer.lower().strip()
+                        else:
+                            student_answer = ''
 
                         if student_answer in answers_tuple:
                             self.request.session['teacher_answers'] += self.current_question.scores
