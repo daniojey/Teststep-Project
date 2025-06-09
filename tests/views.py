@@ -22,7 +22,7 @@ from django.views import View
 
 # Библиотеки проекта
 from common.mixins import CacheMixin
-from tests.utils import send_emails_from_users
+from tests.utils import check_min_datetime, send_emails_from_users
 from users.models import User, UsersGroupMembership
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
@@ -272,7 +272,8 @@ class EditTestView(UpdateView):
         form.fields['date_in'].widget = DateTimeInput(
             attrs={
                 'type': 'datetime-local',
-                'class': 'form-control'  # опционально (для стилизации)
+                'class': 'form-control',  # опционально (для стилизации)
+                'min': check_min_datetime(localtime(self.object.date_in), localtime())
             },
             format='%Y-%m-%dT%H:%M'     # обязательный формат
         )
@@ -280,7 +281,8 @@ class EditTestView(UpdateView):
         form.fields['date_out'].widget = DateTimeInput(
             attrs={
                 'type': 'datetime-local',
-                'class': 'form-control'  # опционально (для стилизации)
+                'class': 'form-control',  # опционально (для стилизации)
+                'min': check_min_datetime(localtime(self.object.date_in), localtime())
             },
             format='%Y-%m-%dT%H:%M'     # обязательный формат
         )

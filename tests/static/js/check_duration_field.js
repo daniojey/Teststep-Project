@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const durationField = document.getElementById('durationField');
-    const testForm = document.getElementById('form-edit-test');
+    const testForm = document.getElementById('testForm');
     const saveBtn = document.querySelector('.save-btn');
 
     durationField.addEventListener('change', () => {
