@@ -299,15 +299,24 @@ class AddUsersView(View):
                     users= data
                 else:
                     return JsonResponse({'error': 'Помилка обробки документу', 'detail': f"{data}"}, status=400)
+                
             elif file_extension == 'xls':
-                result, data = exel_parser(file=file)
+                result, data = exel_parser(file=file, format_file="xls")
                 if result == 'success':
                     users = data
+                else:
+                    return JsonResponse({'error': 'Помилка обробки документу', 'detail': f"{data}"}, status=400)
+                
             elif file_extension == "xlsx":
-                pass
+                result, data = exel_parser(file=file, format_file="xlsx")
+                if result == 'success':
+                    users = data
+                else:
+                    return JsonResponse({'error': 'Помилка обробки документу', 'detail': f"{data}"}, status=400)
+
             else:
                 return JsonResponse({'error': 'Тип документу не підтримуется для обробки'}, status=400)
-
+            
 
             return JsonResponse(data={'users': users if users else []},status=200)
         

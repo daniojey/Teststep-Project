@@ -6,7 +6,7 @@ def create_field(value=None, valid=True, error=None):
     return {"value": value, "valid": valid, "error": error}
 
 
-def validate_user(data, dublicate=None):
+def validate_user(data: dict, dublicate=None):
     dublicate_set = dublicate if isinstance(dublicate, set) else set()
 
     try:
@@ -14,7 +14,7 @@ def validate_user(data, dublicate=None):
         last_name = data["last_name"] if data["last_name"] is not None else None
         email = data["email"] if data["email"] is not None else None
         username = data["username"] if data["username"] is not None else None
-        password = data["password"] if data["email"] is not None else None
+        password = data["password"] if data["password"] is not None else None
     except Exception as e:
         return "error", {}
     
@@ -114,7 +114,7 @@ def validate_user(data, dublicate=None):
                 dublicate_set.add(str(email).lower().strip())
 
     else:
-        res["email"]['valud'] = 'None'
+        res["email"]['value'] = 'None'
         res["email"]['valid'] = False
         res["email"]['error'] = "Відсутнє поле email"
         res['overal_valid'] = False
