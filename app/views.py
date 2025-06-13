@@ -1,6 +1,9 @@
+from datetime import datetime
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from django.views.generic import TemplateView, View
 import requests
 
@@ -63,6 +66,9 @@ class IndexView(LoginRequiredMixin, TemplateView):
         completed_test_ids = set(TestResult.objects.filter(user=user).values_list('test_id', flat=True))
         awaiting_test_ids = set(TestsReviews.objects.filter(user=user).values_list('test_id', flat=True))
 
+        # Получаем дату и время сервера
+        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+
         # Получаем все тесты одним запросом
         all_tests = (Tests.objects
                     .filter(students__students__contains=[user_id])
@@ -70,9 +76,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
         
         # Используем Python для фильтрации вместо дополнительных запросов к БД
         tests_dict = {test.id: test for test in all_tests}
+        actual_test_dict = {test.id: test for test in all_tests.filter(Q(date_in__lt=server_time) & Q(date_out__gte=server_time))}
         
         uncompleted_tests = [
-            test for test_id, test in tests_dict.items()
+            test for test_id, test in actual_test_dict.items()
             if test_id not in completed_test_ids and test_id not in awaiting_test_ids
         ]
         

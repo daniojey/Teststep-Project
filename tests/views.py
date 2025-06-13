@@ -5,10 +5,11 @@ from multiprocessing import Value
 import os
 import random
 import base64
-from datetime import timedelta
+from datetime import datetime, timedelta
 from wsgiref.util import request_uri
 
 # Импортируем библиотеки Django
+from django.utils import timezone
 from django.views.generic import FormView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
@@ -786,13 +787,27 @@ class TestPreviewView(LoginRequiredMixin,TemplateView):
 
         # Получаем тест и результат по тесту либо то что тест находится на ожидании проверки, необходимо для отображения стилей
         test = get_object_or_404(Tests.objects.select_related('user'), id=test_id)
+
+        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+        test_date_in = localtime(test.date_in)
+        test_date_out = localtime(test.date_out)
+
+        if server_time > test_date_in and server_time < test_date_out:
+            # print('Вермя сервера меньше', server_time)
+            # print('Время теста', test_date_in)
+            # print('Вермя окончания теста', test_date_out)
+            open_test = True
+        else:
+            open_test = False
+
         test_results = TestResult.objects.filter(test=test, user=user).select_related('test', 'user').first()
-        test_review = TestsReviews.objects.filter(user=user, test=test).select_related('test', 'user')
+        test_review = TestsReviews.objects.filter(user=user, test=test).exists()
 
         context.update({
             'test': test,
             'test_results': test_results,
             'test_review': test_review,
+            'open_test': open_test
         })
 
         return context
@@ -831,6 +846,21 @@ class TakeTestView(LoginRequiredMixin ,FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
+        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+
+        if server_time < localtime(self.test.date_in) or server_time > localtime(self.test.date_out):
+            if 'test_responses' in request.session:
+
+                if len(request.session.get('test_responses')) != 0:
+                    return redirect('tests:test_results', test_id=self.kwargs['test_id'])
+                else:
+                    print('return 2')
+                    self.clear_test_session(request=request)
+                    return redirect('app:index')
+                
+            else:
+                print('return 1')
+                return redirect('app:index')
 
         # При неверном ID теста в сессии очищаем сессию
         session_test_id = request.session.get('test_id')

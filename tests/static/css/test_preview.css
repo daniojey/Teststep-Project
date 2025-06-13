@@ -108,31 +108,30 @@
     border: none;
     cursor: pointer;
     margin: 0 auto;
-}
 
-.start-test-btn:hover {
-    background-color: #574EE0;
-}
+    &:disabled {
+        width: 100%;
+        height: 61px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        color: rgba(255, 255, 255, 0.30);
+        border-radius: 12px;
+        background: rgba(114, 96, 245, 0.30);
+        border: none;
+        cursor: pointer;
+        margin: 0 auto;
+    }
 
+    &:disabled:hover {
+        color: rgba(255, 255, 255, 0.30);
+        background: rgba(114, 96, 245, 0.30);
+    }
 
-/* Если тест пройден используем другой стиль кнопки и также добавляем label с результатом по тесту*/
-.no-active-test-btn {
-    width: 100%;
-    height: 61px;
-    padding: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.30);
-    border-radius: 12px;
-    background: rgba(114, 96, 245, 0.30);
-    border: none;
-    cursor: pointer;
-    margin: 0 auto;
-}
+    &:hover {
+        background-color: #574EE0;
+    }
 
-.no-active-test-btn:hover {
-    background-color: rgba(114, 96, 245, 0.30);
-    color: rgba(255, 255, 255, 0.30);
 }
 
 .user-test-result {
@@ -146,11 +145,31 @@
     justify-content: space-between;
     align-items: center;
     display: flex;
-    gap: auto;
 }
 
 .score-and-time {
     padding: 0px 24px 0px 24px;
+}
+
+.user-test-review {
+    margin-top: 80px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+
+    label {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
 }
 
 @media (max-width: 400px) {

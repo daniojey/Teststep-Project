@@ -25,16 +25,17 @@
             <p class="test-duration">Час проходження: {{ test.duration|format_duration_minutes }}</p>
         </div>
 
+        <button class="start-test-btn" id="start-test" {% if not open_test or test_review or test_results %}disabled{% endif %}>Розпочати тестування</button>
+
         {% if test_results %}
-            <button class="no-active-test-btn" disabled>Розпочати тестування</button>
             <div class='user-test-result'>
                 <label class='test-result-text'>Ваш результат:</label>
                 <label class='score-and-time'>{{ test_results.score|floatformat:0 }}% | {{ test_results.duration|format_duration }}</label>
-            </div>
+            </div>            
         {% elif test_review %}
-            
-        {% else %}
-            <button class="start-test-btn" id="start-test">Розпочати тестування</button>
+           <div class="user-test-review">
+                <label>Ваш результат очікує перевірки</label>
+           </div>
         {% endif %}
     </div>
 
