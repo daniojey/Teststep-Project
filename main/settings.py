@@ -539,14 +539,17 @@ UNFOLD = {
 # }
 
 
-sentry_sdk.init(
-    dsn=config("SENTRY_DSN", default=""),
-    send_default_pii=True,
-    integrations=[
-        DjangoIntegration(
-            transaction_style='function_name'
-        )
-    ],
-    traces_sample_rate=1.0,
+SENTRY_DSN = config('SENTRY_DSN', default=None)
 
-)
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        integrations=[
+            DjangoIntegration(
+                transaction_style='function_name'
+            )
+        ],
+        traces_sample_rate=1.0,
+
+    )
