@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import string
 import sys
 
 import dj_database_url
@@ -22,6 +23,8 @@ import logging
 
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -534,3 +537,16 @@ UNFOLD = {
 #         }
 #     },
 # }
+
+
+sentry_sdk.init(
+    dsn=config("SENTRY_DSN", default=""),
+    send_default_pii=True,
+    integrations=[
+        DjangoIntegration(
+            transaction_style='function_name'
+        )
+    ],
+    traces_sample_rate=1.0,
+
+)
