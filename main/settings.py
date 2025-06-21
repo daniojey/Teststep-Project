@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import string
 import sys
 
 import dj_database_url
@@ -22,6 +23,8 @@ import logging
 
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -165,10 +168,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# STATIC_URL = 'static/'
+STATIC_URL = 'static/'
 
 
-# # # Дополнительные настройки для WhiteNoise
+# # Дополнительные настройки для WhiteNoise
 # if 'test' in sys.argv:
 #     # Используем стандартное хранилище для тестов, чтобы избежать ошибок с манифестом
 #     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
@@ -182,7 +185,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #     BASE_DIR / "app/static",
 #     BASE_DIR / "tests/static",
 #     BASE_DIR / "static", 'users'
-    
 # ]
 
 # Default primary key field type
@@ -535,3 +537,19 @@ UNFOLD = {
 #         }
 #     },
 # }
+
+
+SENTRY_DSN = config('SENTRY_DSN', default=None)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        integrations=[
+            DjangoIntegration(
+                transaction_style='function_name'
+            )
+        ],
+        traces_sample_rate=1.0,
+
+    )
