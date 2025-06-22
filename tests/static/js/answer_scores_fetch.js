@@ -24,9 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         answer.addEventListener('change', () => {
+            const answerValue = answer.value.replace(',', '.')
+            console.log('ПАРСИНГ', parseFloat(answerValue))
 
-            if (parseInt(answer.value, 10) && isPositiveIntegerString(answer.value) || parseInt(answer.value, 10) === 0){
-                console.log('ПРОВЕРКА')
+            if (parseFloat(answerValue) && parseFloat(answerValue) >= 0 || parseFloat(answerValue) === 0){
+                // console.log(parseFloat(answerValue))
+                // console.log('ПРОВЕРКА')
 
                 if (timers.has(answer)) {
                     clearTimeout(timers.get(answer));
@@ -34,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const formData = new FormData();
                 // formData.set('score', "bob")
-                formData.set('score', answer.value)
+                formData.set('score', answerValue)
                 formData.set('type', answer.dataset.type)
 
                 let timerId = setTimeout(() => {
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 timers.set(answer, timerId)
             } else {
-
+                console.log('Проблемма при изменении')
             }
         })
     })

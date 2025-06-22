@@ -1,6 +1,7 @@
 # tests/views.py
 # Базовые библиотеки
 from copyreg import constructor
+from decimal import Decimal
 from multiprocessing import Value
 import os
 import random
@@ -704,6 +705,25 @@ def delete_matching_pair(request, pair_id):
     question.update_question_score()
     return redirect('tests:add_matching_pair', question_id=question.id)
 
+class ChangeQuestionScoreView(View):
+    def post(self, request, ids=None, *args, **kwargs):
+        if ids:
+            post_scores = request.POST.get('score')
+
+            try:
+                score = float(post_scores)
+            except ValueError as e:
+                return JsonResponse({'error': 'Помилка при обробці балів', 'detail': f"{e}"}, status=400)
+            
+            try:
+                question = get_object_or_404(Question, id=ids)
+                question.scores = score
+                question.save()
+            
+                return JsonResponse({"success": f"Бали змінено на {score}"})
+            except Exception as e:
+                return JsonResponse({'error': 'Помилка при обробці відповіді', 'detail': f"{e}"}, status=400)
+
 
 class ChangeAnswerScoreView(View):
 
@@ -711,9 +731,10 @@ class ChangeAnswerScoreView(View):
         if ids:
             type_answer = request.POST.get('type')
             post_scores = request.POST.get('score')
+            print(post_scores)
 
             try:
-                score = int(post_scores)
+                score = float(post_scores)
             except ValueError as e:
                 return JsonResponse({'error': 'Помилка при обробці балів', 'detail': f"{e}"}, status=400)
 
@@ -1210,7 +1231,7 @@ class TestsResultsView(View):
                     if match:
                         correct_answers += match.score
 
-                    if int(correct_answers) == question.scores:
+                    if correct_answers == question.scores:
                             complete_question = True
 
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
@@ -1243,7 +1264,7 @@ class TestsResultsView(View):
                 try:
                     if correct_answer and correct_answer.id == int(value):
                         correct_answers += correct_answer.score
-                        if int(correct_answers) == question.scores:
+                        if correct_answers == question.scores:
                             complete_question = True
                 except ValueError as e:
                     print(e)
@@ -1272,7 +1293,7 @@ class TestsResultsView(View):
                         if str(v) in correct_answers_dict:
                             correct_answers += correct_answers_dict[v]
 
-                    if int(correct_answers) == question.scores:
+                    if correct_answers == question.scores:
                         complete_question = True
 
                 elif question.scores_for == Question.SCORE_FOR_QUESTION:
@@ -1290,7 +1311,7 @@ class TestsResultsView(View):
                     except ValueError as e:
                         print(e)
 
-                    if int(correct_answers) == question.scores:
+                    if correct_answers == question.scores:
                         complete_question = True
 
 
@@ -1306,7 +1327,7 @@ class TestsResultsView(View):
 
                         correct_answers += correct_answers_dict[value]
 
-                        if int(correct_answers) == question.scores:
+                        if correct_answers == question.scores:
                                 complete_question = True
 
             elif question.scores_for == Question.SCORE_FOR_QUESTION:
@@ -1320,7 +1341,7 @@ class TestsResultsView(View):
 
 
 
-        print("ОТВЕТ", question, correct_answers)
+        print("ОТВЕТ", question, correct_answers,":", complete_question)
         return complete_question ,correct_answers
     
     def save_test_results(self, request, test, score, test_duration):
@@ -1723,7 +1744,7 @@ class TakeTestReviewView(FormView):
             action = self.request.POST.get('action')
 
             if action == 'correct':
-                self.request.session['teacher_answers'] += self.current_question.scores
+                self.request.session['teacher_answers'] += float(self.current_question.scores)
 
             elif action == 'incorrect':
                 ...
@@ -2152,7 +2173,7 @@ class TestReviewResults(View):
             total_scores = test.questions.aggregate(Sum('scores'))['scores__sum']
 
         
-            score = round((correct_answers / total_scores) * 100) if total_scores > 0 else 0
+            score = round((correct_answers / float(total_scores)) * 100) if total_scores > 0 else 0
             # print(score)
             test_result = TestResult.objects.create(
                 user=user,

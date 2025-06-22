@@ -211,6 +211,7 @@ class QuestionForm(forms.ModelForm):
         self.fields['question_type'].initial = question_type[0]
 
         self.fields['group'].required = False
+        # self.fields['answer_type'].required = True
 
         
 
@@ -234,7 +235,7 @@ class QuestionForm(forms.ModelForm):
                 'style': 'display: none;'
                 }),
             'group': forms.Select(attrs={'class': 'custom-select'}),
-            'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect'}),
+            'answer_type': forms.Select(attrs={'class': 'custom-select', 'id': 'answerSelect', 'required': True}),
             'scores_for': forms.Select(attrs={"class": 'custom-select', 'id': 'scoresFor'}),
             'scores': forms.NumberInput(attrs={'class': 'number-input', 'required': False})
         }

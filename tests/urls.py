@@ -23,6 +23,7 @@ urlpatterns = [
     path('<int:question_id>/add_matching_pair/', views.AddMathicngPairView.as_view(), name='add_matching_pair'),
     path('<int:pair_id>/delete_matching_pair/', views.delete_matching_pair, name='delete_matching_pair'),
     path('<int:test_id>/complete_questions/', views.complete_questions, name='complete_questions'),
+    path('change_question_score/<int:ids>/', views.ChangeQuestionScoreView.as_view(), name='change_question_score'),
     path('change_answer_score/<int:ids>/', views.ChangeAnswerScoreView.as_view(), name='change_answer_score'),
     path('tests_group_reviews/<int:test_id>/', views.TestGroupReviewsView.as_view(), name='test_group_reviews'),
     path('take_test/<int:test_id>/', views.TakeTestView.as_view(), name='take_test'),

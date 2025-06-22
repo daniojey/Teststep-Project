@@ -10,6 +10,7 @@ from imagekit.processors import ResizeToFill
 from PIL import Image
 from io import BytesIO
 from django.core.files import File
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Categories(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name="Назва")
@@ -141,7 +142,7 @@ class Question(models.Model):
     test = models.ForeignKey(Tests, related_name='questions', on_delete=models.CASCADE,verbose_name="Тест")
     group = models.ForeignKey(QuestionGroup, related_name='questions_group', on_delete=models.SET_NULL, verbose_name="Группа", blank=True, null=True)
     scores_for = models.CharField(choices=SCORE_FOR_TYPES , verbose_name="Тип оцінювання")
-    scores = models.IntegerField(default=0, verbose_name="Бали за питання", blank=True, null=True)
+    scores = models.FloatField(default=0, validators=[MinValueValidator(0.0), MaxValueValidator(500.0)], verbose_name="Бали за питання", blank=True, null=True)
     text = models.TextField(verbose_name="Текст питання", blank=True, null=True)
     question_type = models.CharField(max_length=55, choices=QUESTION_TYPES, verbose_name="Тип питання")
     answer_type = models.CharField(choices=ANSWER_TYPES, verbose_name='Тип відповіді', blank=True, null=True)
@@ -216,7 +217,7 @@ class Question(models.Model):
 
 class MatchingPair(models.Model):
     question = models.ForeignKey(Question, related_name='matching_pairs', on_delete=models.CASCADE)
-    score = models.IntegerField(default=1, verbose_name="Бали за відповідність")
+    score = models.FloatField(default=1, verbose_name="Бали за відповідність")
     left_item = models.CharField(max_length=255, verbose_name='Ліва частина')
     right_item = models.CharField(max_length=255, verbose_name='Права частина')
 
@@ -231,7 +232,7 @@ class MatchingPair(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name="Питання")
-    score = models.IntegerField(default=0, verbose_name="Бали за відповідь")
+    score = models.FloatField(default=0, verbose_name="Бали за відповідь")
     text = models.CharField(verbose_name="Текст відповіді", max_length=255)
     is_correct = models.BooleanField(default=False, verbose_name="Правильна відповідь")
     audio_response = models.FileField(upload_to='answers/audios/', blank=True, null=True, verbose_name="Голосова відповідь")

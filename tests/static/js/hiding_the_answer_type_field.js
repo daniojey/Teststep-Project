@@ -5,10 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function toggleAnswerType() {
         if (questionTypeSelect.value === 'MTCH') {
             // Скрываем поле и очищаем значение
+            answerTypeSelect.required = false;
             answerTypeSelect.style.display = 'none';
             answerTypeSelect.value = '';
         } else {
             // Показываем поле
+            answerTypeSelect.required = true;
             answerTypeSelect.style.display = 'block';
         }
     }

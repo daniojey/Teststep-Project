@@ -13,6 +13,7 @@
 
 <body>
         <div id="error-popup" class="error-popup"></div>
+        <div id="message-popup" class="message-popup"></div>
         <div class='test-and-students'>
             <div class='main-test-container'>
                 <h2>Додати питання до тесту: {{ test.name }}</h2>
@@ -103,7 +104,8 @@
                 <div class='add-and-delete'>
                     {% if question.scores > 0 %}
                         <div class='score-container'>
-                            <p>{{ question.scores }}</p>
+                            {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                             <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                         </div>
                     {% endif %}
 
@@ -131,7 +133,8 @@
                 <div class='add-and-delete'>
                     {% if question.scores > 0 %}
                         <div class='score-container'>
-                            <p>{{ question.scores }}</p>
+                            {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                            <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                         </div>
                     {% endif %}
 
@@ -154,7 +157,8 @@
                 <div class='add-and-delete'>
                     {% if question.scores > 0 %}
                         <div class='score-container'>
-                            <p>{{ question.scores }}</p>
+                            {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                            <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                         </div>
                     {% endif %}
                     
@@ -176,7 +180,8 @@
                 <div class='add-and-delete'>
                     {% if question.scores > 0 %}
                         <div class='score-container'>
-                            <p>{{ question.scores }}</p>
+                            {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                            <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                         </div>
                     {% endif %}
 
@@ -208,7 +213,8 @@
                     <div class='add-and-delete'>    
                         {% if question.scores > 0 %}
                             <div class='score-container'>
-                                <p>{{ question.scores }}</p>
+                                {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                                <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                             </div>
                         {% endif %}
 
@@ -230,7 +236,8 @@
                     <div class='add-and-delete'>
                         {% if question.scores > 0 %}
                             <div class='score-container'>
-                                <p>{{ question.scores }}</p>
+                                {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                                <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                             </div>
                         {% endif %}
 
@@ -250,7 +257,8 @@
                     <div class='add-and-delete'>
                         {% if question.scores > 0 %}
                             <div class='score-container'>
-                                <p>{{ question.scores }}</p>
+                                {% comment %} <p>{{ question.scores }}</p> {% endcomment %}
+                                <input type="text" id="questionScore" data-default={{ question.scores }} data-type={{ question.scores_for }} data-ids="{{ question.id }}" value={{ question.scores }}></input>
                             </div>
                         {% endif %}
 
@@ -301,6 +309,8 @@
             showError({{ errors|safe }});
         {% endif %}
     </script>
+    <script src="{% static "js/zero_cutting_scores.js" %}"></script>
+    <script src="{% static "js/question_score_fetch.js" %}"></script>
     <script src="{% static "js/question_form_pre_sumbit.js" %}"></script>
     <script src="{% static "js/custom_arrow_number_input.js" %}"></script>
     <script src="{% static "js/copy_site_container.js" %}"></script>

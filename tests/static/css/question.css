@@ -353,6 +353,14 @@
     margin-bottom: 40px;
 }
 
+.audio-label-question label{
+    color: #FFF !important;
+    display: flex;
+    justify-content: start !important;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
 .question-audio-container {
     display: flex;
     width: 300px;
