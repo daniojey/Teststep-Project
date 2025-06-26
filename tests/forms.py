@@ -6,7 +6,7 @@ from django import forms
 from django.utils import timezone
 
 from common.mixins import CacheMixin
-from users.models import User, UsersGroupMembership
+from users.models import User
 from .models import Categories, MatchingPair, QuestionGroup, Tests, Question, Answer, TestsReviews
 
 class TestForm(CacheMixin,forms.ModelForm):
@@ -23,11 +23,12 @@ class TestForm(CacheMixin,forms.ModelForm):
 
         query = self.set_get_cache(Categories.objects.all(), "category_cache", 15)
         self.fields['category'].choices = [(item.id, item.name) for item in query]
+        self.fields['group'].choices = [('', 'Оберіть группу')] + [(g.id, g.name) for g in self.user.group.all()]
 
 
     class Meta:
         model = Tests
-        fields = ['name', 'description', 'image','category', 'check_type', 'date_in','date_out']
+        fields = ['name', 'description', 'image','category', 'check_type', 'group', 'date_in','date_out']
         widgets = {
             'name':forms.TextInput(attrs={'placeholder': 'Назва тесту'}),
             'image': forms.ClearableFileInput(attrs={
@@ -40,6 +41,7 @@ class TestForm(CacheMixin,forms.ModelForm):
             # }),
             'category': forms.Select(attrs={'class': 'custom-select'}),
             'check_type': forms.Select(attrs={'class': 'custom-select'}),
+            'group': forms.Select(attrs={'class':'custom-select'}),
             'date_in': forms.DateTimeInput(
                 attrs={
                     'type': 'datetime-local',
@@ -266,23 +268,23 @@ class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
         super().__init__(*args, **kwargs)
 
 
-        # Получаем группу, в которой состоит учитель
-        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
+        # # Получаем группу, в которой состоит учитель
+        # user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
         
-        if user_group:
-            students_in_group = UsersGroupMembership.objects.filter(group=user_group.group).prefetch_related('user').values_list('user_id', 'user__username')
+        # if user_group:
+        #     students_in_group = UsersGroupMembership.objects.filter(group=user_group.group).prefetch_related('user').values_list('user_id', 'user__username')
 
-            # Список студентов для чекбоксов
-            students = [(ids, username) for ids, username in students_in_group]
+        #     # Список студентов для чекбоксов
+        #     students = [(ids, username) for ids, username in students_in_group]
 
             
-        else:
-            students = [(user.id, user.username)]
+        # else:
+        #     students = [(user.id, user.username)]
         
 
         # Заполняем поле с чекбоксами
         self.fields['students'] = forms.MultipleChoiceField(
-           choices=students,  # Список студентов в формате (id, имя)
+           choices=[('0', 'bob')],  # Список студентов в формате (id, имя)
            widget=forms.CheckboxSelectMultiple,
            label='Додати студентів до тесту',
            required=False

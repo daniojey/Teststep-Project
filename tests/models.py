@@ -3,7 +3,7 @@ from uuid import uuid4
 from pathlib import Path
 from django.db import models
 from django.forms import ValidationError
-from users.models import User
+from users.models import Group, User
 from .validators import validate_image, validate_audio_file
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
@@ -34,7 +34,9 @@ class Tests(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
-    students = models.JSONField(verbose_name='Студенти', default=list, blank=True, null=True)
+    students = models.ManyToManyField(User, related_name='tests', blank=True)
+    group = models.ForeignKey(Group, related_name='test_group', on_delete=models.CASCADE)
+    # students = models.JSONField(verbose_name='Студенти', default=list, blank=True, null=True)
     name = models.CharField(verbose_name="Ім'я",max_length=130, unique=True)
     description = models.CharField(verbose_name="Описание",max_length=500)
     image = models.ImageField(verbose_name="Превью",null=True, blank=True, validators=[validate_image], upload_to="test-images")

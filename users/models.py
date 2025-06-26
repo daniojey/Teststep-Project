@@ -8,6 +8,8 @@ from io import BytesIO
 
 class User(AbstractUser):
     image = models.ImageField(upload_to='users_images', blank=True, null=True)
+    teacher = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return  self.username
@@ -41,30 +43,18 @@ class User(AbstractUser):
         verbose_name_plural = "Користувачі"
 
 
-class UsersGroup(models.Model):
-    name = models.CharField(verbose_name="Назва групи", max_length=100,unique=True)
 
+class Group(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Назва группи')
+    members = models.ManyToManyField('User', related_name='group', verbose_name='Групи', blank=True)
+    
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
     class Meta:
-        db_table = 'users_group'
+        db_table = 'group'
         verbose_name = 'Група'
         verbose_name_plural = 'Групи'
-
-
-class UsersGroupMembership(models.Model):
-    user = models.OneToOneField(User ,on_delete=models.CASCADE , related_name='Учистник')
-    group = models.ForeignKey(UsersGroup, on_delete=models.CASCADE, related_name='Участники')
-    owner = models.BooleanField(default=False, verbose_name="Вчитель групи")
-
-    def __str__(self):
-        return f"{self.user} - {self.group}"
-
-    class Meta:
-        db_table = 'user_group_membership'
-        verbose_name = 'Членство користувача в групі'
-        verbose_name_plural = 'Членство користувача в групах'
 
 
 class LoginAttempt(models.Model):

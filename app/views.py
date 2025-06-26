@@ -8,7 +8,7 @@ from django.views.generic import TemplateView, View
 import requests
 
 from tests.models import TestResult, Tests, TestsReviews
-from users.models import User, UsersGroupMembership
+from users.models import User
 
 class IndexView(LoginRequiredMixin, TemplateView):
     """
@@ -59,47 +59,47 @@ class IndexView(LoginRequiredMixin, TemplateView):
         user_id = str(user.id)
 
         # Получаем группу одним запросом с select_related
-        group_membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
-        group = group_membership.group if group_membership else "Без групи"
+        # group_membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
+        # group = group_membership.group if group_membership else "Без групи"
 
-        # Получаем все нужные test_id одним запросом
-        completed_test_ids = set(TestResult.objects.filter(user=user).values_list('test_id', flat=True))
-        awaiting_test_ids = set(TestsReviews.objects.filter(user=user).values_list('test_id', flat=True))
+        # # Получаем все нужные test_id одним запросом
+        # completed_test_ids = set(TestResult.objects.filter(user=user).values_list('test_id', flat=True))
+        # awaiting_test_ids = set(TestsReviews.objects.filter(user=user).values_list('test_id', flat=True))
 
-        # Получаем дату и время сервера
-        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+        # # Получаем дату и время сервера
+        # server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
 
-        # Получаем все тесты одним запросом
-        all_tests = (Tests.objects
-                    .filter(students__students__contains=[user_id])
-                    .order_by('-date_taken'))
+        # # Получаем все тесты одним запросом
+        # all_tests = (Tests.objects
+        #             .filter(students__students__contains=[user_id])
+        #             .order_by('-date_taken'))
         
-        # Используем Python для фильтрации вместо дополнительных запросов к БД
-        tests_dict = {test.id: test for test in all_tests}
-        actual_test_dict = {test.id: test for test in all_tests.filter(Q(date_in__lt=server_time) & Q(date_out__gte=server_time))}
+        # # Используем Python для фильтрации вместо дополнительных запросов к БД
+        # tests_dict = {test.id: test for test in all_tests}
+        # actual_test_dict = {test.id: test for test in all_tests.filter(Q(date_in__lt=server_time) & Q(date_out__gte=server_time))}
         
-        uncompleted_tests = [
-            test for test_id, test in actual_test_dict.items()
-            if test_id not in completed_test_ids and test_id not in awaiting_test_ids
-        ]
+        # uncompleted_tests = [
+        #     test for test_id, test in actual_test_dict.items()
+        #     if test_id not in completed_test_ids and test_id not in awaiting_test_ids
+        # ]
         
-        awaiting_tests = [
-            test for test_id, test in tests_dict.items()
-            if test_id in awaiting_test_ids
-        ]
+        # awaiting_tests = [
+        #     test for test_id, test in tests_dict.items()
+        #     if test_id in awaiting_test_ids
+        # ]
         
-        completed_tests = [
-            test for test_id, test in tests_dict.items()
-            if test_id in completed_test_ids
-        ]
+        # completed_tests = [
+        #     test for test_id, test in tests_dict.items()
+        #     if test_id in completed_test_ids
+        # ]
 
-        context.update({
-            'tests': all_tests,
-            'uncompleted_tests': uncompleted_tests,
-            'awaiting_tests': awaiting_tests,
-            'completed_tests': completed_tests,
-            'group': group,
-        })
+        # context.update({
+        #     'tests': all_tests,
+        #     'uncompleted_tests': uncompleted_tests,
+        #     'awaiting_tests': awaiting_tests,
+        #     'completed_tests': completed_tests,
+        #     'group': group,
+        # })
 
         return context
 

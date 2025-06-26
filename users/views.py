@@ -16,7 +16,7 @@ from users.custom_utils.parser_utils import exel_parser, xml_parser
 from .utils import is_blocked
 from django.db import transaction
 
-from .models import LoginAttempt, User, UsersGroupMembership
+from .models import LoginAttempt, User
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 

@@ -26,7 +26,7 @@ from django.views import View
 # Библиотеки проекта
 from common.mixins import CacheMixin
 from tests.utils import check_min_datetime, send_emails_from_users
-from users.models import User, UsersGroupMembership
+from users.models import User
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 
@@ -42,21 +42,21 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Проверка на принадлежность к группе и статус учителя
-        membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
-        if membership and membership.owner:
-            # Пользователь - учитель группы, выводим тесты, которые он выгружал
-            context['tests'] = Tests.objects.filter(user=user)  # Все тесты, созданные учителем
-        else:
-            # Пользователь - студент, выводим его результаты
-            test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
-            context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
+        # # Проверка на принадлежность к группе и статус учителя
+        # membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
+        # if membership and membership.owner:
+        #     # Пользователь - учитель группы, выводим тесты, которые он выгружал
+        #     context['tests'] = Tests.objects.filter(user=user)  # Все тесты, созданные учителем
+        # else:
+        #     # Пользователь - студент, выводим его результаты
+        #     test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
+        #     context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
             
 
-        context.update({
-            'group': membership.group if membership and membership.group else None,
-            'active_tab': 'rating',
-        })
+        # context.update({
+        #     'group': membership.group if membership and membership.group else None,
+        #     'active_tab': 'rating',
+        # })
 
         return context
     
@@ -84,28 +84,28 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 
 
         # Получаем тест и группу пользователя
-        test = get_object_or_404(Tests, id=test_id)
-        user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
+        # test = get_object_or_404(Tests, id=test_id)
+        # user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
 
-        # Если группа существует возвращаем результаты по тестам всех группы, иначе пустой список
-        if user_group:
-            group_members = UsersGroupMembership.objects.filter(group=user_group.group).select_related('user')
-            results = TestResult.objects.filter(
-                 user__id__in=[member.user.id for member in group_members],
-                test=test
-            ).annotate(
-                scores=F('score'),
-                duration_seconds=ExpressionWrapper(F('duration'), output_field=fields.DurationField())
-            ).order_by('-scores', 'duration_seconds')
-        else:
-            results = []
+        # # Если группа существует возвращаем результаты по тестам всех группы, иначе пустой список
+        # if user_group:
+        #     group_members = UsersGroupMembership.objects.filter(group=user_group.group).select_related('user')
+        #     results = TestResult.objects.filter(
+        #          user__id__in=[member.user.id for member in group_members],
+        #         test=test
+        #     ).annotate(
+        #         scores=F('score'),
+        #         duration_seconds=ExpressionWrapper(F('duration'), output_field=fields.DurationField())
+        #     ).order_by('-scores', 'duration_seconds')
+        # else:
+        #     results = []
 
 
-        context.update({
-            'test': test,
-            'results': results,
-            'active_tab': 'rating',
-        })
+        # context.update({
+        #     'test': test,
+        #     'results': results,
+        #     'active_tab': 'rating',
+        # })
 
         return context
 
@@ -1536,37 +1536,37 @@ class TestsForReviewView(CacheMixin ,TemplateView):
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
 
-        user_groups = self.set_get_cache(
-            UsersGroupMembership.objects.filter(user=user).select_related('group'),
-            f"user_group_{user.id}",
-            30,
-        )
-        # user_groups = UsersGroupMembership.objects.filter(user=user).select_related('group')
+        # user_groups = self.set_get_cache(
+        #     UsersGroupMembership.objects.filter(user=user).select_related('group'),
+        #     f"user_group_{user.id}",
+        #     30,
+        # )
+        # # user_groups = UsersGroupMembership.objects.filter(user=user).select_related('group')
 
-        if user_groups.exists():
-            # group = user_groups.first().group
-            group = self.set_get_cache(user_groups[0].group, f"user_first_group_{user.id}", 30)
+        # if user_groups.exists():
+        #     # group = user_groups.first().group
+        #     group = self.set_get_cache(user_groups[0].group, f"user_first_group_{user.id}", 30)
 
-            group_memberships = UsersGroupMembership.objects.filter(group=group).select_related('user')
+        #     group_memberships = UsersGroupMembership.objects.filter(group=group).select_related('user')
 
-            # tests_reviews = Tests.objects.filter(
-            #     user__in=[member.user for member in group_memberships],
-            #     check_type="manual"
-            # )
-            tests_reviews = self.set_get_cache(
-                Tests.objects.filter(
-                    user__in=[member.user for member in group_memberships],
-                    check_type="manual"),
-                f"test_reviews_{user.id}",
-                30,
-            )
-        else:
-            tests_reviews = Tests.objects.none()
+        #     # tests_reviews = Tests.objects.filter(
+        #     #     user__in=[member.user for member in group_memberships],
+        #     #     check_type="manual"
+        #     # )
+        #     tests_reviews = self.set_get_cache(
+        #         Tests.objects.filter(
+        #             user__in=[member.user for member in group_memberships],
+        #             check_type="manual"),
+        #         f"test_reviews_{user.id}",
+        #         30,
+        #     )
+        # else:
+        #     tests_reviews = Tests.objects.none()
 
-        context.update({
-            'test_result': tests_reviews,
-            'active_tab': 'my_tests'
-        })
+        # context.update({
+        #     'test_result': tests_reviews,
+        #     'active_tab': 'my_tests'
+        # })
 
         return context
 
@@ -1627,14 +1627,14 @@ class TestGroupReviewsView(TemplateView):
         return context
 
     def get_user_group(self, user):
-        user_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
+        # user_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
 
-        if user_membership and user_membership.group:
-            return (
-                UsersGroupMembership.objects.filter(group=user_membership.group)
-                .values_list('user_id', flat=True)
-            )
-        else:
+        # if user_membership and user_membership.group:
+        #     return (
+        #         UsersGroupMembership.objects.filter(group=user_membership.group)
+        #         .values_list('user_id', flat=True)
+        #     )
+        # else:
             return []
 
 

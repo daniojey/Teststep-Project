@@ -376,16 +376,16 @@ UNFOLD = {
                     },
                     {
                         "title": _("Групи"),
-                        "link": reverse_lazy("admin:users_usersgroup_changelist"),
+                        "link": reverse_lazy("admin:users_group_changelist"),
                     },
-                    {
-                        "title": _("Членство користувача в групах"),
-                        "link": reverse_lazy("admin:users_usersgroupmembership_changelist"),
-                    },
-                    {
-                        "title": _("Спроби входу"),
-                        "link": reverse_lazy("admin:users_loginattempt_changelist"),
-                    },
+                    # {
+                    #     "title": _("Членство користувача в групах"),
+                    #     "link": reverse_lazy("admin:users_usersgroupmembership_changelist"),
+                    # },
+                    # {
+                    #     "title": _("Спроби входу"),
+                    #     "link": reverse_lazy("admin:users_loginattempt_changelist"),
+                    # },
                     {
                         "title": _("Email повідомлення по тестам"),
                         "link": reverse_lazy("admin:users_emailtestnotyficateuser_changelist"),

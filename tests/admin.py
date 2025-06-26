@@ -186,8 +186,9 @@ def date_out(obj):
     return f"{localtime(obj.date_out).date()}:{localtime(obj.date_out).time()}"
 
 class TestsAdmin(ModelAdmin):
-    list_display = ["user","name","duration","date_taken",date_in,date_out, 'category', "check_type"]
+    list_display = ["name","duration","date_taken",date_in,date_out, 'category', "check_type"]
     list_display_links = ('name',)
+    filter_horizontal = ('students',)
     form = TestsAdminForm  # Подключаем кастомную форму к админке
     search_fields = ['name']
     list_filter = [
