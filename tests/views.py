@@ -454,7 +454,19 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
             # Если форма валидна, то получаем спасок всех студентов и сохраняем в одноименнованное поле в модели Tests
             if students_form.is_valid():
                 data_users = students_form.cleaned_data.get('students')
-                test.students = {'students': students_form.cleaned_data.get('students')}
+                form_users = set((int(ids) for ids in data_users))
+                test_students = set(test.students.all().values_list("id", flat=True))
+                
+                # Получаем как пользователей которых нужно удалить так и тех которых нужно будет добавить 
+                remove_set = test_students.difference(form_users)
+                add_set = form_users.difference(test_students)
+
+                if add_set:
+                    test.students.add(*add_set)
+
+                if remove_set:
+                    test.students.remove(*remove_set)
+
                 test.save()
                 send_emails_from_users(data_users, test)
                 return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'})

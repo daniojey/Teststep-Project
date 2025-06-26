@@ -267,24 +267,18 @@ class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
         user = kwargs.pop('user', None)  # Текущий пользователь (учитель)
         super().__init__(*args, **kwargs)
 
-
         # # Получаем группу, в которой состоит учитель
-        # user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
-        
-        # if user_group:
-        #     students_in_group = UsersGroupMembership.objects.filter(group=user_group.group).prefetch_related('user').values_list('user_id', 'user__username')
+        user_group = test.group
 
-        #     # Список студентов для чекбоксов
-        #     students = [(ids, username) for ids, username in students_in_group]
-
-            
-        # else:
-        #     students = [(user.id, user.username)]
+        if user_group:
+            students = [(u.id, u.username) for u in user_group.members.all()]
+        else:
+            students = [(user.id, user.username)]
         
 
         # Заполняем поле с чекбоксами
         self.fields['students'] = forms.MultipleChoiceField(
-           choices=[('0', 'bob')],  # Список студентов в формате (id, имя)
+           choices=students,  # Список студентов в формате (id, имя)
            widget=forms.CheckboxSelectMultiple,
            label='Додати студентів до тесту',
            required=False
@@ -294,7 +288,8 @@ class QuestionStudentsForm(CacheMixin ,forms.ModelForm):
         # Устанавливаем начальные значения для чекбоксов, если студенты уже выбраны
         if test and test.students:
             try:
-                self.initial['students'] = [str(student_id) for student_id in test.students['students']]  # JSONField хранит список ID
+                self.initial['students'] = [str(student_id) for student_id in test.students.all().values_list('id', flat=True)]  # JSONField хранит список ID
+
             except Exception as e:
                 print(f"У вашій группі на данний момент відсутні студенти {e}")
 
