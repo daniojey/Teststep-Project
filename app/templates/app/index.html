@@ -9,85 +9,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <body align='center'>
-    
-    <div class="test-group-container">
-        <div class="test-group">
-            <div class="group-header" onclick="toggleGroup('group-1')">
-                <h3>{{ group }}</h3>
-                <span class="arrow"></span> <!-- Стрелка вниз -->
-            </div>
-            <div id="group-1" class="group-content">
-                <!-- Здесь будут категории и тесты для группы 1 -->
-                <div class="category">
-                    <h3 align='left'>Невиконані тести</h3>
-                    <div class="tests">
-                        <!-- Тесты первой категории -->
-                        {% for test in uncompleted_tests %}
-                            <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
-                                <div class="test-item"
-                                data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
-                                    <div class="test-overlay-header">
-                                        {{ test.name }}
-                                    </div>
-                                    <!-- Нижняя полоса с датами -->
-                                    <div class="test-overlay-footer">
-                                        <div class="date-icon">
-                                            <img src="{% static "icons/calendar.svg" %}" alt="calendar">
-                                            <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+    {% for group, data in group_data.items %}
+        <div class="test-group-container">
+            <div class="test-group">
+                <div class="group-header" onclick="toggleGroup({{ forloop.counter }})">
+                    <h3>{{ data.group_name }}</h3>
+                    <span class="arrow" id="arrow_{{ forloop.counter }}"></span> <!-- Стрелка вниз -->
+                </div>
+                <div id="group_{{ forloop.counter }}" class="group-content">
+                    <!-- Здесь будут категории и тесты для группы 1 -->
+                    <div class="category">
+                        <h3 align='left'>Невиконані тести</h3>
+                        <div class="tests">
+                            <!-- Тесты первой категории -->
+                            {% for test in data.uncomplete_tests %}
+                                <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
+                                    <div class="test-item"
+                                    data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
+                                        <div class="test-overlay-header">
+                                            {{ test.name }}
+                                        </div>
+                                        <!-- Нижняя полоса с датами -->
+                                        <div class="test-overlay-footer">
+                                            <div class="date-icon">
+                                                <img src="{% static "icons/calendar.svg" %}" alt="calendar">
+                                                <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </a>    
-                        {% endfor %}
+                                </a>    
+                            {% endfor %}
+                            </div>
+                        </div>
+                    <div class="category">
+                        <h3 align='left'>Очікують на перевірку</h3>
+                        <div class="tests">
+                            {% for test in data.test_reviews %}
+                                    <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
+                                        <div class="test-item" 
+                                        data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
+                                            <div class="test-overlay-header">
+                                                {{ test.name }}
+                                            </div>
+                                            <!-- Нижняя полоса с датами -->
+                                            <div class="test-overlay-footer">
+                                                <div class="date-icon">
+                                                    <img src="{% static "icons/calendar.svg" %}" alt="calendar">
+                                                    <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>    
+                            {% endfor %}
                         </div>
                     </div>
-                <div class="category">
-                    <h3 align='left'>Очікують на перевірку</h3>
-                    <div class="tests">
-                        {% for test in awaiting_tests %}
-                                <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
-                                    <div class="test-item" 
-                                    data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
-                                        <div class="test-overlay-header">
-                                            {{ test.name }}
-                                        </div>
-                                        <!-- Нижняя полоса с датами -->
-                                        <div class="test-overlay-footer">
-                                            <div class="date-icon">
-                                                <img src="{% static "icons/calendar.svg" %}" alt="calendar">
-                                                <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                    <div class="category">
+                        <h3 align='left'>Пройдені тести</h3>
+                        <div class="tests">
+                            {% for test in data.test_results %}
+                                    <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
+                                        <div class="test-item" 
+                                        data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
+                                            <div class="test-overlay-header">
+                                                {{ test.name }}
+                                            </div>
+                                            <!-- Нижняя полоса с датами -->
+                                            <div class="test-overlay-footer">
+                                                <div class="date-icon">
+                                                    <img src="{% static "icons/calendar.svg" %}" alt="calendar">
+                                                    <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </a>    
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="category">
-                    <h3 align='left'>Пройдені тести</h3>
-                    <div class="tests">
-                        {% for test in completed_tests %}
-                                <a href="{% url "tests:test_preview" test_id=test.id %}" class="test-item-link">
-                                    <div class="test-item" 
-                                    data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
-                                        <div class="test-overlay-header">
-                                            {{ test.name }}
-                                        </div>
-                                        <!-- Нижняя полоса с датами -->
-                                        <div class="test-overlay-footer">
-                                            <div class="date-icon">
-                                                <img src="{% static "icons/calendar.svg" %}" alt="calendar">
-                                                <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>    
-                        {% endfor %}
+                                    </a>    
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endfor %}
     <script src="{% static "js/dropdown_panel.js" %}"></script>
     <script src="{% static "js/image_lazy_loading.js" %}"></script>
 </body>

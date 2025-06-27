@@ -41,6 +41,7 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        groups = user.groups.all()
         
         # # Проверка на принадлежность к группе и статус учителя
         # membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
@@ -53,10 +54,10 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         #     context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
             
 
-        # context.update({
+        context.update({
         #     'group': membership.group if membership and membership.group else None,
-        #     'active_tab': 'rating',
-        # })
+            'active_tab': 'rating',
+        })
 
         return context
     

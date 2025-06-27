@@ -1,4 +1,5 @@
 from datetime import datetime
+import pprint
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -8,7 +9,7 @@ from django.views.generic import TemplateView, View
 import requests
 
 from tests.models import TestResult, Tests, TestsReviews
-from users.models import User
+from users.models import Group, User
 
 class IndexView(LoginRequiredMixin, TemplateView):
     """
@@ -57,6 +58,65 @@ class IndexView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user  # Используем существующий объект user
         user_id = str(user.id)
+
+        groups = user.group.all()
+
+        groups_data = {}
+
+        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+
+        for i, group in enumerate(groups):
+            group_dict = {}
+
+            group_dict['group_name'] = group.name
+            
+            all_tests = user.tests.filter(
+                Q(group=group), 
+                Q(date_in__lt=server_time) & Q(date_out__gte=server_time)
+                ).values_list('id', flat=True)
+            all_test_ids = list(all_tests)
+
+
+            test_reviews = TestsReviews.objects.filter(
+                Q(test__id__in=all_test_ids) | Q(group=group) & Q(user=user)
+            ).select_related('test').only('id', 'test')
+            test_reviews_list = list(test_reviews)
+            test_reviews_ids = set([item.test.id for item in test_reviews_list])
+            test_reveiws_data = [item.test for item in test_reviews_list]
+            group_dict['test_reviews'] = test_reveiws_data
+
+            print(test_reviews_ids)
+
+            test_results = TestResult.objects.filter(test__id__in=all_test_ids).select_related('test').only('id', 'test')
+            test_results_list = list(test_results)
+            test_results_ids = set([item.test.id for item in test_results_list])
+            test_results_data = [item.test for item in test_results_list]
+            group_dict['test_results'] = test_results_data
+
+            print(test_results_ids)
+
+            exclude_ids = test_results_ids | test_reviews_ids
+            results_ids = list(set(all_test_ids) - exclude_ids)
+            print(results_ids)
+            uncomplete_tests = Tests.objects.filter(id__in=results_ids)
+            group_dict['uncomplete_tests'] = uncomplete_tests
+
+            print(uncomplete_tests)
+
+            pprint.pprint(group_dict)
+
+            groups_data[f"Group {i}"] = group_dict
+
+            pprint.pprint(groups_data)
+
+        
+        context.update(
+            {
+                "group_data": groups_data
+            }
+        )
+
+            
 
         # Получаем группу одним запросом с select_related
         # group_membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()

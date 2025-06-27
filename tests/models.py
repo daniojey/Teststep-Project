@@ -1,4 +1,5 @@
 import os
+from tkinter import CASCADE
 from uuid import uuid4
 from pathlib import Path
 from django.db import models
@@ -280,9 +281,7 @@ class TestsReviews(models.Model):
     duration = models.DurationField()
     answers = models.JSONField()  # Хранение ответов пользователя в формате JSON
     audio_answers = models.JSONField(blank=True, null=True)
-    group = models.CharField(max_length=100, blank=True, null=True)  # Опционально: группа пользователя
-    reviewed = models.BooleanField(default=False)
-    score = models.FloatField(blank=True, null=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, related_name='test_reviews', blank=True, null=True)  # Опционально: группа пользователя
 
     class Meta:
         db_table = "test_reviews"

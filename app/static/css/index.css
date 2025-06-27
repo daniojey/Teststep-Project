@@ -1,11 +1,20 @@
+header {
+    margin-bottom: 30px;
+}
+
 /* Контейнер для группы тестов */
 .test-group-container {
     /* max-width: calc(100% - 160px); */
     width: 100%;
     max-width: 1290px;
     margin: 0 auto; /* Центрируем блок */
-    padding-top: 60px;
-    padding-bottom: 60px;
+    padding-top: 10px;
+}
+
+@media (max-width: 1290px) {
+    .test-group-container {
+        max-width: calc(100% - 15px);
+    }
 }
 
 @media (max-width: 530px) {
@@ -44,10 +53,17 @@
 
 /* Содержимое группы (скрыто по умолчанию) */
 .group-content {
-    display: none;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
     background-color: #3A354A;
-    padding-top: 36px;
-    height: 100%;
+    padding-bottom: 0;
+    transition: height 0.4s ease-out, opacity 0.3s ease-out, padding-bottom 0.3s ease-out;
+}
+
+.group-content.active {
+    opacity: 1;
+    padding-bottom: 36px;
 }
 
 .category {
