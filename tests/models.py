@@ -253,6 +253,7 @@ class Answer(models.Model):
 class TestResult(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_results')
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, related_name='test_results', blank=True, null=True)
     score = models.DecimalField(max_digits=5, decimal_places=2)
     date_taken = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=1)
@@ -276,7 +277,7 @@ class TestResult(models.Model):
 
 class TestsReviews(models.Model):
     test = models.ForeignKey(Tests, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_reviews')
     date_taken = models.DateTimeField(auto_now_add=True)
     duration = models.DurationField()
     answers = models.JSONField()  # Хранение ответов пользователя в формате JSON

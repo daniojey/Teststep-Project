@@ -1,6 +1,6 @@
 from datetime import datetime
 import pprint
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -59,46 +59,69 @@ class IndexView(LoginRequiredMixin, TemplateView):
         user = self.request.user  # Используем существующий объект user
         user_id = str(user.id)
 
-        groups = user.group.all()
+        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+
+        groups = user.group.prefetch_related(
+            Prefetch(
+                'test_group',
+                queryset=Tests.objects.select_related('group'),
+                to_attr='all_group_tests'
+            ),
+
+            Prefetch(
+                'test_reviews',
+                queryset=TestsReviews.objects.select_related('test'),
+                to_attr="test_reviews_in_group"
+            ),
+
+            Prefetch(
+                'test_results',
+                queryset=TestResult.objects.select_related('test'),
+                to_attr='test_results_in_group'
+            )
+        ).all()
 
         groups_data = {}
-
-        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
 
         for i, group in enumerate(groups):
             group_dict = {}
 
             group_dict['group_name'] = group.name
             
-            all_tests = user.tests.filter(
-                Q(group=group), 
-                Q(date_in__lt=server_time) & Q(date_out__gte=server_time)
-                ).values_list('id', flat=True)
-            all_test_ids = list(all_tests)
+            all_tests = group.all_group_tests
+            active_tests = [
+                test for test in all_tests
+                if test.date_in < server_time and test.date_out >= server_time
+            ]
+
+            all_test_ids = {test.id for test in all_tests}
+            active_tests_ids = {test.id for test in active_tests}
 
 
-            test_reviews = TestsReviews.objects.filter(
-                Q(test__id__in=all_test_ids) | Q(group=group) & Q(user=user)
-            ).select_related('test').only('id', 'test')
-            test_reviews_list = list(test_reviews)
-            test_reviews_ids = set([item.test.id for item in test_reviews_list])
-            test_reveiws_data = [item.test for item in test_reviews_list]
-            group_dict['test_reviews'] = test_reveiws_data
+            # print(group.test_reviews_in_group)
+            # print(group.test_results_in_group)
+
+            test_reviews = [
+                tr for tr in group.test_reviews_in_group if tr.test_id in all_test_ids
+            ]
+            test_reviews_ids = {item.test_id for item in test_reviews}
+            group_dict['test_reviews'] = [item.test for item in test_reviews]
 
             print(test_reviews_ids)
 
-            test_results = TestResult.objects.filter(test__id__in=all_test_ids).select_related('test').only('id', 'test')
-            test_results_list = list(test_results)
-            test_results_ids = set([item.test.id for item in test_results_list])
-            test_results_data = [item.test for item in test_results_list]
-            group_dict['test_results'] = test_results_data
+            test_results = [
+                tr for tr in group.test_results_in_group if tr.test_id in active_tests_ids
+            ]
+            test_results_ids ={item.test_id for item in test_results}
+            group_dict['test_results'] = [item.test for item in test_results]
 
             print(test_results_ids)
 
             exclude_ids = test_results_ids | test_reviews_ids
             results_ids = list(set(all_test_ids) - exclude_ids)
             print(results_ids)
-            uncomplete_tests = Tests.objects.filter(id__in=results_ids)
+
+            uncomplete_tests = [test for test in active_tests if test.id in results_ids]
             group_dict['uncomplete_tests'] = uncomplete_tests
 
             print(uncomplete_tests)
@@ -110,11 +133,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
             pprint.pprint(groups_data)
 
         
-        context.update(
-            {
-                "group_data": groups_data
-            }
-        )
+        context.update({"group_data": groups_data})
 
             
 

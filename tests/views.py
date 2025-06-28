@@ -41,7 +41,6 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        groups = user.groups.all()
         
         # # Проверка на принадлежность к группе и статус учителя
         # membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
@@ -52,6 +51,8 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         #     # Пользователь - студент, выводим его результаты
         #     test_lists = TestResult.objects.filter(user=user).values_list("test_id", flat=True)
         #     context['tests'] = Tests.objects.filter(id__in=test_lists)  # Тесты, по которым есть результаты у студента
+
+        
             
 
         context.update({
@@ -82,6 +83,29 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = get_object_or_404(User, id=self.request.user.id)
         test_id = self.kwargs.get('test_id')
+
+        # groups = user.group.prefetch_related(
+        #     Prefetch(
+        #         'test_reviews',
+        #         queryset=TestsReviews.objects.filter(
+        #             test_id=test_id
+        #         ),
+        #         to_attr='test_rew'
+        #     )
+        # )
+
+        # groups = list(groups)
+
+        # for group in groups:
+        #     print("Группа",group)
+
+        #     for member in group.test_rew:
+        #         print(member)
+
+
+        # print(groups)
+        # print(groups.members_with_reviews)
+        # print(groups.pending_reviews)
 
 
         # Получаем тест и группу пользователя

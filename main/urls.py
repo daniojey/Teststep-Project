@@ -30,8 +30,8 @@ urlpatterns = [
     path("testes/", include("tests.urls", namespace='tests')),
     path("user/", include("users.urls", namespace='users')),
     path('csp-report/', csrf_exempt(CspReports.as_view()), name='csp_reports')
-] 
-#  + debug_toolbar_urls()
+] + debug_toolbar_urls()
+# 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

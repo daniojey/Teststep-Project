@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Сторонние приложения
-    # "debug_toolbar",
+    "debug_toolbar",
     'imagekit',
 
     # Созданные приложения
@@ -73,7 +73,7 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = [
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
