@@ -1612,7 +1612,7 @@ class TestsForReviewView(CacheMixin ,TemplateView):
     template_name = 'tests/test_for_reviews.html'
 
     def dispatch(self, request, *args, **kwargs):
-        user= request.user
+        user = request.user
         if not user.is_superuser or not user.is_staff:
             return redirect(reverse("app:index"))
 
@@ -1620,7 +1620,31 @@ class TestsForReviewView(CacheMixin ,TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = get_object_or_404(User, id=self.request.user.id)
+        user = self.request.user
+
+        groups = user.group.prefetch_related(
+            Prefetch(
+                'test_reviews',
+                queryset=TestsReviews.objects.select_related('test'),
+                to_attr='reviews_select'
+            )
+        )
+
+        group_data = {
+            f"Group {i}": {
+                "group_name": group.name,
+                "test_result": [rew.test for rew in group.reviews_select],
+            }
+            for i, group in enumerate(groups)
+        }
+
+        pprint(group_data)
+
+
+        context.update({'groups': group_data})
+
+
+
 
         # user_groups = self.set_get_cache(
         #     UsersGroupMembership.objects.filter(user=user).select_related('group'),

@@ -9,6 +9,15 @@
     background: #363242;
 }
 
+.group-title {
+    display: flex;
+    width: 100%;
+    text-align: left;
+    font-size: 28px;
+    color: #FFF;
+    margin-bottom: 30px;
+}
+
 .tests-container-items {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Колонки адаптируются к ширине контейнера */

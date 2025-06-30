@@ -18,25 +18,28 @@
         <h2>Тести на перевірку</h2>
     </div>
 
-    <div class="tests-container-items">
-        {% for test in test_result %}
-        <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">
-            <div class="test-item"
-            data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
-                <div class="test-overlay-header">
-                    {{ test.name }}
-                </div>
-                <!-- Нижняя полоса с датами -->
-                <div class="test-overlay-footer">
-                    <div class="date-icon">
-                        <img src="{% static "icons/calendar.svg" %}" alt="calendar">
-                        <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+    {% for group, data in groups.items %}
+        <h2 class="group-title">Група:{{ data.group_name }}</h2>
+        <div class="tests-container-items">
+            {% for test in data.test_result %}
+            <a href="{% url "tests:test_group_reviews" test_id=test.id %}" class="test-item-link">
+                <div class="test-item"
+                data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static "images/default_image.jpg" %}{% endif %}">
+                    <div class="test-overlay-header">
+                        {{ test.name }}
+                    </div>
+                    <!-- Нижняя полоса с датами -->
+                    <div class="test-overlay-footer">
+                        <div class="date-icon">
+                            <img src="{% static "icons/calendar.svg" %}" alt="calendar">
+                            <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </a>    
-        {% endfor %}
-    </div>
+            </a>    
+            {% endfor %}
+        </div>
+    {% endfor %}
 </div>
 
 <script src="{% static "js/image_lazy_loading.js" %}"></script>
