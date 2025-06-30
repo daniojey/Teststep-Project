@@ -70,13 +70,17 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
             Prefetch(
                 'test_reviews',
-                queryset=TestsReviews.objects.select_related('test'),
+                queryset=TestsReviews.objects.select_related('test').only(
+                    'test', 'group'
+                ),
                 to_attr="test_reviews_in_group"
             ),
 
             Prefetch(
                 'test_results',
-                queryset=TestResult.objects.select_related('test'),
+                queryset=TestResult.objects.select_related('test').only(
+                    'test', 'group'
+                ),
                 to_attr='test_results_in_group'
             )
         ).all()

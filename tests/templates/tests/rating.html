@@ -8,35 +8,41 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/rating.css' %}">  
 
 <body>
-    
-    <div class="group-container">
-        {% if group %}
-            <h2>{{ group }} (Рейтинг)</h2>
-        {% else %}
-            <h2>Без групи (Рейтинг)</h2>
-        {% endif %}
+    <h1 class='title'>Рейтинг</h1>
+    {% for group, data in groups.items %}
+        <div class="group-container">
+            {% if group %}
+                <div class='group-header' data-groupid="{{ forloop.counter }}">
+                    <h2>{{ data.group_name }}</h2>
+                    <span class="arrow" id="arrow_{{ forloop.counter }}"></span>
+                </div>
+            {% else %}
+                <h2>Без групи</h2>
+            {% endif %}
 
-        <div class="tests-ratings-container">
-            {% for test in tests %}
-            <a href="{% url "tests:rating_test" test_id=test.id %}" class="test-item-link">
-                <div class="test-item"
-                data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static 'default-image.jpg' %}{% endif %}">
-                    <div class="test-overlay-header">
-                        {{ test.name }}
-                    </div>
-                    <!-- Нижняя полоса с датами -->
-                    <div class="test-overlay-footer">
-                        <div class="date-icon">
-                            <img src="{% static "icons/calendar.svg" %}" alt="calendar">
-                            <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+            <div class="tests-ratings-container" id="group_{{ forloop.counter }}">
+                {% for test in data.tests %}
+                <a href="{% url "tests:rating_test" test_id=test.id %}" class="test-item-link">
+                    <div class="test-item"
+                    data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static "images/default_image.jpg" %}{% endif %}">
+                        <div class="test-overlay-header">
+                            {{ test.name }}
+                        </div>
+                        <!-- Нижняя полоса с датами -->
+                        <div class="test-overlay-footer">
+                            <div class="date-icon">
+                                <img src="{% static "icons/calendar.svg" %}" alt="calendar">
+                                <span>{{ test.date_in|date:"d.m.Y" }} - {{ test.date_out|date:"d.m.Y" }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </a>    
-            {% endfor %}
+                </a>    
+                {% endfor %}
+            </div>
         </div>
-    </div>
+    {% endfor %}
     <script src="{% static "js/image_lazy_loading.js" %}"></script>
+    <script src="{% static "js/group_tabs_v2.js" %}"></script>
 </body>
     
 {% endblock %}

@@ -1,11 +1,36 @@
+.title {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 25px;
+}
+
 .group-container {
-    max-width: calc(100% - 120px);
+    max-width: 1290px;
     margin: 0 auto;
-    margin-top: 60px;
-    margin-bottom: 60px;
-    background-color: #363242;
+    background-color: #3A354A;
     border-radius: 12px;
-    background: #363242;
+    margin-top: 25px;
+}
+
+.group-header {
+    background-color: #3A354A;
+    color: white;
+    padding: 24px;
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 12px;
 }
 
 .group-container h2 {
@@ -15,23 +40,45 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
-    padding: 24px 24px 0px 24px;
     text-align: left;
     display: flex;
-    margin-bottom: 60px;
 }
 
 .tests-ratings-container {
+    height: 0;
     display: grid;
+    box-sizing: border-box;
     grid-template-columns: repeat(auto-fill, minmax(286px, max-content)); /* Колонки адаптируются к ширине контейнера */
     gap: 40px 10px; /* Минимальный gap между элементами */
     justify-content: space-between; /* Равномерное распределение */
-    padding: 0 24px;
-    padding-bottom: 40px;
-    margin-bottom: 40px;
     align-items: center;
+    padding: 0 24px;
+    overflow: hidden;
+    opacity: 0;
+    transition: height 0.4s ease-out, opacity 0.5s ease-out;
 }
 
+.tests-ratings-container.active{
+    opacity: 1;
+    padding-bottom: 24px;
+}
+
+
+.arrow {
+    display: inline-block;
+    width: 24px;  /* Укажи точную ширину твоей картинки */
+    height: 24px; /* Укажи точную высоту твоей картинки */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/arrow_icon.svg'); /* Путь к картинке */
+    background-size: contain; /* Сохраняем размер изображения */
+    background-repeat: no-repeat; /* Не повторяем картинку */
+    background-position: center; /* Центрируем картинку */
+    transition: transform 0.4s ease;
+}
+
+
+.arrow.rotate {
+    transform: rotate(180deg); /* Поворачиваем стрелку на 180 градусов */
+}
 
 
 @media (max-width: 500px) {

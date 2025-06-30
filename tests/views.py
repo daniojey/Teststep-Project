@@ -4,6 +4,7 @@ from copyreg import constructor
 from decimal import Decimal
 from multiprocessing import Value
 import os
+from pprint import pprint
 import random
 import base64
 from datetime import datetime, timedelta
@@ -41,6 +42,75 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+
+        is_special_user = user.is_staff or user.is_superuser or user.owner
+
+
+        if is_special_user:
+            groups = user.group.prefetch_related(
+                Prefetch(
+                    'test_group',
+                    queryset=Tests.objects.select_related('user'),
+                    to_attr='tests_for_user'
+                )
+            )
+
+            # group_data = {}
+
+            # for i, group in enumerate(groups):
+            #     group_dict = {}
+
+            #     group_dict['group_name'] = group.name
+
+            #     group_dict['tests'] = [test for test in group.tests_for_user]
+
+            #     group_data[f"Group {i}"] = group_dict
+
+            group_data = {
+                f'Group {i}': {
+                    'group_name': group.name,
+                    'tests': list(group.tests_for_user)
+                }
+
+                for i, group in enumerate(groups)
+            }
+            
+
+            pprint(group_data)
+
+        else:
+            groups = user.group.prefetch_related(
+                Prefetch(
+                    'test_results',
+                    queryset=TestResult.objects.select_related('test', 'user').only(
+                        'test', 'user', 'group'
+                    ),
+                    to_attr='test_results_group'
+                )
+            ).all()
+
+            # group_data = {}
+
+            # for i, group in enumerate(groups):
+            #     group_dict = {}
+
+            #     group_dict['group_name'] = group.name
+
+            #     group_dict['tests'] = [item.test for item in group.test_results_group]
+
+            #     group_data[f"Group {i}"] = group_dict
+
+            group_data = {
+                f"Group {i}": {
+                    'group_name': group.name,
+                    'tests': [result.test for result in group.test_results_group],
+                }
+
+                for i, group in enumerate(groups)
+            }
+
+
+            pprint(group_data)        
         
         # # Проверка на принадлежность к группе и статус учителя
         # membership = UsersGroupMembership.objects.select_related('group').filter(user=user).first()
@@ -57,6 +127,7 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
 
         context.update({
         #     'group': membership.group if membership and membership.group else None,
+            "groups": group_data, 
             'active_tab': 'rating',
         })
 
