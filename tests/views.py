@@ -1225,7 +1225,7 @@ class TestsResultsView(View):
     template_name = 'tests/test_results.html'
 
     def get(self, request, test_id):
-        test = get_object_or_404(Tests, id=test_id)
+        test = get_object_or_404(Tests.objects.select_related('group'), id=test_id)
         responses = request.session.get('test_responses', {})
         audio_answers = request.session.get('autio_answer_', {})
         test_time = request.session.get('remaining_time', None)
@@ -1240,6 +1240,7 @@ class TestsResultsView(View):
             test_duration = timedelta(seconds=test.duration.total_seconds() - test_time)
             TestsReviews.objects.create(
                 test=test,
+                group=test.group,
                 user=request.user,
                 answers=responses,
                 audio_answers=audio_answers,
@@ -1434,6 +1435,7 @@ class TestsResultsView(View):
         test_result, created = TestResult.objects.get_or_create(
             user=request.user,
             test=test,
+            group=test.group,
             defaults={'score': score, 'attempts': 1, 'duration': test_duration}
         )
 
@@ -1625,7 +1627,7 @@ class TestsForReviewView(CacheMixin ,TemplateView):
         groups = user.group.prefetch_related(
             Prefetch(
                 'test_reviews',
-                queryset=TestsReviews.objects.select_related('test'),
+                queryset=TestsReviews.objects.select_related('test').order_by('test', 'test__date_taken').distinct('test'),
                 to_attr='reviews_select'
             )
         )
@@ -1717,17 +1719,19 @@ class TestGroupReviewsView(TemplateView):
     def get_context_data(self, **kwargs):
         context =  super().get_context_data(**kwargs)
         test_id = self.kwargs.get('test_id')
-        test = get_object_or_404(Tests, id=test_id)
-        user = get_object_or_404(User, id=self.request.user.id)
+        test = get_object_or_404(Tests.objects.select_related('group'), id=test_id)
 
-        group_memberships = self.get_user_group(user=user)
+        user_reviews = TestsReviews.objects.filter(test=test, group=test.group).select_related('user')
 
-        # user_reviews = []
+        # group_memberships = self.get_user_group(user=user)
 
-        user_reviews = (
-            TestsReviews.objects.filter(test=test, user__id__in=group_memberships)
-            .select_related('user')  # Оптимизируем запросы, подтягивая данные пользователей
-        )
+        # groups = user.groups.prefetch_related(
+        #     Prefetch(
+        #         'test_reviews',
+        #         queryset=TestsReviews.objects.filter(test=test).select_related('test', 'user'),
+        #         to_attr="test_reviews_data"
+        #     )
+        # )
 
         context.update({
             'test': test,
@@ -1736,7 +1740,7 @@ class TestGroupReviewsView(TemplateView):
 
         return context
 
-    def get_user_group(self, user):
+    # def get_user_group(self, user):
         # user_membership = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
 
         # if user_membership and user_membership.group:
@@ -1745,7 +1749,7 @@ class TestGroupReviewsView(TemplateView):
         #         .values_list('user_id', flat=True)
         #     )
         # else:
-            return []
+            # return []
 
 
 # def test_group_reviews(request, test_id):
@@ -2272,7 +2276,7 @@ class TestReviewResults(View):
         print(correct_answers)
         test_review_id = self.request.session['test_student_responses_id']
         if test_review_id:
-            test_review = TestsReviews.objects.filter(id=test_review_id).select_related('user', 'test').first()
+            test_review = TestsReviews.objects.filter(id=test_review_id).select_related('user', 'test', 'group').first()
         else:
             test_review = None
 
@@ -2288,6 +2292,7 @@ class TestReviewResults(View):
             test_result = TestResult.objects.create(
                 user=user,
                 test=test,
+                group=test.group,
                 duration=duration,
                 score=score,
                 attempts=2

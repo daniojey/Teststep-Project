@@ -35,26 +35,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
     template_name = 'app/index.html'
 
     def get_context_data(self, **kwargs):
-        """
-        Retrieve and add context data for the index page
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Additional keyword arguments passed to the view
-
-        Returns
-        -------
-        dict
-            A dictionary containing the following keys:
-            - 'tests' : QuerySet of all test associated with the user.
-            - 'uncompleted_tests' : QuerySet of tests the user has not completed.
-            - 'awaitig_tests' : QuerySet of tests awaiting teacher review.
-            - 'completed_tests' : QuerySet of tests the user has completed.
-            - 'group' : str or Group
-                The name of the user`s group, or 'Без группы' if the user not in a group
-        
-        """
         context = super().get_context_data(**kwargs)
         user = self.request.user  # Используем существующий объект user
         user_id = str(user.id)
@@ -64,21 +44,31 @@ class IndexView(LoginRequiredMixin, TemplateView):
         groups = user.group.prefetch_related(
             Prefetch(
                 'test_group',
-                queryset=Tests.objects.select_related('group'),
+                queryset=Tests.objects.filter(
+                    students__id=user_id
+                ).select_related('group'),
                 to_attr='all_group_tests'
             ),
 
             Prefetch(
                 'test_reviews',
-                queryset=TestsReviews.objects.select_related('test').only(
-                    'test', 'group'
+                queryset=TestsReviews.objects.filter(
+                    user_id=user_id
+                ).select_related(
+                    'test', 'user'
+                ).only(
+                    'test', 'group', 'user'
                 ),
                 to_attr="test_reviews_in_group"
             ),
 
             Prefetch(
                 'test_results',
-                queryset=TestResult.objects.select_related('test').only(
+                queryset=TestResult.objects.filter(
+                    user_id=user_id
+                ).select_related(
+                    'test'
+                ).only(
                     'test', 'group'
                 ),
                 to_attr='test_results_in_group'
@@ -102,16 +92,12 @@ class IndexView(LoginRequiredMixin, TemplateView):
             active_tests_ids = {test.id for test in active_tests}
 
 
-            # print(group.test_reviews_in_group)
-            # print(group.test_results_in_group)
-
             test_reviews = [
-                tr for tr in group.test_reviews_in_group if tr.test_id in all_test_ids
+                tr for tr in group.test_reviews_in_group
             ]
             test_reviews_ids = {item.test_id for item in test_reviews}
             group_dict['test_reviews'] = [item.test for item in test_reviews]
 
-            print(test_reviews_ids)
 
             test_results = [
                 tr for tr in group.test_results_in_group if tr.test_id in active_tests_ids
@@ -119,22 +105,16 @@ class IndexView(LoginRequiredMixin, TemplateView):
             test_results_ids ={item.test_id for item in test_results}
             group_dict['test_results'] = [item.test for item in test_results]
 
-            print(test_results_ids)
 
             exclude_ids = test_results_ids | test_reviews_ids
             results_ids = list(set(all_test_ids) - exclude_ids)
-            print(results_ids)
 
             uncomplete_tests = [test for test in active_tests if test.id in results_ids]
             group_dict['uncomplete_tests'] = uncomplete_tests
 
-            print(uncomplete_tests)
-
-            pprint.pprint(group_dict)
 
             groups_data[f"Group {i}"] = group_dict
 
-            pprint.pprint(groups_data)
 
         
         context.update({"group_data": groups_data})
