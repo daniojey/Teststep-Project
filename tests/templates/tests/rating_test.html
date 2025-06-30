@@ -10,13 +10,13 @@
                 <a href="javascript:void(0);" onclick="window.history.back();" class="back-icon">
                     <img src="{% static 'icons/back_arrow.svg' %}" alt="Назад">
                 </a>
-                <h2>{{ test }}</h2> 
+                <h2>{{ test_name }}</h2> 
             </div>
         
             {% if results %}
                 {% load timedelta_filters %}
                 {% for item in results %}
-                <div class="leaderboard-item">
+                <div class="leaderboard-item" style="--delay: {{ forloop.counter }}; animation-delay: calc(var(--delay) * 0.1s);">
                     <div class='leader-item-header'>
                         {% if forloop.counter == 1 %}
                         <img src="{% static 'icons/1st.svg' %}" alt="1 место">

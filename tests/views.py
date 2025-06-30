@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.db.models import F, ExpressionWrapper, Prefetch, Sum, fields
 from django.forms import ClearableFileInput, DateInput, DateTimeInput, NumberInput, TextInput, Textarea
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import localtime, now
 from django.urls import reverse, reverse_lazy
@@ -27,7 +27,7 @@ from django.views import View
 # Библиотеки проекта
 from common.mixins import CacheMixin
 from tests.utils import check_min_datetime, send_emails_from_users
-from users.models import User
+from users.models import Group, User
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
 from .forms import MatchingPairForm, QuestionGroupForm, QuestionStudentsForm, TestForm, QuestionForm, AnswerForm, TestReviewForm, TestTakeForm
 
@@ -152,56 +152,34 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = get_object_or_404(User, id=self.request.user.id)
+        # user = self.request.user
         test_id = self.kwargs.get('test_id')
 
-        # groups = user.group.prefetch_related(
-        #     Prefetch(
-        #         'test_reviews',
-        #         queryset=TestsReviews.objects.filter(
-        #             test_id=test_id
-        #         ),
-        #         to_attr='test_rew'
-        #     )
-        # )
+        try:
+            test_group_id, test_name = Tests.objects.filter(id=test_id).values_list('group_id', 'name').first()
+        except Tests.DoesNotExist:
+            return Http404('test not found')
+        
+        data = Group.objects.filter(id=test_group_id).prefetch_related(
+            Prefetch(
+                'test_results',
+                queryset=TestResult.objects.filter(
+                    test__id=test_id
+                ).select_related(
+                    'test', 'user'
+                ).annotate(
+                    scores=F('score'),
+                    duration_seconds=ExpressionWrapper(F('duration'), output_field=fields.DurationField())
+                ).order_by('-scores', 'duration_seconds'),
+                to_attr='test_results_data'
+            )
+        ).first()
 
-        # groups = list(groups)
-
-        # for group in groups:
-        #     print("Группа",group)
-
-        #     for member in group.test_rew:
-        #         print(member)
-
-
-        # print(groups)
-        # print(groups.members_with_reviews)
-        # print(groups.pending_reviews)
-
-
-        # Получаем тест и группу пользователя
-        # test = get_object_or_404(Tests, id=test_id)
-        # user_group = UsersGroupMembership.objects.filter(user=user).select_related('group').first()
-
-        # # Если группа существует возвращаем результаты по тестам всех группы, иначе пустой список
-        # if user_group:
-        #     group_members = UsersGroupMembership.objects.filter(group=user_group.group).select_related('user')
-        #     results = TestResult.objects.filter(
-        #          user__id__in=[member.user.id for member in group_members],
-        #         test=test
-        #     ).annotate(
-        #         scores=F('score'),
-        #         duration_seconds=ExpressionWrapper(F('duration'), output_field=fields.DurationField())
-        #     ).order_by('-scores', 'duration_seconds')
-        # else:
-        #     results = []
-
-
-        # context.update({
-        #     'test': test,
-        #     'results': results,
-        #     'active_tab': 'rating',
-        # })
+        context.update({
+            'results': data.test_results_data,
+            'active_tab': 'rating',
+            'test_name': test_name
+        })
 
         return context
 
