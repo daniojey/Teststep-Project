@@ -1,5 +1,4 @@
 from datetime import datetime
-import pprint
 from django.db.models import Q, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -9,7 +8,6 @@ from django.views.generic import TemplateView, View
 import requests
 
 from tests.models import TestResult, Tests, TestsReviews
-from users.models import Group, User
 
 class IndexView(LoginRequiredMixin, TemplateView):
     """

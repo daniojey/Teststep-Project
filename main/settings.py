@@ -271,13 +271,32 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 AWS_DEFAULT_ACL = 'public-read'
 
 # Настройки для хранения медиа файлов на S3 и для тестов исполбьзуем локальное хранилище
-if "test" in sys.argv:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-else:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# if "test" in sys.argv:
+#     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+# else:
+#     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-# Настройки для статических файлов (если нужно)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# # Настройки для статических файлов (если нужно)
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+if "test" in sys.argv:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'
+            },
+        'staticfiles': {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
+        }
+    }
 
 # Политика для загрузки файлов
 AWS_DEFAULT_ACL = None
@@ -447,6 +466,39 @@ UNFOLD = {
 
     
 }
+
+if DEBUG:
+    LOGGING = {
+        "version": 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            }
+        },
+        'handlers': {
+            'test_file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'logs', 'test_views.log'),
+                'formatter': 'verbose',
+                'encoding': 'utf-8',
+                'mode': 'w',
+            },
+        },
+        'loggers': {
+            'test_logger': {
+                'handlers': ['test_file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            }
+        }
+    }
 
 # LOGGING = {
 #     "version": 1,
