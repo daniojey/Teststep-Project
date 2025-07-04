@@ -2,20 +2,35 @@ from datetime import datetime
 from enum import member
 import logging
 from os import name
+from unicodedata import category
 from wsgiref.util import request_uri
 
 from django.utils import duration
 from django.utils.timezone import make_aware, timedelta
 from tests.admin import date_in, date_out
-from tests.models import Categories, Tests
+from tests.models import Categories, TestResult, Tests
 import pytest
 from random import choice, randint, choices
 
-from tests.testing.utils.view_utils import create_test_results, create_tests, create_test_reviews
+from tests.testing.utils.view_utils import create_test_results, create_tests, create_test_reviews, create_category
 from users.models import Group, User
 from config import СURRENT_CONFIG
 
 test_logger = logging.getLogger('test_logger')
+
+@pytest.fixture
+def users_data():
+    """Для получения данных пользователя в тестах для логина"""
+    return {
+        'testuser': {
+            'username': 'testuser',
+            'password': 'testpass123',
+        },
+        'testsuperuser': {
+            'username': 'testsuperuser',
+            'password': 'testpass123',
+        }
+    }
 
 @pytest.fixture(scope='session')
 def global_config():
@@ -26,11 +41,20 @@ def global_config():
     return СURRENT_CONFIG
 
 @pytest.fixture
-def test_user(db):
+def test_super_user(db):
     """ Фикстура для создания кастомного пользователя"""
+    return User.objects.create_superuser(
+        username="testsuperuser",
+        email="2@gmail.com",
+        password="testpass123",
+        teacher=True,
+    )
+
+@pytest.fixture
+def test_user(db):
     return User.objects.create_user(
         username="testuser",
-        email="1@gmail.com",
+        email="3@gmail.com",
         password="testpass123",
     )
 
@@ -44,13 +68,17 @@ def test_page_data(django_db_setup, django_db_blocker, global_config):
             test_reviews = global_config.test_reviews
             test_results = global_config.test_results
             random_data = global_config.random_data
-            
-            test_logger.info(f'Инициализация конфига в ДАТЕ {global_config}')
 
-
-            user = User.objects.create_user(
-                username="testuser",
+            user = User.objects.create_superuser(
+                username="testsuperuser",
                 email="1@gmail.com",
+                password="testpass123",
+                teacher=True,
+            )
+
+            student = User.objects.create_user(
+                username="testuser",
+                email="3@gmail.com",
                 password="testpass123",
             )
 
@@ -60,35 +88,11 @@ def test_page_data(django_db_setup, django_db_blocker, global_config):
                 name="testGroup",
             )
 
-            group.members.add(user)
+            group.members.set((user.id, student.id))
 
             test_logger.info(f'MEMBERS {group.members.all()}')
 
-            if random_data:
-                category_data = []
-
-                for i in range(randint(2, 5)):
-                    category_obj = Categories(
-                        name=f"testCategory {i}",
-                        slug=f"test_category_{i}",
-                    )
-
-                    category_data.append(category_obj)
-                
-                print(category_data)
-                Categories.objects.bulk_create(category_data)
-
-                category = Categories.objects.all()
-                test_logger.info(f"Категории {category}")
-            else:
-                Categories.objects.create(
-                    name=f"testCategory",
-                    slug=f"test_category"
-                )
-
-                category = Categories.objects.all()
-                test_logger.info(f"Категории {category}")
-
+            category = create_category(random_data=random_data)
 
             tests = create_tests(
                 categories=category, 
@@ -134,12 +138,21 @@ def test_page_data(django_db_setup, django_db_blocker, global_config):
                     group=group,
                 )
 
-            return "123"
+            return '1'
 
     return _test_page_data
         
 
-            
+    
+@pytest.fixture
+def get_test_result():
+    result = TestResult.objects.all().first()
+    
+    if result:
+        return result.test
+    else:
+        return None
+
 
 
 

@@ -43,7 +43,7 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        is_special_user = user.is_staff or user.is_superuser or user.owner
+        is_special_user = user.is_staff or user.is_superuser or user.teacher
 
 
         if is_special_user:

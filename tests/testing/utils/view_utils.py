@@ -1,13 +1,41 @@
 from datetime import datetime, timedelta
 import logging
-from random import choice, choices
+from random import choice, choices, randint
 
+from django.db.models import QuerySet
 from django.utils import duration, timezone
 from django.utils.timezone import localtime, make_aware, now
 
-from tests.models import TestResult, Tests, TestsReviews
+from tests.models import Categories, TestResult, Tests, TestsReviews
 
 test_logger = logging.getLogger('test_logger')
+
+def create_category(random_data: bool) -> QuerySet:
+    if random_data:
+        category_data = []
+
+        for i in range(randint(2, 5)):
+            category_obj = Categories(
+                name=f"testCategory {i}",
+                slug=f"test_category_{i}",
+            )
+
+            category_data.append(category_obj)
+                
+        Categories.objects.bulk_create(category_data)
+
+        category = Categories.objects.all()
+        test_logger.info(f"Категории {category}")
+    else:
+        Categories.objects.create(
+            name=f"testCategory",
+            slug=f"test_category"
+        )
+
+        category = Categories.objects.all()
+        test_logger.info(f"Категории {category}")
+
+    return category
 
 def create_tests(categories, user, group, count_tests, random_data: bool):
     test_logger.info("Начинаем тест my_view")

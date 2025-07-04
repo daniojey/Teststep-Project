@@ -251,6 +251,7 @@ class Answer(models.Model):
 
 
 class TestResult(models.Model):
+    __test__ = False 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_results')
     test = models.ForeignKey(Tests, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, related_name='test_results', blank=True, null=True)
@@ -276,6 +277,7 @@ class TestResult(models.Model):
     
 
 class TestsReviews(models.Model):
+    __test__ = False 
     test = models.ForeignKey(Tests, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_reviews')
     date_taken = models.DateTimeField(auto_now_add=True)
