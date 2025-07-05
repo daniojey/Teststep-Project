@@ -1,11 +1,19 @@
 from urllib import response
+from django.contrib.auth import login
 from django.urls import reverse
 import pytest
 import test
-from conftests import test_page_data, global_config, test_user, users_data, get_test_result
+from conftests import (
+    test_page_data, 
+    global_config, 
+    test_user, 
+    users_data, 
+    get_test_result,
+    create_one_test
+)
 import logging
 
-from tests.models import TestResult
+from tests.models import TestResult, Tests
 
 test_logger = logging.getLogger('test_logger')
 
@@ -148,3 +156,47 @@ def test_rating_test_page(client, global_config, users_data, get_test_result):
         assert response.context['test_name'] == test.name
 
     test_logger.info(f"{get_test_result}")
+
+
+# Проверка главной странички для учителей
+@pytest.mark.run(order=5)
+@pytest.mark.django_db
+def test_all_tests_page_superuser(client, users_data, global_config):
+    user = users_data['testuser']
+    assert user
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+
+    response = client.get(reverse('tests:all_tests'))
+    assert response.status_code == 302
+
+@pytest.mark.run(order=6)
+@pytest.mark.django_db
+def test_all_tests_page_superuser(client, users_data, global_config):
+    superuser = users_data['testsuperuser']
+    assert superuser
+    login = client.login(username=superuser['username'], password=superuser['password'])
+    assert login 
+
+    response = client.get(reverse('tests:all_tests'))
+    assert response.status_code == 200
+    assert len(response.context['tests']) == global_config.all_tests
+    assert "tests/all_tests.html" in [t.name for t in response.templates]
+
+
+@pytest.mark.run(order=7)
+@pytest.mark.django_db
+def test_all_tests_page_teacher(client, users_data, global_config, create_one_test):
+    teacher = users_data['testteacher']
+    login = client.login(username=teacher['username'], password=teacher['password'])
+    assert login
+
+    create_one_test(user=pytest.test_teacher, group=pytest.test_teacher.group.first())
+
+    response = client.get(reverse('tests:all_tests'))
+    assert response.status_code == 200
+
+    assert len(response.context['tests']) == 1
+
+
+

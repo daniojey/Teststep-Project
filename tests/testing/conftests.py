@@ -6,6 +6,7 @@ from unicodedata import category
 from wsgiref.util import request_uri
 
 from django.utils import duration
+from django.utils import timezone
 from django.utils.timezone import make_aware, timedelta
 from tests.admin import date_in, date_out
 from tests.models import Categories, TestResult, Tests
@@ -28,6 +29,10 @@ def users_data():
         },
         'testsuperuser': {
             'username': 'testsuperuser',
+            'password': 'testpass123',
+        },
+        'testteacher': {
+            'username': 'testteacher',
             'password': 'testpass123',
         }
     }
@@ -54,7 +59,7 @@ def test_super_user(db):
 def test_user(db):
     return User.objects.create_user(
         username="testuser",
-        email="3@gmail.com",
+        email="5@gmail.com",
         password="testpass123",
     )
 
@@ -82,13 +87,23 @@ def test_page_data(django_db_setup, django_db_blocker, global_config):
                 password="testpass123",
             )
 
-            pytest.test_user = user
+            teacher = User.objects.create_user(
+                username='testteacher',
+                email="4@gmail.com",
+                password='testpass123',
+                is_staff=True,
+                teacher=True,
+            )
+            
+            pytest.test_superuser = user
+            pytest.test_student = student
+            pytest.test_teacher = teacher
 
             group = Group.objects.create(
                 name="testGroup",
             )
 
-            group.members.set((user.id, student.id))
+            group.members.set((user.id, student.id, teacher.id))
 
             test_logger.info(f'MEMBERS {group.members.all()}')
 
@@ -153,6 +168,27 @@ def get_test_result():
     else:
         return None
 
+
+@pytest.fixture
+def create_one_test(db):
+    def _create_one_test(user, group):
+        test = Tests.objects.create(
+            user=user,
+            group=group,
+            name=f"TEST {user.username}",
+            description=f"test desc",
+            duration = timedelta(minutes=30),
+            date_in=timezone.now(),
+            date_out=timezone.now() + timedelta(weeks=2),
+            category=Categories.objects.first(),
+            check_type=choices(["auto","manual"]),
+        )
+
+        test_logger.info(f"{test}")
+
+        return test
+
+    return _create_one_test
 
 
 

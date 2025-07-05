@@ -34,6 +34,7 @@ class Tests(models.Model):
         (AUTO_CHECK, 'Авто-перевірка')
     ]
 
+    __test__ = False 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tests')
     students = models.ManyToManyField(User, related_name='tests', blank=True)
     group = models.ForeignKey(Group, related_name='test_group', on_delete=models.CASCADE)
