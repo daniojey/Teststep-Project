@@ -209,24 +209,7 @@ AUTHENTICATION_BACKENDS = (
 #  # Для тестирования
 
 # Включаем поддержку отправки писем в Django
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
-EMAIL_PORT = config('EMAIL_PORT', cast=int) # Используем порт для TLS
-
-# Данные для авторизации
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
-# Безопасное соединение
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)  # Используется чаще всего
-# EMAIL_USE_SSL = True # Для некоторых серверов можно вместо TLS
-
-# Указываем «с обратным адресом» для всех писем
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'DEFAULT_SECRET_KEY')
 
@@ -260,57 +243,6 @@ if DEBUG:
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 # НАСТРОЕЧКИ для AMAZON S3
-
-# Настройки для использования S3
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
-
-# Указываем, что файлы должны быть публичными
-AWS_DEFAULT_ACL = 'public-read'
-
-# Настройки для хранения медиа файлов на S3 и для тестов исполбьзуем локальное хранилище
-# if "test" in sys.argv:
-#     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-# else:
-#     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-# # Настройки для статических файлов (если нужно)
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-if "test" in sys.argv:
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        }
-    }
-else:
-    STORAGES = {
-        "default": {
-            "BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'
-            },
-        'staticfiles': {
-            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
-        }
-    }
-
-# Политика для загрузки файлов
-AWS_DEFAULT_ACL = None
-
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-
-AWS_MEDIA_LOCATION = 'media'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/'
-
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-    'ContentDisposition': 'inline',
-}
 
 
 UNFOLD = {
@@ -490,6 +422,11 @@ if DEBUG:
                 'encoding': 'utf-8',
                 'mode': 'w',
             },
+            # "logtail": {
+            #     "class": "logtail.LogtailHandler",
+            #     "source_token": config("BETTERSTACK_SOURCE_TOKEN"),
+            #     "host": config("INGESTING_HOST"),
+            # }
         },
         'loggers': {
             'test_logger': {
@@ -500,108 +437,98 @@ if DEBUG:
         }
     }
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters" : {
-#         "verbose": {
-#             "format": "{levelname} {asctime} {module} {message}",
-#             "style": "{"
-#         },
-#         'simple': {
-#             "format": "{levelname} {message}",
-#             "style": "{"
-#         },
-#         "detailed": {
-#             "format": "{levelname}|{asctime}|{pathname}:{lineno}| {message} {exc_info}",
-#             "style": "{",
-#         }
-#     },
-#     "handlers": {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#         },
+ENABLE_SMTP = config('ENABLE_SMTP', default=False)
+ENABLE_S3 = config('ENABLE_S3', default=False)
+ENABLE_SENTRY = config('ENABLE_SENTRY', default=False)
 
-#         # "sql_file": {
-#         #     "level": "DEBUG",
-#         #     "class": "logging.FileHandler",
-#         #     "filename": BASE_DIR / "logs"/ "sql.log",
-#         #     "formatter": "verbose"
-#         # },
+print(type(ENABLE_S3), ENABLE_S3)
 
-#         # "debug_log": {
-#         #     "level": "DEBUG",
-#         #     "class": "logging.FileHandler",
-#         #     "filename": BASE_DIR / "logs"/ "debug.log",
-#         #     "formatter": "verbose"
-#         # },
+if ENABLE_SMTP == 'True':
+    print('ENABLE_SMTP')
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-#         # "error_file": {
-#         #     "level": "ERROR",
-#         #     "class": "logging.FileHandler",
-#         #     "filename": BASE_DIR / "logs"/ "errors.log",
-#         #     "formatter": "detailed",
-#         # },
-#         # "warning_file": {
-#         #     "level": "WARNING",
-#         #     "class": "logging.FileHandler",
-#         #     "filename": BASE_DIR / "logs"/ "warnings.log",
-#         #     "formatter": "detailed"
-#         # },
-#         # "critical_errors": {
-#         #     "level": "CRITICAL",
-#         #     "class": "logging.handlers.RotatingFileHandler",
-#         #     "filename": BASE_DIR / "logs" / "critical.log",
-#         #     "formatter": "detailed",
-#         #     "maxBytes": 5 * 1024 * 1024,  # 5MB
-#         #     "backupCount": 3,  # Хранить 3 старых файла
-#         # },
+    EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
+    EMAIL_PORT = config('EMAIL_PORT', cast=int) # Используем порт для TLS
 
-#         # "console_log": {
-#         #     "level": "INFO",
-#         #     "class": "logging.StreamHandler",
-#         #     "formatter": "verbose"
-#         # },
+    # Данные для авторизации
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
-#         "logtail": {
-#             "class": "logtail.LogtailHandler",
-#             "source_token": config("BETTERSTACK_SOURCE_TOKEN"),
-#             "host": config("INGESTING_HOST"),
-#         }
+    # Безопасное соединение
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)  # Используется чаще всего
+    # EMAIL_USE_SSL = True # Для некоторых серверов можно вместо TLS
 
-#     },
-#     "loggers": {
-#         "django.db.backends": {
-#             "handlers": ["console"],
-#             "level": "DEBUG",
-#             "propagate": True,
-#         },
-
-#         "django": {
-#             "handlers": ["console"],
-#             "level": "DEBUG",
-#             "propagate": False,
-#         },
-#         "django.request": {
-#             "handlers": [ "logtail", "console",],
-#             "level": "ERROR",
-
-#         }
-#     },
-# }
+    # Указываем «с обратным адресом» для всех писем
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-SENTRY_DSN = config('SENTRY_DSN', default=None)
+if ENABLE_S3 == 'True':
+    print('S3 ENABLED')
+    # Настройки для использования S3
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        send_default_pii=True,
-        integrations=[
-            DjangoIntegration(
-                transaction_style='function_name'
-            )
-        ],
-        traces_sample_rate=1.0,
+    # Указываем, что файлы должны быть публичными
+    AWS_DEFAULT_ACL = 'public-read'
 
-    )
+    # Настройки для хранения медиа файлов на S3 и для тестов исполбьзуем локальное хранилище
+    # if "test" in sys.argv:
+    #     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    # else:
+    #     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    # # Настройки для статических файлов (если нужно)
+    # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    if "test" in sys.argv:
+        STORAGES = {
+            "default": {
+                "BACKEND": "django.core.files.storage.FileSystemStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            }
+        }
+    else:
+        STORAGES = {
+            "default": {
+                "BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'
+                },
+            'staticfiles': {
+                'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
+            }
+        }
+
+    # Политика для загрузки файлов
+    AWS_DEFAULT_ACL = None
+
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+    AWS_MEDIA_LOCATION = 'media'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/'
+
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+        'ContentDisposition': 'inline',
+    }
+
+
+if ENABLE_SENTRY == 'True':
+    print('ENABLE SENTRY') 
+    SENTRY_DSN = config('SENTRY_DSN', default=None)
+
+    if SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            send_default_pii=True,
+            integrations=[
+                DjangoIntegration(
+                    transaction_style='function_name'
+                )
+            ],
+            traces_sample_rate=1.0,
+
+        )
