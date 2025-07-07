@@ -52,6 +52,7 @@ class Group(models.Model):
         return self.name
 
     class Meta:
+        ordering = ['name']
         db_table = 'group'
         verbose_name = 'Група'
         verbose_name_plural = 'Групи'

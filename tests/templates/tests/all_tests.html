@@ -18,7 +18,20 @@
             {% endif %}
         </div>
     </div> {% endcomment %}
-    
+    <div class='base-filter-container'>
+        <h3>Пошук</h3>
+        <form method='get' id='filterForm' class='filter-form'>
+            <select class="custom-select" name="category" id="category">
+                <option value="">Без категорії</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}" {% if request.GET.category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            <input class="custom-input" type="text" name='search' {% if request.GET.search %}value="{{ request.GET.search }}"{% endif %}>
+            <button type="submit" class="submit-btn">Пошук</button>
+        </form>
+    </div>
     
     <div class='my-test-container'>
         <div class='my-test-container-header'>
@@ -27,7 +40,7 @@
         </div>
 
         <div class="tests-sorted-container">
-            {% for test in tests %}
+            {% for test in page_obj %}
             <a href="{% url "tests:add_questions" test_id=test.id %}" class="test-item-link">
                 <div class="test-item"
                 data-bg="{% if test.image %}{{ test.image.url }}{% else %}{% static "images/default_image.jpg" %}{% endif %}">
@@ -45,6 +58,34 @@
             </a>    
             {% endfor %}
         </div>
+
+        {% if paginate_active %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                    <div class='page-text-links'>
+                        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class='text-link'>Перша</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class='text-link-preview'>Назад</a>
+                    </div>
+                    {% endif %}
+            
+                    <div class='page-number-container'>
+                        {% for page in page_obj.paginator.page_range %}
+                        {% if page >= page_obj.number|add:-2 and page <= page_obj.number|add:2 %}
+                            <a href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" {% if page == page_obj.number %} class="page-number active" {% else %} class='page-number'{% endif %}>{{ page }}</a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+            
+                    {% if page_obj.has_next %}
+                    <div class='page-text-links'>
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class='text-link-next'>Наступна</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" class='text-link'>Остання</a>
+                    </div>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
     </div>
     <script src="{% static "js/image_lazy_loading.js" %}"></script>
 </body>

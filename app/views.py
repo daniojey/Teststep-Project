@@ -10,26 +10,6 @@ import requests
 from tests.models import TestResult, Tests, TestsReviews
 
 class IndexView(LoginRequiredMixin, TemplateView):
-    """
-    View to render the main index page for logged-in users.
-
-    This view displays tests associated with the current user, grouped into
-    categories such as completed tests, uncompleted tests, and tests awaitin review.
-    It also provides information about the user's group memebership.
-
-    
-    Attributes
-    ----------
-    template_name : str
-        The path to the template user for renedering the index page.
-
-    
-    Methods
-    -------
-    get_context_data(**kwargs)
-        Adds custom context data for the template, including tests categorized
-        by their status(completed, uncompleted, or awaiting review) and the user`s group
-    """
     template_name = 'app/index.html'
 
     def get_context_data(self, **kwargs):

@@ -1,7 +1,99 @@
+.base-filter-container {
+    display: flex;
+    position: relative;
+    max-width: calc(100% - 120px);
+    width: 100%;
+    background-color: #363242;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 0 auto;
+    margin-top: 20px;
+    align-items: center;
+    justify-content: center;
+
+    h3 {
+        position: absolute;
+        left: 24px;
+        color: #FFF;
+        font-family: Roboto;
+        font-size: 24px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+        white-space: nowrap
+    }
+}
+
+.filter-form {
+    display: flex;
+    gap: 15px;
+    width: 70%;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-select {
+    height: 57px;
+    /* width: 100%;
+    max-width: 200px; */
+    padding: 10px;
+    padding-right: 40px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    background: #363242;
+    border: 1px solid #FFF;
+    border-radius: 12px;
+    appearance: none; /* Убираем стандартную стрелочку */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 24px; /* Размер стрелки */
+}
+
+
+.custom-input {
+    display: flex;
+    max-width: 350px;
+    padding: 16px 12px;
+    background-color: #363242;
+    border: 1px solid rgba(255, 255, 255, 0.60);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 18px;
+    width: 100%;
+    height: 57px;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.40);
+        font-family: Roboto;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 146%; /* 26.28px */
+    }
+}
+
+.submit-btn {
+    width: 100px;
+    height: 57px;
+    background-color: #6f42c1;
+    border-radius: 12px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 146%; /* 29.2px */
+}
+
 .my-test-container{
     overflow: auto;
     margin: 0 auto;
-    margin-top: 60px;
+    margin-top: 20px;
     margin-bottom: 30px;
     padding: 24px;
     max-width: calc(100% - 120px);
@@ -55,8 +147,134 @@
     color: #FFF;
 }
 
+.pagination {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.step-links {
+    display: flex;
+    gap: 15px;
+}
+
+.page-text-links {
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.3s ease forwards;
+
+    a {
+        background-color: #7260F5;
+        color: #FFF;
+        font-family: Roboto;
+        padding: 7px 12px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: normal;
+        text-decoration: none;
+        border: 0.5px solid #7260F5;
+        transition: color 0.4s ease-out, background-color 0.4s ease-out;
+
+        &:hover {
+            color: #7260F5;
+            background-color: #FFF;
+        }
+    }
+    
+}
+
+.page-number-container {
+    display: flex;
+    gap: 6px;
+
+    .page-number {
+        background-color: #7260F5;
+        color: #FFF;
+        font-family: Roboto;
+        padding: 7px 9px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: normal;
+        text-decoration: none;
+        border: 0.5px solid #7260F5;
+        transition: color 0.4s ease-out, background-color 0.4s ease-out;
+
+        &:hover {
+            color: #7260F5;
+            background-color: #FFF;
+        }
+    }
+
+    .page-number.active {
+        color: rgb(121, 121, 121);
+        background-color: #363242;
+        pointer-events: none;
+    }
+}
+
+@keyframes fadeIn{
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 1050px) {
+    .base-filter-container {
+        h3 {
+            display: none;
+        }
+    }
+
+    .filter-form {
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 800px) {
+    .filter-form {
+        flex-direction: column;
+        padding: 0px 35px;
+    }
+
+    .custom-select {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .custom-input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .submit-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+
+
+}
+
+@media (max-width: 680px) {
+    .page-text-links {
+        display: none;
+    }
+}
+
 
 @media (max-width: 500px) {
+    .base-filter-container {
+        max-width: calc(100% - 30px);
+    }
+
     .my-test-container {
         max-width: calc(100% - 30px);
         margin-bottom: 20px;

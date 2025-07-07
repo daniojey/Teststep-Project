@@ -8,6 +8,7 @@ from pprint import pprint
 import random
 import base64
 from datetime import datetime, timedelta
+from unicodedata import category
 from wsgiref.util import request_uri
 
 # Импортируем библиотеки Django
@@ -19,6 +20,7 @@ from django.db.models import F, ExpressionWrapper, Prefetch, Sum, fields
 from django.forms import ClearableFileInput, DateInput, DateTimeInput, NumberInput, TextInput, Textarea
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
 from django.utils.timezone import localtime, now
 from django.urls import reverse, reverse_lazy
 from django.core.files.base import ContentFile
@@ -230,15 +232,48 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        category = self.request.GET.get('category', None)
+        search = self.request.GET.get('search', None)
+
+        page = self.request.GET.get('page', 1)
+        page_size = 10
+
+        categories = Categories.objects.all()
+
         # Если админ то отображаем все тесты, иначе только тесты текущего пользователя
         if self.request.user.is_superuser:
-            tests = Tests.objects.all()
+            tests = Tests.objects.all().order_by('-date_taken')
+
+            if category:
+                category_filter = Categories.objects.get(name=category)
+                print(category_filter)
+                tests = tests.filter(category=category_filter)
+            
+            if search:
+                tests = tests.filter(name__icontains=search)
+
         else:
-            tests = Tests.objects.filter(user=self.request.user)
+            tests = Tests.objects.filter(user=self.request.user).order_by('-date_taken')
+
+            if category:
+                category_filter = Categories.objects.get(name=category)
+                print(category_filter)
+                tests = tests.filter(category=category_filter)
+            
+            if search:
+                tests = tests.filter(name__icontains=search)
+
+                
+        paginator = Paginator(tests, page_size)
+
+        page_obj = paginator.get_page(page)
 
         context.update({
+            'page_obj': page_obj,
             'tests': tests,
-            'active_tab': 'my_tests'
+            'active_tab': 'my_tests',
+            'paginate_active': True if paginator.count > page_size else None,
+            'categories': categories 
         })
 
         return context
