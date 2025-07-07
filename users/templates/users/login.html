@@ -44,8 +44,10 @@
                         data-eye-open="{% static 'icons/mdi_eye.svg' %}" 
                         data-eye-closed="{% static 'icons/mdi_eye-off.svg' %}">
                     </div>
-
-                    <a href="{% url "users:reset_password" %}" class="password-link">Забули пароль ?</a>
+                    
+                    {% if smtp_work %}
+                        <a href="{% url "users:reset_password" %}" class="password-link">Забули пароль ?</a>
+                    {% endif %}
 
                     <button type="submit" class="submit-btn">Увійти</button> 
 

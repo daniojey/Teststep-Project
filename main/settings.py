@@ -460,6 +460,8 @@ if ENABLE_SMTP == 'True':
 
     # Указываем «с обратным адресом» для всех писем
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 if ENABLE_S3 == 'True':

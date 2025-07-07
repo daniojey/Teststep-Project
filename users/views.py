@@ -6,15 +6,14 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import View
 import xml.etree.ElementTree as ET
-from django.views.decorators.csrf import csrf_exempt
-from tests.models import TestResult, TestsReviews
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from users.custom_utils.parser_utils import exel_parser, xml_parser
 from .utils import is_blocked
 from django.db import transaction
+from main.settings import ENABLE_SMTP
 
 from .models import LoginAttempt, User
 
@@ -88,6 +87,7 @@ class UserLoginView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['smtp_work'] = True if ENABLE_SMTP == 'True' else False
         context["title"] = "LOGIN"
         return context
 

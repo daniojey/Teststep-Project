@@ -16,7 +16,7 @@ SECURE_HSTS_PRELOAD = False
 
 LOGGING = {}
 
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
+if not DEBUG and ENABLE_SMTP == 'True':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
