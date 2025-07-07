@@ -1,5 +1,4 @@
 import os
-from tkinter import CASCADE
 from uuid import uuid4
 from pathlib import Path
 from django.db import models
