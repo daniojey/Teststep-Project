@@ -13,7 +13,7 @@ from wsgiref.util import request_uri
 
 # Импортируем библиотеки Django
 from django.utils import timezone
-from django.views.generic import FormView, TemplateView, UpdateView
+from django.views.generic import FormView, TemplateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.db.models import F, ExpressionWrapper, Prefetch, Sum, fields
@@ -28,6 +28,7 @@ from django.views import View
 
 # Библиотеки проекта
 from common.mixins import CacheMixin
+from tests.permissions import TestcheckOwnerOrAdminMixin, CheckPersonalMixin
 from tests.utils import check_min_datetime, send_emails_from_users
 from users.models import Group, User
 from .models import Categories, MatchingPair, QuestionGroup, TestResult, Tests, Question, Answer, TestsReviews
@@ -293,7 +294,7 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
 #     return render(request, 'tests/all_tests.html', {'tests': tests, "active_tab": "my_tests"})
 
 
-class CreateTestView(LoginRequiredMixin, FormView):
+class CreateTestView(LoginRequiredMixin,CheckPersonalMixin, FormView):
     template_name = 'tests/create_test.html'
     form_class = TestForm
 
@@ -449,14 +450,19 @@ class EditTestView(UpdateView):
     
 #     return render(request, 'tests/create_test.html', {'form': form})
 
+class DeleteTestView(TestcheckOwnerOrAdminMixin, View):
+    def post(self, request, *args, **kwargs):
+        test_id = kwargs.get('test_id', None)
+        if not test_id:
+            return Http404('Not found test')
+        
+        test = get_object_or_404(Tests, id=test_id)
+        test.delete()
 
-def delete_test(request, test_id):
-    test = get_object_or_404(Tests, id=test_id)
-    test.delete()
-    return redirect('app:index')
+        return redirect(reverse_lazy('app:index'))
 
 
-class AddQuestionGroupView(LoginRequiredMixin, FormView):
+class AddQuestionGroupView(LoginRequiredMixin,TestcheckOwnerOrAdminMixin, FormView):
     template_name = 'tests/adq.html'
     form_class = QuestionGroupForm
 
@@ -493,7 +499,7 @@ class AddQuestionGroupView(LoginRequiredMixin, FormView):
 #     return render(request, 'tests/adq.html', context=context)
     
 
-class AddQuestionsView(LoginRequiredMixin, TemplateView):
+class AddQuestionsView(LoginRequiredMixin,TestcheckOwnerOrAdminMixin, TemplateView):
     template_name = 'tests/add_questions.html'
 
     def get_context_data(self, **kwargs):
@@ -653,19 +659,31 @@ class AddQuestionsView(LoginRequiredMixin, TemplateView):
 
 #     return render(request, 'tests/add_questions.html', context=context)
 
+class DeleteQuestionView(CheckPersonalMixin, View):
+    def post(self, request, *args, **kwargs):
+        question_id = kwargs.get('question_id', None)
+        if not question_id:
+            return Http404('Question not found')
 
-def delete_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
-    test = get_object_or_404(Tests, id=question.test.id)
-    question.delete()
-    return redirect('tests:add_questions', test_id=test.id)
+        question = get_object_or_404(Question.objects.select_related('test'), id=question_id)
+        
+        test = question.test
+        question.delete()
+
+        return redirect('tests:add_questions', test_id=test.id)
+
+# def delete_question(request, question_id):
+#     question = get_object_or_404(Question, id=question_id)
+#     test = get_object_or_404(Tests, id=question.test.id)
+#     question.delete()
+#     return redirect('tests:add_questions', test_id=test.id)
 
 
 def complete_questions(request, test_id):
     return redirect('app:index')
 
 
-class AddAnswersView(LoginRequiredMixin, FormView):
+class AddAnswersView(LoginRequiredMixin,CheckPersonalMixin, FormView):
     template_name = 'tests/add_answer.html'
     form_class = AnswerForm
 
@@ -781,17 +799,24 @@ class SaveCorrectView(View):
             ...
 
         return redirect(reverse('tests:add_questions', args=[question.test.id]))
+    
+
+class DeleteAnswerView(CheckPersonalMixin, View):
+    def post(self, request, *args, **kwargs):
+        answer_id = kwargs.get('answer_id', None)
+        if not answer_id:
+            Http404('Answer not found')
+
+        answer = get_object_or_404(Answer.objects.select_related('question'), id=answer_id)
+        question = answer.question
+
+        answer.delete()
+        return redirect('tests:add_answers', question_id=question.id)
 
 
-def delete_answer(request, answer_id):
-    answer = get_object_or_404(Answer, id=answer_id)
-    question = get_object_or_404(Question, id=answer.question.id)
-    answer.delete()
-    question.update_question_score()
-    return redirect('tests:add_answers', question_id=question.id)
 
 
-class AddMathicngPairView(LoginRequiredMixin, FormView):
+class AddMathicngPairView(LoginRequiredMixin,DeleteAnswerView, FormView):
     template_name = 'tests/add_answer.html'
     form_class = MatchingPairForm
 
@@ -829,13 +854,18 @@ class AddMathicngPairView(LoginRequiredMixin, FormView):
 
         return context
 
+class DeleteMatchingPairView(CheckPersonalMixin, View):
+    def post(self, request, *args, **kwargs):
+        matching_pair_id = kwargs.get('pair_id', None)
+        if not matching_pair_id:
+            Http404('Mathing pair not found')
 
-def delete_matching_pair(request, pair_id):
-    matching_pair = get_object_or_404(MatchingPair, id=pair_id)
-    question = get_object_or_404(Question, id=matching_pair.question.id)
-    matching_pair.delete()
-    question.update_question_score()
-    return redirect('tests:add_matching_pair', question_id=question.id)
+        matching_pair = get_object_or_404(MatchingPair.objects.select_related('question'), id=matching_pair_id)
+        question = matching_pair.question
+        matching_pair.delete()
+        return redirect('tests:add_matching_pair', question_id=question.id)
+
+
 
 class ChangeQuestionScoreView(View):
     def post(self, request, ids=None, *args, **kwargs):
@@ -1656,7 +1686,7 @@ def success_manual_test(request):
     return render(request, 'tests/success_page_manual_test.html')
 
 
-class TestsForReviewView(CacheMixin ,TemplateView):
+class TestsForReviewView(CheckPersonalMixin, CacheMixin ,TemplateView):
     template_name = 'tests/test_for_reviews.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -1759,7 +1789,7 @@ class TestsForReviewView(CacheMixin ,TemplateView):
 #     return render(request, 'tests/tr.html', context=context)
 
 
-class TestGroupReviewsView(TemplateView):
+class TestGroupReviewsView(CheckPersonalMixin, TemplateView):
     template_name = 'tests/test_group_reviews.html'
 
     def get_context_data(self, **kwargs):
