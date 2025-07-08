@@ -222,6 +222,9 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
     template_name = "tests/all_tests.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if request.user.is_anonymous:
+            return redirect(reverse_lazy('app:index'))
+
         if request.user.teacher or request.user.is_staff or request.user.is_superuser:
             pass
         else:
@@ -263,7 +266,7 @@ class AllTestsView(LoginRequiredMixin, TemplateView):
             if search:
                 tests = tests.filter(name__icontains=search)
 
-                
+
         paginator = Paginator(tests, page_size)
 
         page_obj = paginator.get_page(page)
