@@ -18,9 +18,3 @@
     EMAIL_USE_TLS= <True для HTTPS| False для HTTP>
 ```
 
-### 2️⃣ Django Secret key необхідний для доступу к проекту
->[Згенерувати ключ можна тут](https://djecrety.ir/)
-
-```env
-    DJANGO_SECRET_KEY = orz(0trfms-x^*c4+zjw(s-%rod^*&k6^5aqy@ysmhy8453fv8
-```
