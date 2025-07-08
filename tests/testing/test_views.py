@@ -1,6 +1,6 @@
 from urllib import response
 from django.contrib.auth import login
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 import pytest
 import test
 from conftests import (
@@ -161,14 +161,15 @@ def test_rating_test_page(client, global_config, users_data, get_test_result):
 # Проверка главной странички для учителей
 @pytest.mark.run(order=5)
 @pytest.mark.django_db
-def test_all_tests_page_superuser(client, users_data, global_config):
+def test_all_tests_page_user(client, users_data):
     user = users_data['testuser']
     assert user
     login = client.login(username=user['username'], password=user['password'])
     assert login
 
     response = client.get(reverse('tests:all_tests'))
-    assert response.status_code == 302
+    assert response.status_code == 403
+
 
 @pytest.mark.run(order=6)
 @pytest.mark.django_db
@@ -186,7 +187,7 @@ def test_all_tests_page_superuser(client, users_data, global_config):
 
 @pytest.mark.run(order=7)
 @pytest.mark.django_db
-def test_all_tests_page_teacher(client, users_data, global_config, create_one_test):
+def test_all_tests_page_teacher(client, users_data, create_one_test):
     teacher = users_data['testteacher']
     login = client.login(username=teacher['username'], password=teacher['password'])
     assert login
@@ -199,4 +200,52 @@ def test_all_tests_page_teacher(client, users_data, global_config, create_one_te
     assert len(response.context['tests']) == 1
 
 
+@pytest.mark.run(order=8)
+@pytest.mark.django_db
+def test_all_test_page_filtration(client, users_data, global_config):
+    if not global_config.random_data:
+        superuser = users_data['testsuperuser']
+        assert superuser
+        login = client.login(username=superuser['username'], password=superuser['password'])
+        assert login
+
+        url = reverse_lazy('tests:all_tests')
+        test_logger.info(f"url - {url}")
+
+
+        response = client.get(url)
+        assert response.status_code == 200
+        page_obj = response.context['page_obj']
+        # test_logger.info(f"{page_obj.paginator.count}")
+        assert page_obj.paginator.count == global_config.all_tests
+
+
+        test = Tests.objects.first()
+        assert test
+        test_logger.info(f'{test}')
+        response = client.get(f"{url}?search={test.name}")
+        assert response.status_code == 200
+        page_obj = response.context['page_obj']
+        assert page_obj.paginator.count == 1
+
+
+@pytest.mark.run(order=9)
+@pytest.mark.django_db
+def test_all_test_page_pagination(client, users_data, global_config):
+    superuser = users_data['testsuperuser']
+    assert superuser
+    login = client.login(username=superuser['username'], password=superuser['password'])
+    assert login
+
+    url = reverse_lazy('tests:all_tests')
+    response = client.get(url)
+
+    page_obj = response.context['page_obj']
+    last_page = page_obj.paginator.num_pages
+
+    if last_page > 1:
+        response = client.get(f"{url}?page={last_page}")
+        page_obj = response.context['page_obj']
+        test_logger.info(f"{len(page_obj)}")
+        assert page_obj.object_list
 

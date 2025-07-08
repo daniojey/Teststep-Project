@@ -4,10 +4,10 @@ from typing import Optional
 @dataclass
 class TestConfig:
     """Глобальный конфиг для фабрики и тестов"""
-    all_tests: int = 5
+    all_tests: int = 10
     test_reviews: bool = False
     test_results: bool = False
-    random_data: bool = True
+    random_data: bool = False
 
 
     # TODO Доп параметры пока не рабочие 
