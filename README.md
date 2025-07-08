@@ -140,11 +140,11 @@
 ### ⚙️ Налаштування та запуск
 1. Клонуйте проект (Для можливості клонування потрібно буде встановити [Github cli](https://git-scm.com/downloads))
 ```bash
-    git clone https://github.com/SashaAskub2003/Diploma.git
+    git clone https://github.com/daniojey/Pilot-project.git
 ```
 2. Перейдіть в папрку проекту після успішного клонування
 ```bash
-    cd Diploma
+    cd Pilot-project.git
 ```
 3. Створіть Віртуальне оточення за допомогою комманди
 ```bash
