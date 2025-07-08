@@ -219,19 +219,8 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 #     return render(request, 'tests/rating_test.html', context=context)
 
 
-class AllTestsView(LoginRequiredMixin, TemplateView):
+class AllTestsView(LoginRequiredMixin,CheckPersonalMixin, TemplateView):
     template_name = "tests/all_tests.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            return redirect(reverse_lazy('app:index'))
-
-        if request.user.teacher or request.user.is_staff or request.user.is_superuser:
-            pass
-        else:
-             return redirect(reverse_lazy('app:index'))
-        
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
