@@ -17,7 +17,7 @@ from conftests import (
 import logging
 
 from tests.models import Categories, TestResult, Tests
-from users.models import Group
+from users.models import Group, User
 
 test_logger = logging.getLogger('test_logger')
 
@@ -379,3 +379,49 @@ def test_edit_test_page_form_check(client, valid, status_code,  users_data, glob
         assert test.duration.total_seconds() != form_data['duration']
 
     
+
+# Тесты для удаления теста
+@pytest.mark.run(order=15)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user, status_code', [
+    (None, 403),
+    ('testuser', 403),
+    ('testteacher', 302),
+    ('testsuperuser', 302),
+])
+def test_delete_test_view(client,user, status_code,  users_data, global_config, create_one_test):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    user = users_data[user] if user != None else None
+    if user:
+        login = client.login(username=user['username'], password=user['password'])
+        assert login
+
+    if user:
+        test_logger.info(f"{user}")
+
+        if user['username'] == 'testuser':
+            model_user = User.objects.get(username=pytest.test_superuser.username)
+        else:
+            model_user = User.objects.get(username=user['username'])
+
+        group = model_user.group.first()
+
+        test_logger.info(f"{model_user} - {group}")
+        test = create_one_test(user=model_user, group=group)
+    else:
+        test = Tests.objects.first()
+
+    
+    url = reverse('tests:delete_test', kwargs={'test_id': test.id})
+
+    response = client.post(url)
+    test_logger.info(f"{response.status_code}")
+    assert response.status_code == status_code
+    # test.refresh_from_db()
+
+    if status_code == 302:
+        with pytest.raises(Tests.DoesNotExist):
+            Tests.objects.get(pk=test.pk)
+        
