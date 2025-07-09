@@ -335,7 +335,7 @@ class CreateTestView(LoginRequiredMixin,CheckPersonalMixin, FormView):
         return reverse('tests:add_questions', kwargs={'test_id': self.object.id})
     
 
-class EditTestView(UpdateView):
+class EditTestView(LoginRequiredMixin,CheckPersonalMixin, UpdateView):
     model=Tests
     template_name = "tests/edit_test.html"
     fields = ['name', 'description','image', 'duration', 'date_in','date_out', 'category', 'check_type']

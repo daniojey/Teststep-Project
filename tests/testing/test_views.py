@@ -291,8 +291,6 @@ def test_create_test_page_valid_data(client, users_data, form_data_from_test):
     assert response.status_code == 302
 
     assert Tests.objects.filter(name='test Created').exists()
-    # test_logger.info(f"{response.context.get('errors', None)}")
-    # test_logger.info(f"{response.context.get('detail_errors', None)}")
 
 
 @pytest.mark.run(order=12)
@@ -318,3 +316,66 @@ def test_create_test_page_not_valid_data(client, users_data, form_data_from_test
     assert 'category' in detail_errors
     assert 'group' in detail_errors
     assert 'raw_duration' in detail_errors
+
+
+# Тесты для страницы изменения теста
+@pytest.mark.run(order=13)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user, status_code', [
+    (None, 302),
+    ('testuser', 403),
+    ('testsuperuser', 200),
+    ('testteacher', 200),
+])
+def test_edit_test_page_status_code(client, user,status_code, users_data, global_config):
+    if global_config.all_tests > 0:
+        user = users_data[user] if user != None else None
+        test_logger.info(f"user -> {user}")
+
+        if user:
+            login = client.login(username=user['username'], password=user['password'])
+            assert login
+
+        test = Tests.objects.first()
+        url = reverse_lazy('tests:edit_test', kwargs={"pk": test.pk})
+
+        response = client.get(url)
+
+        test_logger.info(f"{response.status_code}")
+        assert response.status_code == status_code
+
+
+
+@pytest.mark.run(order=14)
+@pytest.mark.django_db
+@pytest.mark.parametrize('valid, status_code', [
+    (True, 302),
+    (False, 200),
+])
+def test_edit_test_page_form_check(client, valid, status_code,  users_data, global_config,form_data_from_test):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    superuser = users_data['testsuperuser']
+    assert superuser
+    login = client.login(username=superuser['username'], password=superuser['password'])
+    assert login
+
+    test = Tests.objects.first()
+    url = reverse_lazy('tests:edit_test', kwargs={'pk': test.pk})
+
+    if valid:
+        form_data = form_data_from_test(edit_test=test)
+    else:
+        form_data = form_data_from_test(edit_test=test, not_valid=True)
+
+    response = client.post(url, data=form_data)
+
+    test_logger.info(f"{response.status_code}")
+    assert response.status_code == status_code
+
+    if status_code == 302:
+        test.refresh_from_db()
+        assert test.duration.total_seconds() != form_data['duration']
+
+    

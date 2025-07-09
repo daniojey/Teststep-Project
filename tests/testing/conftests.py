@@ -193,8 +193,33 @@ def create_one_test(db):
 
 @pytest.fixture
 def form_data_from_test(db):
-    def _construct_data(category_id=None, group_id=None, not_valid=False) -> dict:
-        
+    def _construct_data(category_id=None, group_id=None, not_valid=False, edit_test=None) -> dict:
+        if edit_test:
+            if not_valid:
+                return {
+                    'name': edit_test.name,
+                    'description': edit_test.description,
+                    'duration': 'bob', # failed,
+                    'check_type': 'auto',
+                    'category': 99990,
+                    'group': 99999,
+                    'date_in': edit_test.date_in,
+                    'date_out': edit_test.date_out
+                }
+            
+            else:
+                return {
+                    'name': edit_test.name,
+                    'description': edit_test.description,
+                    'duration': 60,
+                    'check_type': edit_test.check_type,
+                    'category': edit_test.category.id,
+                    'group': edit_test.group.id,
+                    'date_in': edit_test.date_in,
+                    'date_out': edit_test.date_out
+                }
+
+
         if not_valid:
             data = {
                 'name': 'test 0',
