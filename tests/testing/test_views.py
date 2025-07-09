@@ -1,6 +1,8 @@
+from unicodedata import category
 from urllib import response
 from django.contrib.auth import login
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 import pytest
 import test
 from conftests import (
@@ -9,11 +11,13 @@ from conftests import (
     test_user, 
     users_data, 
     get_test_result,
-    create_one_test
+    create_one_test,
+    form_data_from_test
 )
 import logging
 
-from tests.models import TestResult, Tests
+from tests.models import Categories, TestResult, Tests
+from users.models import Group
 
 test_logger = logging.getLogger('test_logger')
 
@@ -249,3 +253,68 @@ def test_all_test_page_pagination(client, users_data, global_config):
         test_logger.info(f"{len(page_obj)}")
         assert page_obj.object_list
 
+
+# Тесты страницы создания тестов
+@pytest.mark.run(order=10)
+@pytest.mark.django_db
+def test_create_test_page_user(client, users_data):
+    test_logger.info(f"{Categories.objects.first().id} - {Group.objects.first().id}")
+    response = client.get(reverse('tests:create_test'))
+    assert response.status_code == 302
+
+    user = users_data['testuser']
+    assert user
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+
+    response = client.get(reverse('tests:create_test'))
+    assert response.status_code == 403
+
+
+@pytest.mark.run(order=11)
+@pytest.mark.django_db
+def test_create_test_page_valid_data(client, users_data, form_data_from_test):
+    teacher = users_data['testteacher']
+    assert teacher
+
+    login = client.login(username=teacher['username'], password=teacher['password'])
+    assert login
+
+    url = reverse('tests:create_test')
+
+    category_id = Categories.objects.first().id
+    group_id = Group.objects.first().id    
+
+    form_data = form_data_from_test(category_id, group_id)
+
+    response = client.post(url, data=form_data)
+    assert response.status_code == 302
+
+    assert Tests.objects.filter(name='test Created').exists()
+    # test_logger.info(f"{response.context.get('errors', None)}")
+    # test_logger.info(f"{response.context.get('detail_errors', None)}")
+
+
+@pytest.mark.run(order=12)
+@pytest.mark.django_db
+def test_create_test_page_not_valid_data(client, users_data, form_data_from_test):
+    teacher = users_data['testteacher']
+    assert teacher
+
+    login = client.login(username=teacher['username'], password=teacher['password'])
+    assert login
+
+    url = reverse('tests:create_test')
+
+    form_data = form_data_from_test(not_valid=True)
+    response = client.post(url, data=form_data)
+    assert response.status_code == 200
+    test_logger.info(f"{response.context.get('detail_errors', None)}")
+    detail_errors = response.context.get('detail_errors', None)
+    assert detail_errors
+
+    assert 'name' in detail_errors
+    assert 'description' in detail_errors
+    assert 'category' in detail_errors
+    assert 'group' in detail_errors
+    assert 'raw_duration' in detail_errors

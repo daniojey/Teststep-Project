@@ -191,6 +191,38 @@ def create_one_test(db):
     return _create_one_test
 
 
+@pytest.fixture
+def form_data_from_test(db):
+    def _construct_data(category_id=None, group_id=None, not_valid=False) -> dict:
+        
+        if not_valid:
+            data = {
+                'name': 'test 0',
+                'description': 'a' * 501,
+                # 'category': category_id,
+                'check_type': 'auto',
+                'raw_duration': '100xв',
+                # 'group': group_id,
+                'date_in': timezone.now(),
+                'date_out': timezone.now() + timezone.timedelta(weeks=2)
+            }
+
+        else:
+
+            data = {
+                'name': 'test Created',
+                'description': 'test desc',
+                'category': category_id,
+                'check_type': 'auto',
+                'raw_duration': 60,
+                'group': group_id,
+                'date_in': timezone.now(),
+                'date_out': timezone.now() + timezone.timedelta(weeks=2)
+            }
+
+        return data
+    return _construct_data
+
 
 
 

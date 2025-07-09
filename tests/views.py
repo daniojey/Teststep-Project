@@ -315,7 +315,14 @@ class CreateTestView(LoginRequiredMixin,CheckPersonalMixin, FormView):
             for error in field_errors:
                 errors.append(f"- {error}")
 
-        return self.render_to_response({'form': form, 'errors': errors})
+        return self.render_to_response({
+            'form': form,
+            'errors': errors, 
+            'detail_errors': {
+                key: value
+                for key, value in form.errors.items()
+            }
+            })
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
