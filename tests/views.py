@@ -591,9 +591,9 @@ class AddQuestionsView(LoginRequiredMixin,TestcheckOwnerOrAdminMixin, TemplateVi
 
                 test.save()
                 send_emails_from_users(data_users, test)
-                return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'})
+                return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'}, status=202)
             else:
-                return JsonResponse({'status': 'error', 'message': 'Opps, помилка'})
+                return JsonResponse({'status': 'error', 'message': 'Opps, помилка'}, status=400)
             
         
         context = self.get_context_data()
@@ -655,7 +655,7 @@ class AddQuestionsView(LoginRequiredMixin,TestcheckOwnerOrAdminMixin, TemplateVi
 
 #     return render(request, 'tests/add_questions.html', context=context)
 
-class DeleteQuestionView(CheckPersonalMixin, View):
+class DeleteQuestionView(LoginRequiredMixin, CheckPersonalMixin, View):
     def post(self, request, *args, **kwargs):
         question_id = kwargs.get('question_id', None)
         if not question_id:

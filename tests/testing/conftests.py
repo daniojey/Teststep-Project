@@ -276,7 +276,21 @@ def form_data_from_test(db):
 #         return data
 #     return _form_data_form_question
 
-
+@pytest.fixture
+def create_one_question(db):
+    def _create_one_question(test, question_group=None):
+        question = Question.objects.create(
+            test=test,
+            group=question_group if question_group else None,
+            scores_for=Question.SCORE_FOR_QUESTION,
+            scores=1,
+            text='question text',
+            question_type=Question.TEXT,
+            answer_type=Question.SINGLE_CHOICE,
+        )
+        return question
+    
+    return _create_one_question
 
 
 @pytest.fixture(params=[

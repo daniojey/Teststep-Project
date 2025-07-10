@@ -27,7 +27,7 @@ class TestcheckOwnerOrAdminMixin:
         if not hasattr(obj, 'user'):
             raise AttributeError('Неверный объект')
         
-        if obj.user != request.user and not request.user.is_superuser:
+        if obj.user != request.user and not request.user.is_staff and not request.user.is_superuser:
             raise PermissionDenied('Отказано в доступе')
     
         return super().dispatch(request, *args, **kwargs)

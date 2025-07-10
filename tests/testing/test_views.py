@@ -14,7 +14,8 @@ from conftests import (
     get_test_result,
     create_one_test,
     form_data_from_test,
-    question_combination
+    question_combination,
+    create_one_question
 )
 import logging
 
@@ -498,6 +499,32 @@ def test_add_question_group_created_from_teacher(client,user, question_group_nam
 # Тесты странци создания вопросов и добавления студентов
 
 @pytest.mark.run(order=18)
+@pytest.mark.django_db
+@pytest.mark.parametrize('username, status_code', [
+    (None, 302),
+    ('testuser', 403),
+    ('testteacher', 200),
+    ('testsuperuser', 200),
+])
+def test_create_question_response_code(client,username, status_code, users_data, global_config):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    test = Tests.objects.first()
+    user = users_data[username] if username else None
+
+    if user:
+        login = client.login(username=user['username'], password=user['password'])
+        assert login
+
+    url = reverse('tests:add_questions', kwargs={'test_id': test.id})
+
+    response = client.get(url)
+
+    assert response.status_code == status_code
+    
+
+@pytest.mark.run(order=19)
 def test_create_question_full_variants(client,users_data, question_combination):
     # test_logger.info(question_combination)
     superuser = users_data['testsuperuser']
@@ -514,3 +541,83 @@ def test_create_question_full_variants(client,users_data, question_combination):
     test = Tests.objects.get(id=test_id)
 
     assert len(test.questions.all()) == 1
+
+
+@pytest.mark.run(order=20)
+@pytest.mark.django_db
+@pytest.mark.parametrize('users, users_count, form_valid', [
+    (3, 3, True,),
+    (2, 2, True,),
+    (0, 0, True),
+    (0, 1, False), # superuser default user in all  test.students.all()
+])
+def test_create_questions_page_test_adding_students(client, users, users_count, form_valid, users_data, global_config):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    user = users_data['testsuperuser']
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+
+    test = Tests.objects.first()
+    test_logger.info(f"STUDENTS {test.students.all()}")
+
+    if users != 0:
+        users_set = set(User.objects.all().values_list('id', flat=True)[:users])
+    else:
+        users_set = set()
+
+    if form_valid:
+        form_data = {
+            'form_type': 'form_student',
+            'students': users_set,
+        }
+    else:
+        form_data = {
+            'form_type': 'form_student',
+            'students': 'bobfsdfsd'
+        }
+
+    url = reverse('tests:add_questions', kwargs={'test_id': test.id})
+
+    response = client.post(url, data=form_data)
+    assert response.status_code == 202 if form_valid else 404
+
+    test_logger.info(f"{test.students.all()}")
+    assert test.students.all().count() == users_count
+
+    test_logger.info(f"{users_set}")
+
+
+@pytest.mark.run(order=21)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user_name, status_code', [
+    (None, 302),
+    ('testuser', 403),
+    ('testteacher', 302),
+    ('testsuperuser', 302),
+])
+def test_delete_question(client,user_name ,status_code, users_data , create_one_question, global_config):
+    if global_config.all_tests == 0:
+        pytest.skip()
+    
+    test = Tests.objects.first()
+    question = create_one_question(test)
+
+    user = users_data[user_name] if user_name else None
+
+    if user:
+        login = client.login(username=user['username'], password=user['password'])
+        assert login
+
+    url = reverse('tests:delete_question', kwargs={'question_id': question.id})
+
+    response = client.post(url)
+
+    assert response.status_code == status_code
+
+    if user in ['testteacher', 'testsuperuser'] and status_code == 302:
+        with pytest.raises(Question.DoesNotExist):
+            question.refresh_from_db()
+
+
