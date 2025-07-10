@@ -484,7 +484,7 @@ if ENABLE_S3 == 'True':
     # # Настройки для статических файлов (если нужно)
     # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    if "test" in sys.argv:
+    if "pytest" in sys.argv:
         STORAGES = {
             "default": {
                 "BACKEND": "django.core.files.storage.FileSystemStorage",

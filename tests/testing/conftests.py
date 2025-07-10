@@ -9,11 +9,12 @@ from django.utils import duration
 from django.utils import timezone
 from django.utils.timezone import make_aware, timedelta
 from tests.admin import date_in, date_out
-from tests.models import Categories, TestResult, Tests
+from tests.models import Categories, Question, QuestionGroup, TestResult, Tests
 import pytest
 from random import choice, randint, choices
+from django.core.files.uploadedfile import SimpleUploadedFile
 
-from tests.testing.utils.view_utils import create_test_results, create_tests, create_test_reviews, create_category
+from tests.testing.utils.view_utils import create_image, create_test_results, create_tests, create_test_reviews, create_category
 from users.models import Group, User
 from config import СURRENT_CONFIG
 
@@ -252,4 +253,58 @@ def form_data_from_test(db):
 
 
 
-        
+# @pytest.fixture
+# def form_data_form_question(db):
+#     def _form_data_form_question(test,valid=True, scores_for=None ,question_type=None, answer_type=None,add_question_group=True):
+#         if valid:
+#             if add_question_group:
+#                 question_group =  QuestionGroup.objects.create(name='test question group')
+#             else:
+#                 question_group = None
+
+#             data = {
+#                 'form_type': 'question_form',
+#                 'test': test.id,
+#                 'group': question_group,
+#                 'scores_for': scores_for,
+#                 'text': 'Question text',
+#                 'question_type': question_type,
+#                 'answer_type': answer_type,
+#             }
+
+
+#         return data
+#     return _form_data_form_question
+
+
+
+
+@pytest.fixture(params=[
+    (score_type, q_type, a_type)
+    for score_type in [Question.SCORE_FOR_ANSWER, Question.SCORE_FOR_QUESTION]
+    for q_type in [Question.TEXT, Question.IMAGE, Question.AUDIO, Question.MATCHING]
+    for a_type in [Question.SINGLE_CHOICE, Question.MULTIPLE_CHOICE, Question.ANSWER_INPUT, Question.ANSWER_AUDIO]
+])
+def question_combination(request, create_one_test):
+    score_type, q_type, a_type = request.param
+    test_instance = create_one_test(pytest.test_superuser, pytest.test_superuser.group.first())
+
+    data = {
+        'form_type': 'form_question',
+        'test': test_instance.id,
+        'scores_for': score_type,
+        'scores': 1,
+        'question_type': q_type,
+        'answer_type': a_type,
+    }
+
+    if q_type == Question.IMAGE:
+        data['image'] = create_image()
+
+    if q_type == Question.AUDIO:
+        data['audio'] = SimpleUploadedFile("test.mp3", b"binary_data", content_type="audio/mpeg")
+
+    if q_type == Question.TEXT or q_type == Question.MATCHING:
+        data['text'] = "Sample question text"
+
+    return data

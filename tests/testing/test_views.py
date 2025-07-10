@@ -1,6 +1,7 @@
 from unicodedata import category
 from urllib import response
 from django.contrib.auth import login
+from django.core.exceptions import ValidationError
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 import pytest
@@ -12,11 +13,12 @@ from conftests import (
     users_data, 
     get_test_result,
     create_one_test,
-    form_data_from_test
+    form_data_from_test,
+    question_combination
 )
 import logging
 
-from tests.models import Categories, TestResult, Tests
+from tests.models import Categories, Question, QuestionGroup, TestResult, Tests
 from users.models import Group, User
 
 test_logger = logging.getLogger('test_logger')
@@ -425,3 +427,90 @@ def test_delete_test_view(client,user, status_code,  users_data, global_config, 
         with pytest.raises(Tests.DoesNotExist):
             Tests.objects.get(pk=test.pk)
         
+
+# Тесты для Добавления группы для вопросов в тест
+@pytest.mark.run(order=16)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user, status_code', [
+    (None, 302),
+    ('testuser', 403),
+    ('testteacher', 200),
+    ('testsuperuser', 200),
+])
+def test_add_question_group_response_code(client, user, status_code, users_data, global_config, create_one_test):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    user = users_data[user] if user != None else None
+    if user:
+        login = client.login(username=user['username'], password=user['password'])
+        assert login
+
+    if user:
+        if user['username'] == 'testuser':
+            model_user = User.objects.get(username=pytest.test_superuser.username)
+        else:
+            model_user = User.objects.get(username=user['username'])
+
+        group = model_user.group.first()
+
+        test = create_one_test(model_user, group)
+    else:
+        test = Tests.objects.first()
+
+
+    url = reverse('tests:add_question_group', kwargs={'test_id': test.id})
+    response = client.get(url)
+    assert response.status_code == status_code
+
+
+@pytest.mark.run(order=17)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user, question_group_name, status_code', [
+    ('testsuperuser','test question group', 302),
+    ('testsuperuser','', 200),
+    ('testteacher','test question group', 302),
+    ('testteacher','', 200),
+])
+def test_add_question_group_created_from_teacher(client,user, question_group_name, status_code, users_data, create_one_test, global_config):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    user = users_data[user]
+
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+    user_model = User.objects.get(username=user['username'])
+    group = user_model.group.first()
+    
+    test = create_one_test(user_model, group)
+    url = reverse('tests:add_question_group', kwargs={'test_id': test.id})
+
+    form_data = {'name': question_group_name}
+
+    response = client.post(url, data=form_data)
+    assert response.status_code == status_code
+
+    if status_code == 302:
+        assert QuestionGroup.objects.filter(name=question_group_name).exists()
+
+
+# Тесты странци создания вопросов и добавления студентов
+
+@pytest.mark.run(order=18)
+def test_create_question_full_variants(client,users_data, question_combination):
+    # test_logger.info(question_combination)
+    superuser = users_data['testsuperuser']
+    login = client.login(username=superuser['username'], password=superuser['password'])
+    assert login
+    test_id = question_combination['test']
+
+    url = reverse('tests:add_questions', kwargs={'test_id': test_id})
+
+    response = client.post(url, data=question_combination)
+    if response.context and response.context.get('errors', None):
+        test_logger.info(response.context['errors'])
+    assert response.status_code == 302
+    test = Tests.objects.get(id=test_id)
+
+    assert len(test.questions.all()) == 1

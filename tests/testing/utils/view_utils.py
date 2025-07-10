@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import logging
 from random import choice, choices, randint
+from io import BytesIO
+from PIL import Image
 
 from django.db.models import QuerySet
 from django.utils import duration, timezone
@@ -169,3 +171,12 @@ def create_test_reviews(user, test_count, group):
 
     test_logger.info(f"TEST_REVIEWS {test_reviews}")
     return test_reviews
+
+
+def create_image():
+    file = BytesIO()
+    image = Image.new('RGB', (1, 1), color='red')
+    image.save(file, 'jpeg')
+    file.name = 'test.jpg'
+    file.seek(0)
+    return file
