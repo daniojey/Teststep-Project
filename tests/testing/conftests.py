@@ -278,14 +278,14 @@ def form_data_from_test(db):
 
 @pytest.fixture
 def create_one_question(db):
-    def _create_one_question(test, question_group=None):
+    def _create_one_question(test, question_group=None, matching=False):
         question = Question.objects.create(
             test=test,
             group=question_group if question_group else None,
             scores_for=Question.SCORE_FOR_QUESTION,
             scores=1,
             text='question text',
-            question_type=Question.TEXT,
+            question_type=Question.MATCHING if matching else Question.TEXT,
             answer_type=Question.SINGLE_CHOICE,
         )
         return question
@@ -322,3 +322,107 @@ def question_combination(request, create_one_test):
         data['text'] = "Sample question text"
 
     return data
+
+
+@pytest.fixture(params=[
+    {
+        'score': 0.0,
+        'text': 'answer text',
+        'is_correct': True,
+        'valid': True,
+    },
+    {
+        'score': 3.0,
+        'text': 'answer text',
+        'is_correct': False,
+        'valid': True,
+    },
+    {
+        'score': 10.0,
+        'text': 'answer text',
+        'is_correct': True,
+        'valid': True,
+    },
+    {
+        'score': -10,
+        'text': 'answer text',
+        'is_correct': False,
+        'valid': False,
+    },
+    {
+        'score': -5,
+        'text': 'answer text',
+        'is_correct': True,
+        'valid': False,
+    },
+])
+def answers_form_data(request, create_one_test, create_one_question):
+    score = request.param['score']
+    text = request.param['text']
+    is_correct = request.param['is_correct']
+    valid = request.param['valid']
+
+    user = pytest.test_superuser
+    test = create_one_test(user, user.group.first())
+    question = create_one_question(test)
+
+    # test_logger.info(f"{score} - {text} - {is_correct} - {valid}")
+
+    data = {
+        'question': question.id,
+        'score': score,
+        'text': text,
+        'is_correct': is_correct,
+        'valid': valid
+    }
+
+    return data, question
+
+
+@pytest.fixture(params=[
+    {
+        'score': 10,
+        'left_item': 'l1 item',
+        'right_item': 5,
+        'valid': True,
+    },
+    {
+        'score': 10,
+        'left_item': 3,
+        'right_item': 'r2 item',
+        'valid': False,
+    },
+    {
+        'score': 10,
+        'left_item': 'l3 item',
+        'right_item': 3,
+        'valid': False,
+    },
+    {
+        'score': -10,
+        'left_item': 'l3 item',
+        'right_item': 'r3 item',
+        'valid': False,
+    },
+])
+def matching_pairs_form_data(request, create_one_test, create_one_question):
+    user = pytest.test_superuser
+
+    score = request.param['score']
+    left_item = request.param['left_item']
+    right_item = request.param['right_item']
+    valid = request.param['valid']
+    
+    test = create_one_test(user, user.group.first())
+    question = create_one_question(test, matching=True)
+
+    data = {
+        'question': question.id,
+        'score': score,
+        'left_item': left_item,
+        'right_item': right_item,
+        'valid': valid
+    }
+
+    return data, question
+

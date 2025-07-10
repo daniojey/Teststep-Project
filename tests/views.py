@@ -812,7 +812,7 @@ class DeleteAnswerView(CheckPersonalMixin, View):
 
 
 
-class AddMathicngPairView(LoginRequiredMixin,DeleteAnswerView, FormView):
+class AddMathicngPairView(LoginRequiredMixin, CheckPersonalMixin, FormView):
     template_name = 'tests/add_answer.html'
     form_class = MatchingPairForm
 

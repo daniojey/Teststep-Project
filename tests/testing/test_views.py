@@ -15,7 +15,9 @@ from conftests import (
     create_one_test,
     form_data_from_test,
     question_combination,
-    create_one_question
+    create_one_question,
+    answers_form_data,
+    matching_pairs_form_data
 )
 import logging
 
@@ -620,4 +622,54 @@ def test_delete_question(client,user_name ,status_code, users_data , create_one_
         with pytest.raises(Question.DoesNotExist):
             question.refresh_from_db()
 
+# Тесты для страниц добавления вопроса
+@pytest.mark.run(order=22)
+@pytest.mark.django_db
+def test_add_answers_page_add_answer(client, users_data,answers_form_data):
+    user = users_data['testsuperuser']
+    assert user
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
 
+    form_data, question = answers_form_data
+    valid_form = form_data['valid']
+
+    del form_data['valid']
+
+    url = reverse('tests:add_answers', kwargs={'question_id': question.id})
+
+    # test_logger.info(form_data)
+    response = client.post(url, data=form_data)
+    # test_logger.info(response.status_code)
+
+    assert response.status_code == 302 if valid_form else 200
+
+    if response.status_code == 200:
+        assert 'score' in [ error for error in response.context['form'].errors]
+        # assert response.context['form']
+
+
+@pytest.mark.run(order=23)
+@pytest.mark.django_db
+def test_add_matching_pairs_page_create(client,users_data, matching_pairs_form_data):
+    user = users_data['testsuperuser']
+    assert user
+
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+
+    form_data, question = matching_pairs_form_data
+    valid_form = form_data['valid']
+
+    question_found = Question.objects.filter(id=question.id).exists()
+    assert question_found
+    test_logger.info(question_found)
+
+    del form_data['valid']
+
+    url = reverse('tests:add_matching_pair', kwargs={'question_id': question.id})
+
+    test_logger.info(f"{url} - {form_data}")
+    response = client.post(url, data=form_data)
+    test_logger.info(response)
+    assert response.status_code == 302 if valid_form else 200
