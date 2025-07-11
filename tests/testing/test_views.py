@@ -1,3 +1,4 @@
+from re import A
 from unicodedata import category
 from urllib import response
 from django.contrib.auth import login
@@ -17,7 +18,8 @@ from conftests import (
     question_combination,
     create_one_question,
     answers_form_data,
-    matching_pairs_form_data
+    matching_pairs_form_data,
+    create_test_detail_data,
 )
 import logging
 
@@ -673,3 +675,104 @@ def test_add_matching_pairs_page_create(client,users_data, matching_pairs_form_d
     response = client.post(url, data=form_data)
     test_logger.info(response)
     assert response.status_code == 302 if valid_form else 200
+
+
+@pytest.mark.run(order=24)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user_name, status_code', [
+    (None, 302),
+    ('testuser', 200),
+    ('testteacher', 200),
+    ('testsuperuser', 200),
+])
+def test_preview_test_page_status_code(client,user_name, status_code, users_data, global_config):
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    test = Tests.objects.first()
+
+    user = users_data[user_name] if user_name else None
+
+    if user:
+        client.login(username=user['username'], password=user['password'])
+
+    url = reverse('tests:test_preview', kwargs={'test_id':test.id})
+
+    response = client.get(url)
+
+    assert response.status_code == status_code
+    
+    if response.status_code == 200:
+        assert response.context['test'] == test
+        assert response.context['open_test'] == True
+
+    
+@pytest.mark.run(order=25)
+@pytest.mark.django_db
+@pytest.mark.parametrize('user_name', [
+    ('testuser'),
+    ('testteacher'),
+    ('testsuperuser'),
+])
+def test_take_test_page_all_check(client, user_name, users_data, create_test_detail_data, global_config):
+    """ Проверяем правильность работы тестирования"""
+    #TODO Отсуцтвует проверка при начале теста что ученик есть в test.sudents из-за чего тест может начать любой ученик, исправить
+    if global_config.all_tests == 0:
+        pytest.skip()
+
+    user = users_data[user_name]
+    login = client.login(username=user['username'], password=user['password'])
+    assert login
+
+    test = Tests.objects.first()
+
+    questions = create_test_detail_data(test, questions=3)
+    test_logger.info(questions)
+
+    urls_count = len(questions) # Получаем необходимое количество
+
+    url = reverse('tests:take_test', kwargs={'test_id':test.id}) 
+
+    # Начинаем тест с первого запроса на страницу 
+    response = client.get(url)
+
+    test_logger.info(response.context['all_questions'])
+    # test_logger.info(response.wsgi_request.session.get('test_id'))
+    session = response.wsgi_request.session
+    # Проверяем то что сессия создалась и всё необходимое добавленно в сессию
+    assert response.status_code == 200
+    assert session.get('test_id', None)
+    assert session.get('test_start_time', None)
+    assert session.get('remaining_time', None)
+    assert session.get('question_order', None)
+
+    for i in range(urls_count):
+        test_logger.info(f"range_COUNT {i}")
+        current_question = response.context['question']
+
+        answer = current_question.answers.filter(is_correct=True).first()
+
+        test_logger.info(f"Answer - {answer}")
+
+        form_data = {
+            'answer': answer.id
+        }
+
+        response = client.post(url, data=form_data , follow=True)
+        session = response.wsgi_request.session
+
+        test_logger.info(f'COUNT_RESPONSE {response.status_code}')
+        test_logger.info(f'COUNT_RESPONSE {response.redirect_chain}')
+        test_logger.info(f'COUNT_RESPONSE {session.get('test_responses')}')
+
+
+    assert f"/testes/results/{test.id}/" in response.redirect_chain[0]
+
+    assert TestResult.objects.filter(test=test, user__username=user['username']).exists()
+    assert 'test_id' not in session
+    assert 'test_start_time' not in session
+    assert 'remaining_time' not in session
+    assert 'question_order' not in session
+
+
+    

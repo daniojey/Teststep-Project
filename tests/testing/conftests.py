@@ -9,7 +9,7 @@ from django.utils import duration
 from django.utils import timezone
 from django.utils.timezone import make_aware, timedelta
 from tests.admin import date_in, date_out
-from tests.models import Categories, Question, QuestionGroup, TestResult, Tests
+from tests.models import Answer, Categories, Question, QuestionGroup, TestResult, Tests
 import pytest
 from random import choice, randint, choices
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -426,3 +426,49 @@ def matching_pairs_form_data(request, create_one_test, create_one_question):
 
     return data, question
 
+
+@pytest.fixture
+def create_test_detail_data(db):
+    def _create_test_detail(test, questions=1, answers_for_question=2):
+        question_data = []
+
+        for i in range(questions):
+            question_obj = Question(
+                test=test,
+                scores_for=Question.SCORE_FOR_ANSWER,
+                scores=1,
+                text=f'question {i}',
+                question_type=Question.TEXT,
+                answer_type=Question.SINGLE_CHOICE,
+            )
+
+            question_data.append(question_obj)
+
+
+        created= Question.objects.bulk_create(question_data)
+
+        test_logger.info(created)
+    
+        for question in created:
+            
+            answers_data = []
+            for i in range(answers_for_question):
+                answer_obj = Answer(
+                    question=question,
+                    score=1,
+                    text=f'answer {i}',
+                    is_correct=True if i == 0 else False
+                )
+
+                answers_data.append(answer_obj)
+
+            Answer.objects.bulk_create(answers_data)
+
+            question.update_question_score()
+
+        
+            test_logger.info(question.answers.all())
+
+        return created
+    
+    return _create_test_detail
