@@ -6,7 +6,7 @@
 
 > Навчальна платформа для перевірки знань студентів
 ### [[Screenshots](docs/images/screenshots.md)]
-### [Demo] - **Soon**
+### [[Demo](http://ec2-13-53-147-251.eu-north-1.compute.amazonaws.com/)]
 ---
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
