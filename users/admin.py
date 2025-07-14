@@ -21,7 +21,6 @@ from unfold.views import UnfoldModelAdminViewMixin
 
 
 
-
 class CreateUsersView(UnfoldModelAdminViewMixin, TemplateView):
     title="Додати студентів"
     template_name = "admin/add_users.html"
@@ -38,6 +37,11 @@ class GroupAdmin(ModelAdmin):
 @admin.register(EmailTestNotyficateUser)
 class EmailTestNotifyAdmin(ModelAdmin):
     list_display = ['test', 'user']
+
+@admin.register(LoginAttempt)
+class LoginAttempt(ModelAdmin):
+    search_fields = ['email', 'ip_address']
+    list_display = ['email', 'timestamp', 'success']
 
 
 @admin.register(User)

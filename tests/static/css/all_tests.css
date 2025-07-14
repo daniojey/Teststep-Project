@@ -62,6 +62,7 @@
     background-color: #363242;
     border: 1px solid rgba(255, 255, 255, 0.60);
     color: #ffffff;
+    caret-color: #ffffff;
     border-radius: 12px;
     font-size: 18px;
     width: 100%;
@@ -292,3 +293,36 @@
     }
 }
 
+/* Специфичные стили для автозаполнения */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0 1000px #3A3646 inset !important;
+    transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s !important;
+}
+
+/* Для Firefox */
+input:-moz-autofill,
+input:-moz-autofill:hover,
+input:-moz-autofill:focus,
+input:-moz-autofill:active {
+    text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 1000px #3A3646 inset !important;
+}
+
+/* Стили для невалидных полей */
+input:invalid {
+    border-bottom: 2px solid #FF6B6B !important;
+}
+
+/* Убираем стандартные стили для автозаполнения в новых браузерах */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 1000px #3A3646 inset !important;
+    caret-color: #ffffff !important;
+}

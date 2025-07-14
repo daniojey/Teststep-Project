@@ -84,6 +84,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
     "csp.middleware.CSPMiddleware",
+    'tests.middlewares.UserCheckMiddleware',
     'tests.middlewares.TestExitMiddleware',
     "app.middleware.coop_policy_middleware",
 ]
@@ -333,10 +334,10 @@ UNFOLD = {
                     #     "title": _("Членство користувача в групах"),
                     #     "link": reverse_lazy("admin:users_usersgroupmembership_changelist"),
                     # },
-                    # {
-                    #     "title": _("Спроби входу"),
-                    #     "link": reverse_lazy("admin:users_loginattempt_changelist"),
-                    # },
+                    {
+                        "title": _("Спроби входу"),
+                        "link": reverse_lazy("admin:users_loginattempt_changelist"),
+                    },
                     {
                         "title": _("Email повідомлення по тестам"),
                         "link": reverse_lazy("admin:users_emailtestnotyficateuser_changelist"),
@@ -437,14 +438,15 @@ if DEBUG:
         }
     }
 
+ENABLE_DEMO = config('ENABLE_DEMO',default=False)
 ENABLE_SMTP = config('ENABLE_SMTP', default=False)
 ENABLE_S3 = config('ENABLE_S3', default=False)
 ENABLE_SENTRY = config('ENABLE_SENTRY', default=False)
 
-print(type(ENABLE_S3), ENABLE_S3)
+# print(type(ENABLE_S3), ENABLE_S3)
 
 if ENABLE_SMTP == 'True':
-    print('ENABLE_SMTP')
+    # print('ENABLE_SMTP')
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
     EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
@@ -465,7 +467,7 @@ else:
 
 
 if ENABLE_S3 == 'True':
-    print('S3 ENABLED')
+    # print('S3 ENABLED')
     # Настройки для использования S3
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
@@ -516,10 +518,29 @@ if ENABLE_S3 == 'True':
         'CacheControl': 'max-age=86400',
         'ContentDisposition': 'inline',
     }
+else:
+    if "pytest" in sys.argv:
+        STORAGES = {
+            "default": {
+                "BACKEND": "django.core.files.storage.FileSystemStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            }
+        }
+    else:
+        STORAGES = {
+            "default": {
+                "BACKEND": 'django.core.files.storage.FileSystemStorage'
+                },
+            'staticfiles': {
+                'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+            }
+        }
 
 
 if ENABLE_SENTRY == 'True':
-    print('ENABLE SENTRY') 
+    # print('ENABLE SENTRY') 
     SENTRY_DSN = config('SENTRY_DSN', default=None)
 
     if SENTRY_DSN:

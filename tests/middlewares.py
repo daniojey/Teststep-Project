@@ -1,7 +1,7 @@
 # middlewares.py
 from datetime import timedelta
 import re
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.deprecation import MiddlewareMixin
 from django.urls import reverse
 from .models import Tests, TestResult
@@ -71,3 +71,26 @@ class TestExitMiddleware(MiddlewareMixin):
         for key in keys_to_clear:
             if key in request.session:
                 del request.session[key]
+
+
+class UserCheckMiddleware(MiddlewareMixin):
+    """ Проверка прав демо пользователя"""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.async_mode = False
+
+    def process_request(self, request):
+        admin_panel_url = '/admin/'
+        current_url = request.path_info
+
+        if admin_panel_url in current_url:
+            if not request.user.is_authenticated:
+                return redirect(reverse('users:login'))
+
+            if not request.user.is_superuser and not request.user.is_staff:
+                return redirect('app:index')
+
+        return None
+
+        # if not request.user.is_superuser and not request.user.is_staff:

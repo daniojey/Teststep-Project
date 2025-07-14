@@ -50,6 +50,10 @@
                     {% endif %}
 
                     <button type="submit" class="submit-btn">Увійти</button> 
+                    
+                    {% if demo_work %}
+                        <button id="createDemoBtn" class="submit-btn">Спробувати Демо</button>
+                    {% endif %}
 
                     <p class="login-prompt">Немає облікового запису ? <a href="{% url 'users:registration' %}" class="login-link">Зареєструватися</a></p>
                 </form>
@@ -150,6 +154,7 @@
             });
         });
     </script> {% endcomment %}
+    <script src="{% static 'js/ajax_demo_user.js' %}"></script>
     <script src="{% static 'js/ajax_login.js' %}"></script>
     <script src="{% static 'js/togglePassword.js' %}"></script>
 </body>            

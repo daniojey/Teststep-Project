@@ -8,7 +8,8 @@ from io import BytesIO
 
 class User(AbstractUser):
     image = models.ImageField(upload_to='users_images', blank=True, null=True)
-    teacher = models.BooleanField(default=False)
+    teacher = models.BooleanField(default=False, verbose_name="Вчитель")
+    is_demo = models.BooleanField(default=False, verbose_name='Демо користувач')
     
 
     def __str__(self):
@@ -65,7 +66,7 @@ class LoginAttempt(models.Model):
     success = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f"{self.email or self.id_address} at {self.timestamp} - {'Sucess' if self.success else 'Filed'}"
+        return f"{self.email or self.ip_address} at {self.timestamp} - {'Sucess' if self.success else 'Filed'}"
     
 
     class Meta:

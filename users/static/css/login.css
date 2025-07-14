@@ -158,6 +158,10 @@ body {
     background-color: #6953D9;
 }
 
+#createDemoBtn {
+    margin-top: 10px !important;
+}
+
 /* Стили для текста под кнопкой */
 .custom-form .login-prompt {
     text-align: left;

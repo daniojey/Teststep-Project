@@ -1,6 +1,8 @@
 import json
+import uuid
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
+from django.db.models import Prefetch
 from django.db.models.base import Model as Model
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -10,12 +12,13 @@ from django.http import JsonResponse
 from django.views.generic import FormView, CreateView, UpdateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
+from tests.models import Tests
 from users.custom_utils.parser_utils import exel_parser, xml_parser
 from .utils import is_blocked
 from django.db import transaction
-from main.settings import ENABLE_SMTP
+from main.settings import ENABLE_DEMO, ENABLE_SMTP
 
-from .models import LoginAttempt, User
+from .models import Group, LoginAttempt, User
 
 from users.form import  UserLoginForm, UserRegistrationForm, ProfileForm
 
@@ -88,6 +91,7 @@ class UserLoginView(FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['smtp_work'] = True if ENABLE_SMTP == 'True' else False
+        context['demo_work'] = True if ENABLE_DEMO == 'True' else False
         context["title"] = "LOGIN"
         return context
 
@@ -183,6 +187,85 @@ class UserRegistrationView(CreateView):
 #     }
 
 #     return render(request, 'users/registration.html', context=context)
+
+class CreateDemoUser(View):
+    template_name = "users/login.html"
+    # success_url = reverse_lazy("app:index")
+
+    def post(self, request, *args, **kwargs):
+        # Проверяем наличие блокировки
+        ip_address = self.request.META.get('REMOTE_ADDR')
+        if is_blocked(ip_address=ip_address, timeframe=800, limit=2):
+            return JsonResponse({'status': 'error'}, status= 400)
+        
+        username = self.generate_uuid_from_user()
+
+        # Проверяем уникальность username
+        while True:
+            if User.objects.filter(username=username).exists():
+                username = self.generate_uuid_from_user()
+            else:
+                break
+        
+        password = str(uuid.uuid4()).replace('-', '')[:10]
+
+        try:
+            created_user = User.objects.create_user(
+                first_name='demo',
+                last_name='user',
+                username=username,
+                password=password,
+                is_demo=True
+            )
+
+            # LoginAttempt.objects.create(ip_address=ip_address, success=False)
+
+            login(request, created_user)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error'}, status= 400)
+
+        try:
+            group = Group.objects.prefetch_related(
+                Prefetch(
+                    "test_group",
+                    queryset=Tests.objects.all(),
+                    to_attr="all_tests"
+                )
+            ).get(name="Demo-Group")
+        except Group.DoesNotExist:
+            group = Group.objects.prefetch_related(
+                Prefetch(
+                    "test_group",
+                    queryset=Tests.objects.all(),
+                    to_attr="all_tests"
+                )
+            ).first()
+
+        group.members.add(created_user)
+
+        # pprint.pprint(group.all_tests)
+        if group.all_tests:
+            test_ids = [test.id for test in group.all_tests]
+
+            through_model  = Tests.students.through
+            with transaction.atomic():
+                through_model.objects.bulk_create([
+                    through_model(
+                        tests_id=test_id,
+                        user_id=created_user.id,
+                    ) for test_id in test_ids
+                ])
+
+        
+        return JsonResponse({'status': 'success', 'message': 'Your welcome!'}, status=201)
+
+
+    def generate_uuid_from_user(*args, **kwargs):
+        """ Создание username с уникальным uuid"""
+
+        short_uuid = str(uuid.uuid4()).replace('-', '')[:7]
+        return f'user{short_uuid}'
     
 
 class UserProfileView(LoginRequiredMixin, UpdateView):
@@ -277,8 +360,16 @@ def profile_image_upload(request):
 
 @login_required
 def logout(request):
+    user = request.user
+
     auth.logout(request)
-    return redirect(reverse("app:index"))
+
+    if user.is_demo:
+        # print('demoUSER')
+        user.delete()
+        print('DEMO USER HAS BEEN DELETE')
+        
+    return redirect(reverse("users:login"))
 
 
 class AddUsersView(View):
