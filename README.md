@@ -1,5 +1,9 @@
 # 💼 TestStep
 
+<div align="center" width="100%">
+  <img src="images/screenshot.png" alt="Описание" width="100%"/>
+</div>
+
 > Навчальна платформа для перевірки знань студентів
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -40,7 +44,7 @@
 ```json
  {
   "web_framework": {
-    "Django": "5.0.7",
+    "Django": "5.2.4",
     "asgiref": "3.8.1",
     "gunicorn": "23.0.0"
   },
@@ -52,7 +56,8 @@
   },
   "django_extensions": {
     "django-appconf": "1.0.6",
-    "django-debug-toolbar": "5.0.1", 
+    "django-debug-toolbar": "5.0.1",
+    "pytest-ordering": "0.6", 
     "django-imagekit": "5.0.0",
     "django-ratelimit": "4.1.0",
     "django-storages": "1.14.4",
@@ -206,7 +211,7 @@
 |---------|----------|
 | `python manage.py runserver` | Запуск сервера |
 | `python manage.py createsuperuser` | Створення адміна |
-| `python manage.py tests` | Запуск тестів проекту |
+| `python manage.py pytest` | Запуск тестів проекту |
 
 ---
 ### Додаткові можливості
