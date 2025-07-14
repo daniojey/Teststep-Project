@@ -5,8 +5,8 @@
 </div>
 
 > Навчальна платформа для перевірки знань студентів
-[[Screenshots](docs/images/screenshots.md)]
-[Demo] - **Soon**
+### [[Screenshots](docs/images/screenshots.md)]
+### [Demo] - **Soon**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
