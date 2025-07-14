@@ -1,7 +1,7 @@
 # 💼 TestStep
 
 <div align="center" width="100%">
-  <img src="images/screenshot.png" alt="Описание" width="100%"/>
+  <img src="docs/images/Home_page.png" alt="Описание" width="100%"/>
 </div>
 
 > Навчальна платформа для перевірки знань студентів
