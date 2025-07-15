@@ -1,9 +1,10 @@
 # Используем официальный Python-образ
-FROM python:3.11-slim
+FROM python:3.13.5-bookworm
 
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /application
 
+# RUN apk add --no-cache libxml2-dev libxslt-dev
 # Копируем файл зависимостей в контейнер и устанавливаем их
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

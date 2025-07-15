@@ -61,7 +61,7 @@ def check_min_datetime(object_date, local_date):
     print(local_date)
 
     if object_date < local_date:
-        return f"{object_date.date()}T{object_date.time().strftime("%H:%M")}"
+        return f"{object_date.date()}T{object_date.time().strftime('%H:%M')}"
     else:
-        return f"{local_date.date()}T{local_date.time().strftime("%H:%M")}"
+        return f"{local_date.date()}T{local_date.time().strftime('%H:%M')}"
 

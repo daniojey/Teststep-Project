@@ -46,7 +46,7 @@ class TestForm(CacheMixin,forms.ModelForm):
                 attrs={
                     'type': 'datetime-local',
                     'class': 'form-control',  # опционально (для стилизации)
-                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime("%H:%M")}"
+                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime('%H:%M')}"
                     # 'min': f"{timezone.now().time().strftime("%H:%M")}"
                 },
                 format='%Y-%m-%dT%H:%M'     # обязательный формат
@@ -55,7 +55,7 @@ class TestForm(CacheMixin,forms.ModelForm):
                 attrs={
                     'type': 'datetime-local',
                     'class': 'form-control',  # опционально (для стилизации)
-                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime("%H:%M")}"
+                    'min': f"{timezone.localtime().now().date()}T{timezone.localtime().now().time().strftime('%H:%M')}"
                 },
                 format='%Y-%m-%dT%H:%M'     # обязательный формат
             )

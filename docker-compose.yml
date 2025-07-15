@@ -19,6 +19,7 @@ services:
       - .env
     build: 
       context: .
+      # dockerfile: Dockerfile-Local
     environment:
       DATABASE_HOST: db
       DATABASE_URL: postgres://tests:root@db:5432/Tests
