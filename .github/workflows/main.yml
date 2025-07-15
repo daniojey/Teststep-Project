@@ -65,7 +65,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest --cov=your_package/ --cov-report=xml:coverage.xml
+        pytest --cov=tests/ --cov-report=xml:coverage.xml
 
     - name: Show cooverage
       run: |
