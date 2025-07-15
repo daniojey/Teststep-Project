@@ -69,4 +69,4 @@ jobs:
 
     - name: Show cooverage
       run: |
-        cooverage report
+        coverage report
