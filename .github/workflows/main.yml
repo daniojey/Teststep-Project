@@ -65,4 +65,4 @@ jobs:
 
     - name: Run tests
       run: |
-        python manage.py pytest
+        pytest
