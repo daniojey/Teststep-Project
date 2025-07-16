@@ -1,5 +1,19 @@
 version: '3.9'
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
   db:
     restart: always
     image: postgres
@@ -19,10 +33,12 @@ services:
       - .env
     build: 
       context: .
-      # dockerfile: Dockerfile-Local
+      dockerfile: Dockerfile-Local
     environment:
       DATABASE_HOST: db
       DATABASE_URL: postgres://tests:root@db:5432/Tests
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
     volumes:
       - .:/application 
       - ./media:/application/static/media
@@ -32,6 +48,22 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - redis
+    networks:
+      - app-network
+
+  celery:
+    build: .
+    command: celery -A main worker --loglevel=info -P solo
+    # valumes:
+    #   - .:/application
+    depends_on:
+      - redis
+      - db
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DATABASE_URL: postgres://tests:root@db:5432/Tests
     networks:
       - app-network
 
@@ -41,3 +73,4 @@ networks:
 
 volumes:
   db_data:
+  redis_data:

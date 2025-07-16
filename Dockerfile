@@ -17,6 +17,8 @@ ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=main.production
 
 
+RUN chmod +x manage.py
+
 # Открываем порт (Heroku не использует EXPOSE, но это не повредит)
 EXPOSE 8000
 

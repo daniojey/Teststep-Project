@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db import transaction
 from django.db.models import Q, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -7,6 +8,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView, View
 import requests
 
+from main.celery import debug_task
 from tests.models import TestResult, Tests, TestsReviews
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -141,7 +143,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         #     'completed_tests': completed_tests,
         #     'group': group,
         # })
-
+        transaction.on_commit(lambda: debug_task())
         return context
 
 class AboutDevView(TemplateView):
