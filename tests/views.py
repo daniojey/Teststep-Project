@@ -86,8 +86,12 @@ class UserRatingView(LoginRequiredMixin, TemplateView):
             groups = user.group.prefetch_related(
                 Prefetch(
                     'test_results',
-                    queryset=TestResult.objects.select_related('test', 'user').only(
-                        'test', 'user', 'group'
+                    queryset=TestResult.objects.select_related(
+                        'test', 'user'
+                        ).filter(
+                            user=user
+                        ).only(
+                            'test', 'user', 'group'
                     ),
                     to_attr='test_results_group'
                 )
