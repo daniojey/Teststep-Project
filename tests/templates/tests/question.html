@@ -20,7 +20,7 @@
             <label>Категорія питання ({% if current_question_group %}{{ current_question_group.name }}{% else %}Усі{% endif %})</label>
         </div>
 
-        <div class='form-group'>
+        <div class='form-group' data-answers-count="{{ answers_count }}">
             <form id="test-form" method="POST" class='test-form' action="{% url 'tests:take_test' test.id %}">
                 {% csrf_token %}
                 {% for field in form %}
@@ -101,9 +101,9 @@
                         {% elif question.answer_type == 'MC' %}
                             <div class='checkbox-answers'>
                                 {% for choice in field %}
-                                    <label class="custom-checkbox">
+                                    <label class="custom-checkbox" >
                                         {{ choice.tag }}
-                                        <span class="custom-checkbox-box"></span>
+                                        <span class="custom-checkbox-box mc-{{ forloop.counter0 }}"></span>
                                         {{ choice.choice_label }}
                                     </label>
                                 {% endfor %}
@@ -148,7 +148,7 @@
                             {% for choice in field %}
                                 <label class="custom-checkbox">
                                     {{ choice.tag }}
-                                    <span class="custom-checkbox-box"></span>
+                                    <span class="custom-checkbox-box mc-{{ forloop.counter0 }}"></span>
                                     {{ choice.choice_label }}
                                 </label>
                             {% endfor %}
@@ -254,7 +254,7 @@
                                 {% for choice in field %}
                                     <label class="custom-checkbox">
                                         {{ choice.tag }}
-                                        <span class="custom-checkbox-box"></span>
+                                        <span class="custom-checkbox-box mc-{{ forloop.counter0 }}"></span>
                                         {{ choice.choice_label }}
                                     </label>
                                 {% endfor %}
@@ -369,11 +369,12 @@
        // Установка длительности после загрузки метаданных аудио
        audioPlayer.addEventListener("loadedmetadata", displayDuration);
     </script>
+    <script src="{% static "js/limiter_multi_choice.js" %}"></script>
+    <script src="{% static 'js/test_timer.js' %}"></script>    
     <script src="{% static "js/recorder.js" %}"></script>
     <script src="{% static 'js/radio_select.js' %}"></script>    
     <script src="{% static 'js/drag_and_drop.js' %}"></script>    
     <script src="{% static 'js/answer_recorder.js' %}"></script>
-    <script src="{% static 'js/test_timer.js' %}"></script>    
 </body>
 {% endblock %}
 

@@ -1156,9 +1156,15 @@ class TakeTestView(LoginRequiredMixin ,FormView):
         question_order = self.request.session['question_order']
         question_index = self.request.session['question_index']
 
+        if self.current_question.answer_type == Question.MULTIPLE_CHOICE:
+            answers_count = len(self.current_question.answers.filter(is_correct=True).values_list('id', flat=True))
+        else:
+            answers_count = None 
+
         context.update({
             'test':self.test,
             'question': self.current_question,
+            'answers_count': answers_count,
             'all_questions': {
                 'current': question_index + 1,
                 'all': len(question_order)

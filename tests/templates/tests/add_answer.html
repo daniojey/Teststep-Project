@@ -186,13 +186,13 @@
                     id="is_correct" 
                     value="True">
                 
-                {% elif question.question_type == "IMG" %}
+                {% comment %} {% elif question.question_type == "IMG" %}
                     <input type="hidden" 
                     name="is_correct" 
                     class="form-check-input" 
                     id="is_correct" 
                     value="True">
-                    
+                     {% endcomment %}
                 {% elif question.question_type == "MTCH" %}
                 {% else %}
                     <input type="hidden" 
