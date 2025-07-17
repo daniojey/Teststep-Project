@@ -1490,9 +1490,10 @@ class TestsResultsView(View):
                 }
                     
                 if correct_answers_dict:
-                    if str(value).strip().lower() in correct_answers_dict:
+                    lower_value = str(value).strip().lower()
+                    if lower_value in correct_answers_dict:
 
-                        correct_answers += correct_answers_dict[value]
+                        correct_answers += correct_answers_dict[lower_value]
 
                         if correct_answers == question.scores:
                                 complete_question = True
