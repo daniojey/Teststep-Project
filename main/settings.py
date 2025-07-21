@@ -116,7 +116,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
         "default": dj_database_url.config(
-            default="postgres://test:root@localhost:5432/Tests", conn_max_age=600
+            default="postgres://test:root@localhost:5432/tests", conn_max_age=600
         )
     }
 
@@ -129,13 +129,6 @@ DATABASES = {
     # 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": BASE_DIR / 'cache',
-    }
-}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -443,6 +436,7 @@ ENABLE_DEMO = config('ENABLE_DEMO',default=False)
 ENABLE_SMTP = config('ENABLE_SMTP', default=False)
 ENABLE_S3 = config('ENABLE_S3', default=False)
 ENABLE_SENTRY = config('ENABLE_SENTRY', default=False)
+ENABLE_REDIS = config('ENABLE_REDIS', default=False)
 
 # print(type(ENABLE_S3), ENABLE_S3)
 
@@ -567,13 +561,21 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 
+if ENABLE_REDIS == 'True':
 # Настройки Redis
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': CELERY_BROKER_URL,
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
         }
     }
-}
+else:
+    CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": BASE_DIR / 'cache',
+        }
+    }
