@@ -1145,7 +1145,10 @@ class TakeTestView(LoginRequiredMixin ,FormView):
                     if left.startswith('matching_left'):
                         truncate_string = left.replace('matching_left_', '').split('_')
                         left_item = truncate_string[1]
-                        right_item = MatchingPair.objects.get(id=right).right_item
+                        try:
+                            right_item = MatchingPair.objects.get(id=right).right_item
+                        except ValueError:
+                            continue
 
                         # print('Данные', left_item,'-', right_item)
                         dict_items[left_item] = right_item

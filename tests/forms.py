@@ -463,7 +463,7 @@ class TestTakeForm(forms.Form):
                 for i, left_item in enumerate(left_items):
                     self.fields[f'matching_left_{i}_{left_item}'] = forms.ChoiceField(
                         label=left_item,
-                        required=False,
+                        required=True,
                         widget=forms.Select(attrs={'class': 'custom-select'}),
                         choices=right_choices,
                         initial=right_choices[0],
