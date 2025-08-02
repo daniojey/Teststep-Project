@@ -16,7 +16,7 @@ class TestExitMiddleware(MiddlewareMixin):
         if 'question_order' in request.session and 'test_id' in request.session:
             test_id = request.session.get('test_id')
             # print(f"АЙДИ ТЕСТА В СЕССИИ - {test_id}")
-            test = get_object_or_404(Tests, id=test_id)
+            test = get_object_or_404(Tests.objects.select_related('group'), id=test_id)
 
             # Проверяем, если тест не является тестом с ручной проверкой
             if test.check_type != Tests.MANUAL_CHECK:
@@ -31,6 +31,7 @@ class TestExitMiddleware(MiddlewareMixin):
                         TestResult.objects.get_or_create(
                             user=request.user,
                             test=test,
+                            group=test.group,
                             score=0,
                             attempts=2,
                             duration=timedelta(hours=0, minutes=0,seconds=0)

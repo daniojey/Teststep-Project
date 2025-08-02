@@ -271,7 +271,15 @@
                 {% endfor %}
                 
                 {% if question.question_type == "MTCH" %}
-                    <div class='form-matching'>
+                    {% if is_mobile %}
+                        {% for field in form %}
+                            <div class='matching_select_group'>
+                                {{ field.label_tag }}
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class='form-matching'>
                         {% if question.text %}
                             <div class="matching-question-text">
                                 <h3>{{ question.text }}</h3>
@@ -317,6 +325,8 @@
                                 {% endfor %}
                             </div>
                         </div>
+                    {% endif %}
+                    
                     {% endif %}
                 </div>
                     
@@ -370,6 +380,7 @@
        audioPlayer.addEventListener("loadedmetadata", displayDuration);
     </script>
     <script src="{% static "js/limiter_multi_choice.js" %}"></script>
+    <script src="{% static "js/add_question_custom_select_delete_none.js" %}"></script>
     <script src="{% static 'js/test_timer.js' %}"></script>    
     <script src="{% static "js/recorder.js" %}"></script>
     <script src="{% static 'js/radio_select.js' %}"></script>    

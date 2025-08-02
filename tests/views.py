@@ -1111,15 +1111,20 @@ class TakeTestView(LoginRequiredMixin ,FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+        is_mobile = self.request.user_agent.is_mobile
         question_order = self.request.session['question_order']
         question_index = self.request.session['question_index']
         current_question_id = question_order[question_index]
         self.current_question = get_object_or_404(Question.objects.select_related('group'), id=current_question_id)
 
+        kwargs['is_mobile'] = is_mobile
         kwargs['question'] = self.current_question
         return kwargs
 
     def form_valid(self, form):
+        # print(self.request.POST)
+        # print(self.request.user_agent.is_mobile)
+        is_mobile = self.request.user_agent.is_mobile
         answer = form.cleaned_data.get('answer')
 
         if self.current_question.question_type == 'AUD' or self.current_question.question_type == 'IMG' or self.current_question.question_type == 'TXT':
@@ -1134,11 +1139,25 @@ class TakeTestView(LoginRequiredMixin ,FormView):
         elif self.current_question.question_type == 'MTCH':
             responses = self.request.POST
             dict_items = {}
-            for left, right in responses.items():
-                if left.startswith('answer_'):
-                    left_item = left.split('answer_')[1]
-                    dict_items[left_item] = right
-            self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
+
+            if is_mobile:
+                for left, right in responses.items():
+                    if left.startswith('matching_left'):
+                        truncate_string = left.replace('matching_left_', '').split('_')
+                        left_item = truncate_string[1]
+                        right_item = MatchingPair.objects.get(id=right).right_item
+
+                        # print('Данные', left_item,'-', right_item)
+                        dict_items[left_item] = right_item
+
+                self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
+            else:
+
+                for left, right in responses.items():
+                    if left.startswith('answer_'):
+                        left_item = left.split('answer_')[1]
+                        dict_items[left_item] = right
+                self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
         else:
             if answer:
                 self.request.session['test_responses'][f"question_{self.current_question.id}"] = answer
@@ -1177,7 +1196,8 @@ class TakeTestView(LoginRequiredMixin ,FormView):
                 'text_btn': 'Завершити' if question_index + 1 == len(question_order) else 'Далі'
             },
             'current_question_group': self.current_question.group,
-            'remaining_time': self.request.session['remaining_time']
+            'remaining_time': self.request.session['remaining_time'],
+            'is_mobile': self.request.user_agent.is_mobile
         })
         return context
 

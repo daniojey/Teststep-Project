@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # Сторонние приложения
     "debug_toolbar",
     'imagekit',
+    'django_user_agents',
 
     # Созданные приложения
     "app",
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     'tests.middlewares.UserCheckMiddleware',
     'tests.middlewares.TestExitMiddleware',
     "app.middleware.coop_policy_middleware",
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'

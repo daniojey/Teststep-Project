@@ -350,6 +350,7 @@ class TestTakeForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # Теперь мы передаем только один вопрос
         question = kwargs.pop('question')  # Получаем текущий вопрос
+        is_mobile = kwargs.pop('is_mobile')
         super().__init__(*args, **kwargs)
 
         choices = [(a.id, a.text) for a in question.answers.all()]
@@ -449,27 +450,48 @@ class TestTakeForm(forms.Form):
         
          # Матчинг (Matching)
         elif question.question_type == 'MTCH':
-            left_items = [pair.left_item for pair in question.matching_pairs.all()]
-            right_items = [pair.right_item for pair in question.matching_pairs.all()]
+            if is_mobile:
+                left_items = [pair.left_item for pair in question.matching_pairs.all()]
+                right_choices = [(pair.id, pair.right_item) for pair in question.matching_pairs.all()]
+                # print(right_choices)
 
-            random.shuffle(left_items)
-            random.shuffle(right_items)
-            
+                random.shuffle(left_items)
+                random.shuffle(right_choices)
 
-            for i , pair in enumerate(question.matching_pairs.all()):
-                # Левый элемент просто выводится как текст
-                self.fields[f'matching_left_{pair.id}'] = forms.CharField(
-                    label=left_items[i],
-                    required=False,
-                    widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
-                )
+                right_choices = [('', 'Оберіть відповідь')] + right_choices
 
-                # Правый элемент также выводится как текст
-                self.fields[f'matching_right_{pair.id}'] = forms.CharField(
-                    label=right_items[i],
-                    required=False,
-                    widget=forms.HiddenInput()  # Прячем поле для выбора
-                )
+                for i, left_item in enumerate(left_items):
+                    self.fields[f'matching_left_{i}_{left_item}'] = forms.ChoiceField(
+                        label=left_item,
+                        required=False,
+                        widget=forms.Select(attrs={'class': 'custom-select'}),
+                        choices=right_choices,
+                        initial=right_choices[0],
+                    )
+
+
+            else:
+                left_items = [pair.left_item for pair in question.matching_pairs.all()]
+                right_items = [pair.right_item for pair in question.matching_pairs.all()]
+
+                random.shuffle(left_items)
+                random.shuffle(right_items)
+                
+
+                for i , pair in enumerate(question.matching_pairs.all()):
+                    # Левый элемент просто выводится как текст
+                    self.fields[f'matching_left_{pair.id}'] = forms.CharField(
+                        label=left_items[i],
+                        required=False,
+                        widget=forms.HiddenInput()  # Прячем реальное поле, но текст останется как label
+                    )
+
+                    # Правый элемент также выводится как текст
+                    self.fields[f'matching_right_{pair.id}'] = forms.CharField(
+                        label=right_items[i],
+                        required=False,
+                        widget=forms.HiddenInput()  # Прячем поле для выбора
+                    )
                 
         # elif question.question_type == 'SC':
         #     self.fields[f'answer'] = forms.ChoiceField(

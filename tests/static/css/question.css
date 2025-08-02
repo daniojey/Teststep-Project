@@ -448,6 +448,44 @@
     width: 100%;
 }
 
+.matching_select_group {
+
+    label {
+        display: flex;
+        width: 100%;
+        justify-content: start;
+        align-items: center;
+        color: #FFF;
+        font-family: Roboto;
+        font-size: 24px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+        margin-bottom: 10px;
+    }
+}
+
+.custom-select {
+    height: 57px;
+    width: 100%;
+    padding: 10px;
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 146%; /* 26.28px */
+    background: #363242;
+    border: 1px solid #FFF;
+    border-radius: 12px;
+    appearance: none; /* Убираем стандартную стрелочку */
+    background-image: url('https://teststepbucket.s3.amazonaws.com/icons/create_test_arrow.svg'); /* Добавляем свою стрелку */
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 24px; /* Размер стрелки */
+    margin-bottom: 24px;
+}
+
 .matching-question-text h3{
     color: #FFF;
     display: flex;
