@@ -85,7 +85,7 @@
     
     .group-container {
         max-width: calc(100% - 30px);
-        padding-bottom: 40px;
+        /* padding-bottom: 40px; */
     }
 
     .tests-ratings-container {

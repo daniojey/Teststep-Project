@@ -28,6 +28,7 @@ from django.views import View
 
 # Библиотеки проекта
 from common.mixins import CacheMixin
+from main.settings import ENABLE_CELERY, ENABLE_REDIS
 from tests.permissions import TestcheckOwnerOrAdminMixin, CheckPersonalMixin
 from tests.tasks import send_emails_task
 from tests.utils import check_min_datetime, send_emails_from_users
@@ -595,8 +596,12 @@ class AddQuestionsView(LoginRequiredMixin,TestcheckOwnerOrAdminMixin, TemplateVi
                     test.students.remove(*remove_set)
 
                 test.save()
-                # send_emails_from_users(data_users, test_id)
-                send_emails_task.delay(data_users, test.id)
+
+                if ENABLE_CELERY == 'True' and ENABLE_REDIS == 'True':
+                    send_emails_task.delay(data_users, test.id)
+                else:
+                    send_emails_from_users(data_users, test)
+
                 return JsonResponse({'status': 'success', 'message': 'Студенты обновлены.'}, status=202)
             else:
                 return JsonResponse({'status': 'error', 'message': 'Opps, помилка'}, status=400)

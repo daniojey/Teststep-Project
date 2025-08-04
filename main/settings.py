@@ -434,17 +434,20 @@ if DEBUG:
         }
     }
 
+
+ENABLE_CELERY = config('ENABLE_CELERY', default=False)
 ENABLE_DEMO = config('ENABLE_DEMO',default=False)
 ENABLE_SMTP = config('ENABLE_SMTP', default=False)
 ENABLE_S3 = config('ENABLE_S3', default=False)
 ENABLE_SENTRY = config('ENABLE_SENTRY', default=False)
 ENABLE_REDIS = config('ENABLE_REDIS', default=False)
+    
 
 # print(type(ENABLE_S3), ENABLE_S3)
 
 if ENABLE_SMTP == 'True':
     # print('ENABLE_SMTP')
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
     EMAIL_HOST = config('EMAIL_HOST', default='smpt.gmail.com')  # Пример для Gmail
     EMAIL_PORT = config('EMAIL_PORT', cast=int) # Используем порт для TLS
@@ -553,14 +556,14 @@ if ENABLE_SENTRY == 'True':
 
         )
 
+if ENABLE_CELERY == 'True':
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default="redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
 
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
-
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = 'UTC'
 
 
 if ENABLE_REDIS == 'True':

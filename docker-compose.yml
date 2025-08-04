@@ -35,6 +35,8 @@ services:
       context: .
       dockerfile: Dockerfile-Local
     environment:
+      ENABLE_REDIS: True
+      ENABLE_CELERY: True
       DATABASE_HOST: db
       DATABASE_URL: postgres://tests:root@db:5432/Tests
       CELERY_BROKER_URL: redis://redis:6379/0

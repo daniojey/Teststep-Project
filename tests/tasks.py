@@ -51,8 +51,8 @@ def send_emails_task(self, users_data, test_id):
                         notify = EmailTestNotyficateUser(user=user, test=test)
                         sended_emails.append(notify)
                 except Exception as e:
-                    print(e)
-                    continue
+                    return e
+                    # continue
             
             if sended_emails:
                 EmailTestNotyficateUser.objects.bulk_create(sended_emails)
