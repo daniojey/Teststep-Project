@@ -167,7 +167,10 @@ class AboutDevView(TemplateView):
             }
 
         return context
-    
+
+
+def handler400(request, exception, template_name="400.html"):
+    return render(request, '400.html', context={'error': exception})
 
 # @login_required
 # def index(request):

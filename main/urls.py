@@ -22,7 +22,9 @@ from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.views.decorators.csrf import csrf_exempt
 from app.views import CspReports
+from django.conf.urls import handler400
 
+handler400 = 'app.views.handler400'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
