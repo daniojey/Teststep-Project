@@ -166,8 +166,10 @@ class RatingTestView(LoginRequiredMixin, TemplateView):
 
         try:
             test_group_id, test_name = Tests.objects.filter(id=test_id).values_list('group_id', 'name').first()
+        except TypeError:
+            raise Http404("Poll does not exist")
         except Tests.DoesNotExist:
-            return Http404('test not found')
+            raise Http404("Poll does not exist")
         
         data = Group.objects.filter(id=test_group_id).prefetch_related(
             Prefetch(
