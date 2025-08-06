@@ -94,7 +94,7 @@ class TakeTestService:
 
         if len(all_questions) == 0:
             # Если нет вопросов, то очищаем сессию и перенаправляем на главную страницу
-            TakeTestService.clear_test_session(request=http_request)
+            TakeTestService.clear_test_session(session=session)
             return 'redirect', reverse_lazy('app:index')
         else:
             # Иначе инициализируем начальные данные для прохождения теста
