@@ -30,6 +30,7 @@ from django.views import View
 from common.mixins import CacheMixin
 from main.settings import ENABLE_CELERY, ENABLE_REDIS
 from tests.permissions import TestcheckOwnerOrAdminMixin, CheckPersonalMixin
+from tests.services.take_test_service import TakeTestService
 from tests.tasks import send_emails_task
 from tests.utils import check_min_datetime, send_emails_from_users
 from users.models import Group, User
@@ -1038,83 +1039,18 @@ class TakeTestView(LoginRequiredMixin ,FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.test = get_object_or_404(Tests, id=self.kwargs['test_id'])
-        server_time = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
 
-        if server_time < localtime(self.test.date_in) or server_time > localtime(self.test.date_out):
-            if 'test_responses' in request.session:
+        result, url = TakeTestService.check_session_test(
+            test=self.test, 
+            session=self.request.session, 
+            http_response=self.request
+        )
 
-                if len(request.session.get('test_responses')) != 0:
-                    return redirect('tests:test_results', test_id=self.kwargs['test_id'])
-                else:
-                    print('return 2')
-                    self.clear_test_session(request=request)
-                    return redirect('app:index')
-                
-            else:
-                print('return 1')
-                return redirect('app:index')
-
-        # При неверном ID теста в сессии очищаем сессию
-        session_test_id = request.session.get('test_id')
-        if self.test.id != session_test_id and session_test_id != None:
-            self.clear_test_session(request=request)
-
-        # Снова добавляем ID теста к сессии
-        request.session['test_id'] = self.test.id
-
-        # Если время начала теста не установленио то добавляем его в сессию
-        if 'test_start_time' not in request.session:
-            request.session['test_start_time'] = now().timestamp()  # Сохраняем метку времени
-
-        # Если не установлено оставшееся время(от теста) то добавляем его в сессию
-        if 'remaining_time' not in request.session:
-            request.session['remaining_time'] = self.test.duration.total_seconds()
-
-        # Если сессия для теста не была созданна тогда иничиализируем сессию теста
-        if 'question_order' not in request.session:
-            response = self.initialize_test_session()
-            if isinstance(response, HttpResponse):
-                return response
+        if result == 'redirect':
+            return redirect(url)
 
         return super().dispatch(request, *args, **kwargs)
 
-    def clear_test_session(self, request):
-        # Очищаем все возможные ключи из сессии
-        keys_to_clear = ['test_id', 'question_order', 'question_index', 'test_responses', 'remaining_time', 'test_start_time']
-        for key in keys_to_clear:
-            if key in request.session:
-                del request.session[key]
-
-    def initialize_test_session(self):
-        questions_by_group = {}
-
-        # Проходим по группе вопросов и все вопросы для каждой из них после сохраняем в виде словаря Группа:[Вопросы]
-        for group in QuestionGroup.objects.filter(test=self.test).prefetch_related('questions_group'):
-            questions_by_group[group.name] = list(group.questions_group.all())
-
-        # Проходим по словарю questions_by_group и перемещиваем все вопросы для каждой группы
-        for group_name, questions in questions_by_group.items():
-            random.shuffle(questions)
-
-        # Обединяем все перемешанные вопросы в один список
-        all_questions = []
-        for questions in questions_by_group.values():
-            all_questions.extend(questions)
-
-        # Выбираем оставшиеся вопросы которые не предналежат ни одной из групп после чего перемешиваем их и добавляем в список
-        questions_not_group = list(Question.objects.filter(test=self.test, group=None))
-        random.shuffle(questions_not_group)
-        all_questions.extend(questions_not_group)
-
-        if len(all_questions) == 0:
-            # Если нет вопросов, то очищаем сессию и перенаправляем на главную страницу
-            self.clear_test_session(request=self.request)
-            return redirect('app:index')
-        else:
-            # Иначе инициализируем начальные данные для прохождения теста
-            self.request.session['question_order'] = [q.id for q in all_questions]
-            self.request.session['question_index'] = 0  # Начинаем с первого вопроса
-            self.request.session['test_responses'] = {}  # Для хранения ответов
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -1128,61 +1064,23 @@ class TakeTestView(LoginRequiredMixin ,FormView):
         kwargs['question'] = self.current_question
         return kwargs
 
+
     def form_valid(self, form):
         # print(self.request.POST)
         # print(self.request.user_agent.is_mobile)
-        is_mobile = self.request.user_agent.is_mobile
-        answer = form.cleaned_data.get('answer')
+        result, url = TakeTestService.form_valid(
+            form=form,
+            session=self.request.session,
+            http_request=self.request,
+            current_question=self.current_question
+        )
 
-        if self.current_question.question_type == 'AUD' or self.current_question.question_type == 'IMG' or self.current_question.question_type == 'TXT':
-            if self.current_question.answer_type == 'AUD':
-                audio_answer = form.cleaned_data.get(f'audio_answer_{self.current_question.id}', None)
-                if audio_answer is not None:
-                    self.request.session['test_responses'][f"audio_answer_{self.current_question.id}"] = audio_answer
-            else:
-                if answer:
-                    self.request.session['test_responses'][f"question_{self.current_question.id}"] = answer
+        match result:
+            case 'results':
+                return redirect(url)
+            case 'continue':
+                return redirect(url)
 
-        elif self.current_question.question_type == 'MTCH':
-            responses = self.request.POST
-            dict_items = {}
-
-            if is_mobile:
-                for left, right in responses.items():
-                    if left.startswith('matching_left'):
-                        truncate_string = left.replace('matching_left_', '').split('_')
-                        left_item = truncate_string[1]
-                        try:
-                            right_item = MatchingPair.objects.get(id=right).right_item
-                        except ValueError:
-                            continue
-
-                        # print('Данные', left_item,'-', right_item)
-                        dict_items[left_item] = right_item
-
-                self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
-            else:
-
-                for left, right in responses.items():
-                    if left.startswith('answer_'):
-                        left_item = left.split('answer_')[1]
-                        dict_items[left_item] = right
-                self.request.session['test_responses'][f"question_{self.current_question.id}_type_matching"] = dict_items
-        else:
-            if answer:
-                self.request.session['test_responses'][f"question_{self.current_question.id}"] = answer
-
-        remaining_time = int(self.request.POST.get('remaining_time', 0))
-        self.request.session['remaining_time'] = remaining_time
-
-        self.request.session['question_index'] += 1
-
-        question_order = self.request.session['question_order']
-        question_index = self.request.session['question_index']
-        if question_index >= len(question_order):
-            return redirect('tests:test_results', test_id=self.kwargs['test_id'])
-
-        return redirect('tests:take_test', test_id=self.kwargs['test_id'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
