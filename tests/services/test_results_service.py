@@ -252,7 +252,6 @@ class TestResultsService:
         session_keys = ['question_order','question_index','test_responses','remaining_time', 'test_id']
         for key in session_keys:
             if key in session:
-                print('DELETE', key)
                 del session[key]
 
 

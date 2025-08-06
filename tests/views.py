@@ -1248,8 +1248,8 @@ class TestsResultsView(View):
         )
 
         match (result, data):
-            case ('redirect', str() as url):
-                return redirect(url)
+            case ('redirect', _):
+                return redirect(data)
             case ('render', None):
                 return render(request, 'tests/success_page_manual_test.html')
             case ('render', dict() as context):

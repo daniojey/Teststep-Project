@@ -755,7 +755,8 @@ def test_take_test_page_all_check(client, user_name, users_data, create_test_det
         test_logger.info(f"Answer - {answer}")
 
         form_data = {
-            'answer': answer.id
+            'answer': answer.id,
+            'remaining_time': 200,
         }
 
         response = client.post(url, data=form_data , follow=True)
@@ -768,9 +769,12 @@ def test_take_test_page_all_check(client, user_name, users_data, create_test_det
 
     assert f"/testes/results/{test.id}/" in response.redirect_chain[0]
 
-    assert TestResult.objects.filter(test=test, user__username=user['username']).exists()
+    # assert TestResult.objects.filter(test=test, user__username=user['username']).exists()
+    test = TestResult.objects.filter(test=test, user__username=user['username'])
+    assert test.exists()
+    test = test.first()
+    assert int(test.score) == 100
     assert 'test_id' not in session
-    assert 'test_start_time' not in session
     assert 'remaining_time' not in session
     assert 'question_order' not in session
 
