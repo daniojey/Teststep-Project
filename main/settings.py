@@ -26,6 +26,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -552,9 +553,10 @@ if ENABLE_SENTRY == 'True':
                     transaction_style='function_name'
                 )
             ],
-            traces_sample_rate=1.0,
-
+            traces_sample_rate=1.0,  
         )
+
+        ignore_logger('django.security.DisallowedHost')
 
 if ENABLE_CELERY == 'True':
     CELERY_BROKER_URL = config('CELERY_BROKER_URL', default="redis://localhost:6379/0")
