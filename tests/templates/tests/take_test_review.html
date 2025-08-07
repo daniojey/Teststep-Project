@@ -18,7 +18,7 @@
         <label>Категорія питання ({% if current_question_group %}{{ current_question_group }}{% else %}Усі{% endif %})</label>
     </div>
     
-    <form method="post" class='readonly'>
+    <form method="post" class='readonly' data-answers="{{ current_answers }}" id='test-form' data-current-question="{{ question.answer_type }}" data-question-type="{{ question.question_type }}">
         {% csrf_token %} 
         {% for field in form %}
             {% if question.text and question.question_type != 'MTCH' %}
@@ -95,6 +95,10 @@
                 
                             <div class='input-answer'>
                                 {{ field|addattr:"placeholder:input" }}
+                            </div>
+
+                            <div class='popup-window'>
+                                <p> Правильні відповіді:</p>
                             </div>
                         {% endif %}
                     </div>
@@ -248,6 +252,7 @@
             });
         });
     </script>
+    <script src="{% static "js/show_correct_answers.js" %}"></script>
     <script src="{% static 'js/drag_and_drop_initialize.js' %}"></script> 
     <script src="{% static 'js/radio_select_initialize.js' %}"></script>    
 </body>

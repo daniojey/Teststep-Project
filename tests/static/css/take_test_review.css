@@ -13,6 +13,10 @@
 form.readonly {
     pointer-events: none; /* Блокирует взаимодействие с элементами формы */
     opacity: 0.8; /* Можно добавить визуальный эффект */
+
+    .text-question {
+        pointer-events: auto;
+    }
 }
 
 form.readonly button {
@@ -79,6 +83,7 @@ h3 {
     max-height: 240px;
     border-radius: 12px;
     margin-bottom: 40px;
+    overflow: hidden;
 }
 
 .question-image-container img {
@@ -236,6 +241,34 @@ h3 {
     line-height: 146%; /* 29.2px */
 }
 
+/* Стили для всплывашки */
+.popup-window {
+    display: none;
+    max-width: 800px;
+    position: absolute;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid #fdfdfd;
+    border-radius: 12px;
+    background-color: #2B2738;
+    color: #FFF;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    animation: fadeIn 0.3s ease;
+    animation-fill-mode: forwards;
+
+    p {
+        font-family: Roboto;
+        font-size: 1.5rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 146%; /* 29.2px */
+    }
+}
+
+
 /* Аудио ответ */
 .question-audio-container {
     display: flex;
@@ -355,5 +388,27 @@ h3 {
 
     .submit-btn {
         width: 100%;
+    }
+}
+
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes hideIn {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
     }
 }

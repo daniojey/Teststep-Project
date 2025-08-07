@@ -2,6 +2,7 @@
 # Базовые библиотеки
 from copyreg import constructor
 from decimal import Decimal
+import json
 from multiprocessing import Value
 import os
 from pprint import pprint
@@ -1833,6 +1834,23 @@ class TakeTestReviewView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        if self.current_question.question_type == Question.MATCHING:
+            # current_answers = self.current_question.matching_pairs.all()
+            current_answers = json.dumps({
+                str(pair.left_item): pair.right_item
+                for pair in self.current_question.matching_pairs.all()
+            })
+        else:
+            # current_answers = [answer.text for answer in self.current_question.answers.filter(is_correct=True)]
+            current_answers = json.dumps({
+                str(answer.id): answer.text
+                
+                for answer in self.current_question.answers.filter(is_correct=True)
+            })
+
+
+
         test_review_session = self.request.session['test_review_session']
         question_index = self.request.session['question_index']
 
@@ -1844,7 +1862,8 @@ class TakeTestReviewView(FormView):
             "current": question_index + 1,
             "all": len(test_review_session)
             },
-            'current_question_group': self.current_question.group
+            'current_question_group': self.current_question.group,
+            'current_answers': current_answers
         })
         return context
 
@@ -2098,7 +2117,7 @@ class TestReviewResults(View):
             # test_review.delete()
             # print(test_result)
 
-        test_review.delete()
+        # test_review.delete()
         self.clear_test_session(request)
 
         return redirect('tests:tests_for_review')
