@@ -44,7 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         };
     } else if (questionAnswerType == "INP") {
-        const parsedData = JSON.parse(dataAnswers);
+        try {
+            const parsedData = JSON.parse(dataAnswers);
+        } catch (error) {
+            throw new Error('Помилка скрипту')
+        }
         console.log(parsedData);
         const popupWindow = document.querySelector('.popup-window');
         const questionText = document.querySelector('.text-question')

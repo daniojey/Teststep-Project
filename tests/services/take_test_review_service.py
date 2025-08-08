@@ -239,7 +239,7 @@ class TakeTestReviewService:
         
     
     @staticmethod
-    def get_current_answers(current_question):
+    def get_current_answers(current_question, is_mobile):
 
         if current_question.question_type == Question.MATCHING:
             # current_answers = self.current_question.matching_pairs.all()
@@ -248,11 +248,14 @@ class TakeTestReviewService:
                 for pair in current_question.matching_pairs.all()
             })
         else:
-            # current_answers = [answer.text for answer in self.current_question.answers.filter(is_correct=True)]
-            current_answers = json.dumps({
-                str(answer.id): answer.text
-                
-                for answer in current_question.answers.filter(is_correct=True)
-            })
+
+            if is_mobile:
+                current_answers = [answer.text for answer in current_question.answers.filter(is_correct=True)]
+            else:
+                current_answers = json.dumps({
+                    str(answer.id): answer.text
+                    
+                    for answer in current_question.answers.filter(is_correct=True)
+                })
 
         return current_answers

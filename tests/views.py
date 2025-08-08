@@ -1048,9 +1048,10 @@ class TakeTestReviewView(FormView):
         context = super().get_context_data(**kwargs)
 
         current_answers = TakeTestReviewService.get_current_answers(
-            current_question=self.current_question
+            current_question=self.current_question,
+            # is_mobile=True,
+            is_mobile=self.request.user_agent.is_mobile,
         )
-
 
         test_review_session = self.request.session['test_review_session']
         question_index = self.request.session['question_index']
@@ -1064,7 +1065,9 @@ class TakeTestReviewView(FormView):
                 "all": len(test_review_session)
             },
             'current_question_group': self.current_question.group,
-            'current_answers': current_answers
+            'current_answers': current_answers,
+            # 'is_mobile': True,
+            'is_mobile': self.request.user_agent.is_mobile,
         })
         return context
 
@@ -1102,7 +1105,7 @@ class TestReviewResults(View):
             # test_review.delete()
             # print(test_result)
 
-        # test_review.delete()
+        test_review.delete()
         self.clear_test_session(request)
 
         return redirect('tests:tests_for_review')

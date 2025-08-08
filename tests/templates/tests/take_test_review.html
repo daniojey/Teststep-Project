@@ -7,7 +7,16 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/take_test_review.css' %}">   
 
 <body>
-<div class='main-test-container'>
+{% if question.answer_type == "INP" and is_mobile %}
+    <div class="input-answers-container">
+        <p>Правильні відповіді:</p>
+        {% for data in current_answers %}
+            <p>{{ data }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="main-test-container {% if question.answer_type == "INP" and is_mobile %}mobile{% endif %}">
     <div class='test-header'>
         <h2>{{ all_questions.current }}/{{ all_questions.all }}</h2>
 
