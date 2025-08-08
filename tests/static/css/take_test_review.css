@@ -406,6 +406,22 @@ h3 {
     color: #363242;
 }
 
+@media (max-width: 1150px) {
+    .left-item {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .dropzone {
+        margin-left: 0px !important;
+        max-width: 1100px;
+    }
+
+    .right-item {
+        max-width: 1100px;
+    }
+}
+
 @media (max-width: 700px) {
     .button-container {
         flex-direction: column;
@@ -413,6 +429,14 @@ h3 {
 
     .submit-btn {
         width: 100%;
+    }
+
+    .left-items-container {
+        width: 100%;
+    }
+
+    .right-items-container {
+        display: none;
     }
 }
 
