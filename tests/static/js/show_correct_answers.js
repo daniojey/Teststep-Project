@@ -46,42 +46,44 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (questionAnswerType == "INP") {
         try {
             const parsedData = JSON.parse(dataAnswers);
+       
+            console.log(parsedData);
+            const popupWindow = document.querySelector('.popup-window');
+            const questionText = document.querySelector('.text-question')
+
+            let timers = new Map()
+
+            for (const element in parsedData) {
+                const newElement = document.createElement('p');
+
+                newElement.textContent = parsedData[element]
+
+                popupWindow.appendChild(newElement)
+            }
+
+            questionText.addEventListener('mousemove', (e) => {
+                clearTimeout(timers.get('timer'))
+                popupWindow.style.left = e.pageX + 10 + "px";
+                popupWindow.style.top = e.pageY + 10 + "px";
+                popupWindow.style.animation = "fadeIn 0.3s ease";
+                popupWindow.style.animationFillMode = "forwards";
+                popupWindow.style.display = 'flex';
+            })
+
+            questionText.addEventListener('mouseout', () => {
+                popupWindow.style.animation = "hideIn 0.3s ease";
+                popupWindow.style.animationFillMode = "forwards";
+
+                let timerId = setTimeout(() => {
+                    popupWindow.style.display = 'none';
+                }, 300)
+
+                timers.set('timer', timerId)
+            })
+
         } catch (error) {
             throw new Error('Помилка скрипту')
         }
-        console.log(parsedData);
-        const popupWindow = document.querySelector('.popup-window');
-        const questionText = document.querySelector('.text-question')
-
-        let timers = new Map()
-
-        for (const element in parsedData) {
-            const newElement = document.createElement('p');
-
-            newElement.textContent = parsedData[element]
-
-            popupWindow.appendChild(newElement)
-        }
-
-        questionText.addEventListener('mousemove', (e) => {
-            clearTimeout(timers.get('timer'))
-            popupWindow.style.left = e.pageX + 10 + "px";
-            popupWindow.style.top = e.pageY + 10 + "px";
-            popupWindow.style.animation = "fadeIn 0.3s ease";
-            popupWindow.style.animationFillMode = "forwards";
-            popupWindow.style.display = 'flex';
-        })
-
-        questionText.addEventListener('mouseout', () => {
-            popupWindow.style.animation = "hideIn 0.3s ease";
-            popupWindow.style.animationFillMode = "forwards";
-
-            let timerId = setTimeout(() => {
-                popupWindow.style.display = 'none';
-            }, 300)
-
-            timers.set('timer', timerId)
-        })
     }
     
 
