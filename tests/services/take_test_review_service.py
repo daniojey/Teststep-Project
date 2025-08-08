@@ -249,7 +249,7 @@ class TakeTestReviewService:
             })
         else:
 
-            if is_mobile:
+            if is_mobile and current_question.answers_type == "INP":
                 current_answers = [answer.text for answer in current_question.answers.filter(is_correct=True)]
             else:
                 current_answers = json.dumps({
