@@ -1,12 +1,15 @@
-## Підключення Sentry до проекту
+## Connecting Sentry to a project
 ---
-Sentry - сервіс моніторингу який дозволяє зручно відслідковувати помилки на сервері
+Sentry - monitoring service that allows you to conveniently track errors on the server
 ---
-### Інструкція
-1. Створюємо новий аккаунт в [Sentry](https://sentry.io/)
-2. Додаемо застосунок та обираемо Django
-3. Переходьте в Settings на головній та в пошуку шукаємо Client Keys(DSN)
-4. Копіюйте ваш DSN після чого переходьте у .env файл який ви створювали та додайте в нього ваш
+### Instructions
+1. Create a new account in [Sentry](https://sentry.io/)
+2. Add the application and select Django
+3. Go to Settings on the main page and search for Client Keys (DSN).
+4. Copy your DSN, then go to the .env file you created and add your
 ```env
-    SENTRY_DSN="<Ваш DSN>"
+    ENABLE_SENTRY=True
+    SENTRY_DSN="<Your DSN>"
 ```
+
+In the future, you can disable the use of S3 in your project using ENABLE_SENTRY.

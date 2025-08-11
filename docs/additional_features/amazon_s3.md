@@ -1,97 +1,97 @@
-## Створення S3 Bucket
+## Creating an S3 Bucket
 ---
-S3 - відповідає в цьому проекті за збереження медіа файлів та статики, це дуже необхідно в випадку розгортання проекту на Heroku, так як він кожні 24 години видаляє усі медіа що були збереженні в локальному сховищі проекту
+S3 - responsible for storing media files and static files in this project, which is very important when deploying the project on Heroku, as it deletes all media stored in the project's local storage every 24 hours.
 
-### Використання в данному проекті
-- Зберігає статику проекта а також медіа файли(картинки, аудіо файли)
+### Use in this project
+- Saves project statistics and media files (images, audio files)
 
 ---
-## Інструкція
+## Instructions
 
-### 1 Реєстрація
-1. Перейдіть на [aws.amazon.com](https://aws.amazon.com)
-2. Натисніть **"Create an AWS Account"**
-3. Заповніть реєстраційну форму:
-   - Email адреса
-   - Пароль
-   - Назва акаунта AWS
-4. Підтвердьте email
+### 1 Registration
+1. Go to [aws.amazon.com](https://aws.amazon.com)
+2. Click **“Create an AWS Account”**
+3. Fill out the registration form:
+   - Email address
+   - Password
+   - AWS account name
+4. Confirm your email
 
-### 2 Вибір плану підтримки
+### 2 Choosing a plan
 
-1. Виберіть **"Basic support - Free"** для початку
-2. Завершіть реєстрацію
+1. Select **“Basic support - Free”** to get started
+2. Complete registration
 
-> 💡 **Важливо**: Для нових акаунтів AWS надає Free Tier на 12 місяців!
+> 💡 **Important**: AWS offers a 12-month Free Tier for new accounts!
 
-### 3 Перехід до S3 консолі
+### 3 Switching to the S3 console
 
-1. Увійдіть у [AWS Management Console](https://console.aws.amazon.com)
-2. У пошуковому рядку введіть **"S3"**
-3. Виберіть **"S3"** з результатів пошуку
+1. Log in to [AWS Management Console](https://console.aws.amazon.com)
+2. Enter **“S3”** in the search bar.
+3. Select **“S3”** from the search results.
 
-### 4 Створення нового bucket
+### 4 Creating a new bucket
 
-1. Натисніть **"Create bucket"**
-2. Заповніть основні налаштування:
-   - **Bucket name**: `your-project-media-files` (має бути унікальним глобально)
-   - **AWS Region**: виберіть найближчий регіон (наприклад, `us-east-1`)
+1. Click **“Create bucket”**
+2. Fill in the basic settings:
+   - **Bucket name**: `your-project-media-files` (must be globally unique)
+   - **AWS Region**: Select the nearest region (e.g., `us-east-1`)
 
-### 5 Налаштування доступу
+### 5 Access settings
 
-1. **Object Ownership**: виберіть **"ACLs enabled"**
+1. **Object Ownership**: select **“ACLs enabled”**
 2. **Block Public Access settings**: 
-   - Зніміть позначку з **"Block all public access"**
-   - Поставте позначку у підтвердженні
-3. **Bucket Versioning**: можна залишити **"Disable"**
-4. **Default encryption**: виберіть **"Amazon S3 managed keys (SSE-S3)"**
+   - Uncheck **“Block all public access”**
+   - Check the confirmation box
+3. **Bucket Versioning**: you can leave it **“Disable”**
+4. **Default encryption**: select **“Amazon S3-managed keys (SSE-S3)”**
 
-### 6 Завершення створення
+### 6 Completion of creation
 
-1. Натисніть **"Create bucket"**
-2. Bucket буде створено і він з'явиться у списку
+1. Click **“Create bucket”**
+2. The bucket will be created and will appear in the list.
 
 ---
 
-## 👤 Крок : Створення IAM користувача
+## 👤 Step: Creating an IAM user
 
-### 7 Перехід до IAM консолі
+### 7 Switch to the IAM console
 
-1. У AWS Console знайдіть **"IAM"** у пошуковому рядку
-2. Виберіть **"IAM"**
-3. У лівому меню натисніть **"Users"**
+1. In the AWS Console, find **“IAM”** in the search bar.
+2. Select **“IAM”**
+3. In the left menu, click **“Users”**
 
-### 8 Створення нового користувача
+### 8 Creating a new user
 
-1. Натисніть **"Create user"**
-2. **User name**: введіть ім'я, наприклад `s3-django-user`
-3. **Access type**: виберіть **"Programmatic access"**
-4. Натисніть **"Next"**
+1. Click **“Create user”**
+2. **User name**: enter a name, for example `s3-django-user`
+3. **Access type**: select **“Programmatic access”**
+4. Click **“Next”**
 
-### 9 Налаштування прав доступу
+### 9 Configuring access rights
 
-1. **Set permissions**: виберіть **"Attach policies directly"**
-2. У пошуку знайдіть і виберіть **"AmazonS3FullAccess"**
-3. Натисніть **"Next"**
-4. Додайте теги (опціонально)
-5. Натисніть **"Create user"**
+1. **Set permissions**: select **“Attach policies directly”**
+2. In the search, find and select **“AmazonS3FullAccess”**
+3. Click **“Next”**
+4. Add tags (optional)
+5. Click **“Create user”**
 
-### 10 Збереження ключів доступу
+### 10 Keeping your access keys safe
 
-1. Після створення користувача ви побачите:
-   - **Access key ID**: `AKIA...` (20 символів)
-   - **Secret access key**: `...` (40 символів)
-2. **Скопіюйте та збережіть обидва ключі** - секретний ключ більше не буде показано!
-3. Можете завантажити .csv файл із ключами
+1. After creating a user, you will see:
+   - **Access key ID**: `AKIA...`
+   - **Secret access key**: `...` 
+2. **Copy and save both keys** - the secret key will not be displayed again!
+3. You can download a .csv file with keys
 
 
-### 11 Налаштування CORS
+### 11 CORS settings
 
-1. Поверніться до S3 консолі
-2. Виберіть ваш bucket
-3. Перейдіть у вкладку **"Permissions"**
-4. Знайдіть **"Cross-origin resource sharing (CORS)"**
-5. Натисніть **"Edit"** і вставте:
+1. Return to the S3 console
+2. Select your bucket
+3. Go to the **“Permissions”** tab.
+4. Find **“Cross-Origin Resource Sharing (CORS)”**
+5. Click **“Edit”** and paste:
 
 ```json
 [
@@ -104,8 +104,8 @@ S3 - відповідає в цьому проекті за збереження
 ]
 ```
 
-### 11 Налаштування Bucket Policy
-У розділі Persmission нашого S3 вам потрібно знайти Bucket policy та натиснути Edit, після чого додати такий код та сберегти
+### 11 Bucket Policy Settings
+In the Permissions section of our S3, you need to find Bucket policy and click Edit, then add the following code and save it
 
 ```bash
 {
@@ -121,10 +121,14 @@ S3 - відповідає в цьому проекті за збереження
 }
 ```
 
-### 12 Встановлюемо параметри в **.env**
+### 12 Set the parameters in **.env**
+
 ```env
+    ENABLE_S3=True
     AWS_ACCESS_KEY_ID=<id вашого bucket>
     AWS_SECRET_ACCESS_KEY=<access key який був отриманний при створенні bucket>
     AWS_STORAGE_BUCKET_NAME=<Назва вашого bucket>
     AWS_S3_REGION_NAME=eu-north-1
 ```
+---
+In the future, you can disable the use of S3 in your project using ENABLE_S3.

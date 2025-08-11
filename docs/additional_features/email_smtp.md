@@ -1,20 +1,22 @@
-## Налаштування відправки email повідомлень
+## Configuring email notifications
 ---
-### Використання в данному проекті
-- Для відправки листів студентам після назначення тестів для них
-- Для можливості скидання паролю так як використовуєтся email для відправки посилання на зміну паролю
+### Use in this project
+- To send letters to students after assigning tests to them
+- To reset your password, an email is used to send a link to change your password.
 
-### 1️⃣ SMTP (для відправки повідомлень на email)
+### 1️⃣ SMTP (for sending messages to email)
 
-> Вам необхідно створити аккаунт google и в налаштуваннях додати двухфакторну аутентифікацию після чого перейти в Паролі додатків і додати новий додаток після чого скопіювати та зберегти пароль ствоненного додатку
+> You need to create a Google account and add two-factor authentication in the settings, then go to App Passwords and add a new app, then copy and save the password for the created app.
 
-> [Довідка](https://support.google.com/a/answer/176600?hl=uk)
+> [Reference](https://support.google.com/a/answer/176600?hl=uk)
 
 ```env
+    ENABLE_SMTP=True
     EMAIL_HOST=smtp.gmail.com
-    EMAIL_PORT= <465 для HTTP | 587 для HTTPS>
-    EMAIL_HOST_USER= <email адресса вашого аккаунту>
-    EMAIL_HOST_PASSWORD= <Пароль додатку>
-    EMAIL_USE_TLS= <True для HTTPS| False для HTTP>
+    EMAIL_PORT=<465 for HTTP | 587 for HTTPS>
+    EMAIL_HOST_USER= <email address of your account>
+    EMAIL_HOST_PASSWORD=<Application password>
+    EMAIL_USE_TLS=<True for HTTPS | False for HTTP>
 ```
 
+In the future, you can disable the use of S3 in your project using ENABLE_SMTP.

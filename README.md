@@ -4,7 +4,7 @@
   <img src="docs/images/Home_page.png" alt="Описание" width="100%"/>
 </div>
 
-> Навчальна платформа для перевірки знань студентів
+> Learning platform for testing students' knowledge
 ### [[Screenshots](docs/images/screenshots.md)]
 ### [[Demo](http://ec2-13-53-147-251.eu-north-1.compute.amazonaws.com/)]
 ---
@@ -12,36 +12,36 @@
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)]()
 
-## 📋 Опис
+## 📋 Description
 
-Данний проект був створений для контролю знань студентів і він слугуе зручним інструментом для перевірки знань студентів надавая змогу вчителям швидко та зручно створювати тести з різними питаннями і назначати тест студентим в группі
+This project was created to monitor students' knowledge and serves as a convenient tool for testing students' knowledge, allowing teachers to quickly and conveniently create tests with different questions and assign tests to students in a group.
 
-### ✨ Основні можливості
+### ✨ Key features
 
-- 🔥 **1** - Створення та редагування тестів
-- ⚡ **2** - Групи для учнів і вчителів  
-- 🎯 **3** - Створення різних типів питань для тестів а такой різні типи відповідей
-- 🛡️ **4** - В учнів є можливість змінювати пароль отримуючи лист на email учня 
+- 🔥 **1** - Creating and editing tests
+- ⚡ **2** - Groups for students and teachers  
+- 🎯 **3** - Creating different types of questions for tests and different types of answers
+- 🛡️ **4** - Students have the opportunity to change their password by receiving an email to their student email address.
 
 ---
 
-## 🛠️ Стек проекту
+## 🛠️ Project stack
 
 ### Frontend
-- **HTML** - мова для створення розмітки яка буде відображена у браузері
-- **CSS** - мова я слугуе для закріплення різних стилів за кожним елементом в HTML
-- **JavaScript** - мова програмування яка надае можливість динамічно змінювати елменти в HTML
+- **HTML** - language for creating markup that will be displayed in the browser
+- **CSS** - I use language to assign different styles to each element in HTML.
+- **JavaScript** - A programming language that allows you to dynamically change elements in HTML.
 
 ### Backend
-- **Python** `3.11.x - 3.13.x` - мова програмування
-- **Django** `5.0.4` -  фреймворк для Python який надає швидко та зручно розробляти проекти
-- **Postgresql** `17.x` - PostgreSql база данний 
+- **Python** `3.11.x - 3.13.x` - programming language
+- **Django** `5.0.4` -  A framework for Python that makes it quick and easy to develop projects.
+- **Postgresql** `17.x` - Database
 
 ---
 
-## 📦 Залежності
+## 📦 Dependencies
 
-### Основні залежності (dependencies)
+### Dependencies
 
 ```json
  {
@@ -135,48 +135,48 @@
 ```
 
 
-### Системні вимоги
+### System requirements
 
-- **Python**: версія 3.11 або вище
-- **pip**: версія 21.x або вище  
-- **PostgreSQL**: версія 16.x або вище
-- **FFmpeg**: для обробки аудио/видео файлів
+- **Python**: version 3.11 or higher
+- **pip**: version 21.x or higher
+- **PostgreSQL**: version 16.x or higher
+- **FFmpeg**: for processing audio/video files
 
 ---
 
-### ⚙️ Налаштування та запуск
-1. Клонуйте проект (Для можливості клонування потрібно буде встановити [Github cli](https://git-scm.com/downloads))
+### ⚙️ Setup and launch
+1. Clone the project (To clone, you need to install [Github cli](https://git-scm.com/downloads))
 ```bash
     git clone https://github.com/daniojey/Pilot-project.git
 ```
-2. Перейдіть в папрку проекту після успішного клонування
+2. Go to the project folder after successful cloning
 ```bash
     cd Pilot-project.git
 ```
-3. Створіть Віртуальне оточення за допомогою комманди
+3. Create a virtual environment using the command
 ```bash
-    python -m venv <Назва оточення>
+    python -m venv <Name of environment>
 ```
-4. Після чого вам потрібно буде переходити в нього кожен раз для правильної взаемодії с проектом
->Активація віртуального оточення
+4. After that, you will need to log in every time to interact with the project correctly.
+> Activation of the virtual environment
 ```bash
-    <Назва оточення>/Scripts/activate
+    <Name of environment>/Scripts/activate
 ```
-> Якщо необхідно вийти з нього
+> If you need to exit it
 ```bash
     deactivate
 ```
-5. Встановлюємо залежності проекту
+5. Establishing project dependencies
 ```bash
     pip install -r requirements.txt
 ```
-6. Очікуємо завершення встановлення після чого переходимо за таким шляхом
+6. We are waiting for the installation to complete, after which we will proceed as follows
 ```
     main/
     ├── settings.py 
 ```
-7. Перейдіть на 115 строку коду в settings.py
-> в данному відрізку буде такий код
+7. Go to line 115 of the code in settings.py.
+> This segment will contain the following code
 ```bash
     DATABASES = {
         "default": dj_database_url.config(
@@ -184,46 +184,46 @@
         )
     }
 ```
-8. Завантажте одну с останніх версій PostgreSql після чого відкрийте pgadmin4(застосунок який був встановлений разом з службами Postgresql):
-   8.1. Ствоюйте користувача в Login/Group Roles
-       > Установіть свій пароль який буде використовуватися пізніше а також в Previleges
-   8.2. Створіть нову Databases
-       > в owner оберіть створенного вами користувача
+8. Download one of the latest versions of PostgreSql, then open pgadmin4 (the application that was installed along with Postgresql services):
+   8.1. Create a user in the “Login/Group Roles” section.
+       > Set your password, which will be used later, as well as in Previleges.
+   8.2. Create a new Databases
+       > In owner, select the user you created.
 
-9. Тепер необхідно змінити url вказаний в DATABASES в settings.py який ви можете редагувати
+9. Now you need to change the URL specified in DATABASES in settings.py, which you can edit.
 ```bash
-    default="postgres://<Ім'я створенного користувача>:<Пароль користувача>@localhost:5432/<Назва свореної бази данних>", conn_max_age=600
+    default="postgres://<Name of the created user>:<User password>@localhost:5432/<Name of the created database>", conn_max_age=600
 ```
 
-10. Запуск проекту
+10. Project launch
 ```bash
     python manage.py runserver
 ```
 
-### 2️⃣ Django Secret key необхідний для доступу к проекту(опіональна можливість але для продакшену обов'язкова)
->[Згенерувати ключ можна тут](https://djecrety.ir/)
-> Встановлюйте ключ лише в файл .env у корні проекту(якщо ви не створили ще .env файл то можна це зробити щоб додати django-secret-key а також в подальшому підключити додаткові можливості)
+### 2️⃣ Django Secret key is required to access the project (optional feature, but mandatory for production)
+>[You can generate a key here](https://djecrety.ir/)
+> Only put the key in the .env file in the project root (if you haven't made a .env file yet, you can do that to add the django-secret-key and also connect extra features later).
 ```env
-    DJANGO_SECRET_KEY = orz(0trfms-x^*c4+zjw(s-%rod^*&k6^5aqy@ysmhy8453fv8
+    DJANGO_SECRET_KEY = <Your secret key>
 ```
 
-## 🔧 Доступные команды
+## 🔧 Available commands
 
-| Команда | Опис |
+| Command | Description |
 |---------|----------|
-| `python manage.py runserver` | Запуск сервера |
-| `python manage.py createsuperuser` | Створення адміна |
-| `python manage.py pytest` | Запуск тестів проекту |
+| `python manage.py runserver` | Server startup |
+| `python manage.py createsuperuser` | Creating an admin |
+| `python manage.py pytest` | Launch of project tests |
 
 ---
-### Додаткові можливості
-> Також проект підтримує додаткові можливості такі як
-- Sentry(Моніторинг помилок)
-- Amazon S3(Для сберігання медіа та статики в хмарі)
-- STMP(відправка email повідомлень)
+### Additional features
+> The project also supports additional features such as
+- Sentry (Error Monitoring)
+- Amazon S3 (for storing media and static files in the cloud)
+- STMP (sending email messages)
 
-**Усі додаткові залежності встановлються в .env файл**
+**All additional dependencies are set in the .env file.**
 
-1. [Інструкція по встановленню Sentry](docs/additional_features/sentry.md)
-2. [Інструкція по встановленню S3](docs/additional_features/amazon_s3.md)
-3. [Інструкція по встановленню SMTP](docs/additional_features/email_smtp.md)
+1. [Sentry Installation guide](docs/additional_features/sentry.md)
+2. [S3 Installation guide](docs/additional_features/amazon_s3.md)
+3. [SMTP installation guide](docs/additional_features/email_smtp.md)
